@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "flutter_template",
+			"path": "."
+		},
+		{
+			"name": ".vscode",
+			"path": "../burnsafe/.vscode"
+		}
+	],
+	"settings": {}
+}

@@ -1,0 +1,4 @@
+set VERSION_NUMBER=0.1.0
+set BUILD_VERSION=0.1.0.0
+set BUILD_NUMBER=01000
+set PROJ_NAME=project_name
