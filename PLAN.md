@@ -37,12 +37,12 @@ This document outlines the development plan for the Day Break application, based
 
 ## Phase 3: Location Service
 
-- [ ] **Create Location Service:**
+- [x] **Create Location Service:**
   - Implement a `LocationService` using the `geolocator` package.
   - Develop logic to request location permissions on app startup.
   - Handle cases where permission is denied, allowing for manual input as per `PRD.md`.
 
-- [ ] **Testing:**
+- [x] **Testing:**
   - Write unit tests for the `LocationService`. Use mocking to simulate responses from the `geolocator` package.
   - Ensure all tests pass by running `flutter test`.
 

@@ -1,3 +1,9 @@
+## 0.6.0
+  
+### Feature
+  
+- Added geolocator service
+
 ## 0.5.0
   
 ### Refactor
