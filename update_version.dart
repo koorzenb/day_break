@@ -3,6 +3,16 @@ import 'dart:io';
 import 'package:pub_semver/pub_semver.dart';
 
 void main() {
+  print('Running Flutter tests...');
+  final testResult = Process.runSync('flutter', ['test'], runInShell: true);
+
+  if (testResult.exitCode != 0) {
+    print('Error: Tests failed. Aborting version update.');
+    print(testResult.stdout);
+    print(testResult.stderr);
+    return;
+  }
+
   final changelogFile = File('CHANGELOG.md');
 
   if (!changelogFile.existsSync()) {
@@ -29,25 +39,34 @@ void main() {
     commitDescription = commitParts.group(2)!.trim();
   }
 
-  final nextVersion = _updatePubspecVersion(commitType == 'fix' || commitType == 'bug' || commitType == 'ref');
+  final nextVersion = _updatePubspecVersion(
+    commitType == 'fix' ||
+        commitType == 'bug' ||
+        commitType == 'ref' ||
+        commitType == 'chore' ||
+        commitType == 'docs' ||
+        commitType == 'test' ||
+        commitType == 'enh',
+  );
   _updateChangelog(nextVersion, commitType, commitDescription, changelogFile);
   _commitChanges(commitMessage);
 }
 
 void _updateChangelog(String? nextVersion, String commitType, String commitDescription, File changelogFile) {
   // Update CHANGELOG.md
-  final changelogEntry = '''
+  var ct = _capitalize(commitType == 'ref' ? 'refactor' : commitType);
+  ct = _capitalize(ct == 'Feat' ? 'feature' : ct);
+  ct = _capitalize(ct == 'Enh' ? 'enhancement' : ct);
+  final changelogEntry =
+      '''
 ## $nextVersion
   
-  ### ${_capitalize(commitType == 'ref' ? 'refactor' : commitType)}
+### $ct
   
-  - $commitDescription
-  
-  ''';
-  changelogFile.writeAsStringSync(changelogEntry + changelogFile.readAsStringSync());
+- $commitDescription
 
-  print('Updated CHANGELOG.md with new entry: $changelogEntry');
-  print('Added changelog entry for version: $nextVersion with type "$commitType" and message: "$commitDescription"');
+''';
+  changelogFile.writeAsStringSync(changelogEntry + changelogFile.readAsStringSync());
 }
 
 String? _updatePubspecVersion(bool isNextPatch) {
@@ -55,7 +74,7 @@ String? _updatePubspecVersion(bool isNextPatch) {
 
   if (!pubspecFile.existsSync()) {
     print('Error: pubspec.yaml not found!');
-    null;
+    return null;
   }
 
   // Read pubspec.yaml
@@ -70,26 +89,54 @@ String? _updatePubspecVersion(bool isNextPatch) {
   // Extract version and build number
   final currentVersion = Version.parse(currentVersionMatch.group(1)!); // Semantic version (e.g., 0.3.0)
   final currentBuildNumber = int.parse(currentVersionMatch.group(2)!); // Build number (e.g., 03000)
-  print('Extracted Current version: $currentVersion, Build number: $currentBuildNumber');
 
   // Determine next version based on commit type
   Version nextVersion;
-  int nextBuildNumber;
+  String nextBuildNumber;
   if (isNextPatch) {
-    nextVersion = currentVersion.nextPatch; // Increment the patch version
-    nextBuildNumber = currentBuildNumber + 1; // Increment the build number
+    nextVersion = currentVersion.nextPatch;
+    nextBuildNumber = '${currentBuildNumber + 1}';
+    print('Incrementing patch version: $nextVersion, build number: $nextBuildNumber');
   } else {
     nextVersion = Version(currentVersion.major, currentVersion.minor + 1, 0);
-    nextBuildNumber = ((currentBuildNumber ~/ 100) + 1) * 100;
+    nextBuildNumber = '00${((currentBuildNumber ~/ 100) + 1) * 100}'; // manually update this for major releases
+    print('Incrementing patch version: $nextVersion, build number: $nextBuildNumber');
   }
-  print('Next version: $nextVersion, Next build number: $nextBuildNumber');
 
   // Update pubspec.yaml with new version and build number
   final updatedPubspecContent = pubspecContent.replaceFirst(RegExp(r'version:\s*\d+\.\d+\.\d+\+\d+'), 'version: $nextVersion+$nextBuildNumber');
   pubspecFile.writeAsStringSync(updatedPubspecContent);
   print('Updated pubspec.yaml to version: $nextVersion+$nextBuildNumber');
 
+  _updateBuildEnv(int.parse(nextBuildNumber), nextVersion);
   return nextVersion.toString();
+}
+
+void _updateBuildEnv(int nextBuildNumber, Version nextVersion) {
+  final buildEnvFile = File('set-build-env.bat');
+
+  if (!buildEnvFile.existsSync()) {
+    print('Warning: set-build-env.bat not found, skipping batch file update');
+    return;
+  }
+
+  // .. test
+
+  final buildEnvContent = buildEnvFile.readAsStringSync();
+  final formattedBuildNumber = nextBuildNumber.toString().padLeft(5, '0');
+
+  final buildVersion = '$nextVersion.$nextBuildNumber';
+
+  var updatedBuildEnvContent = buildEnvContent
+      .replaceFirst(RegExp(r'set VERSION_NUMBER=.*'), 'set VERSION_NUMBER=$nextVersion')
+      .replaceFirst(RegExp(r'set BUILD_VERSION=.*'), 'set BUILD_VERSION=$buildVersion')
+      .replaceFirst(RegExp(r'set BUILD_NUMBER=.*'), 'set BUILD_NUMBER=$formattedBuildNumber');
+
+  buildEnvFile.writeAsStringSync(updatedBuildEnvContent);
+  print('Updated set-build-env.bat with:');
+  print('  VERSION_NUMBER=$nextVersion');
+  print('  BUILD_VERSION=$buildVersion');
+  print('  BUILD_NUMBER=$formattedBuildNumber');
 }
 
 // Utility function to capitalize the first letter of a string
@@ -114,13 +161,12 @@ String? _promptForCommitMessage() {
 
 void _commitChanges(String commitMessage) {
   // Stage the updated files
-  final gitAddResult = Process.runSync('git', ['add', 'pubspec.yaml', 'CHANGELOG.md']);
+  final gitAddResult = Process.runSync('git', ['add', 'pubspec.yaml', 'CHANGELOG.md', 'set-build-env.bat']);
   if (gitAddResult.exitCode != 0) {
     print('Error: Failed to stage files. ${gitAddResult.stderr}');
     return;
   }
 
-  print('Staged pubspec.yaml and CHANGELOG.md for commit.');
   final gitCommitResult = Process.runSync('git', ['commit', '-m', commitMessage]);
   if (gitCommitResult.exitCode != 0) {
     print('Error: Failed to commit changes. ${gitCommitResult.stderr}');

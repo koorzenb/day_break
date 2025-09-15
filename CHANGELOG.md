@@ -1,4 +1,16 @@
-## 1.1.0
+## 0.2.0
+  
+### Other
+  
+- Added PLAN.md and PRD.md
+
+## 1.2.0
+  
+  ### Chore
+  
+  - Added PLAN.md and PRD.md
+  
+  ## 1.1.0
   
   ### Feat
   
