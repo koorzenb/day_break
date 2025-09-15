@@ -4,11 +4,11 @@ This document outlines the development plan for the Day Break application, based
 
 ## Phase 1: Project Setup and Core Dependencies
 
-- [ ] **Initialize Project:**
+- [x] **Initialize Project:**
    * Ensure the Flutter project is correctly set up and follows the structure outlined in `copilot-instructions.md`.
    * Verify the Flutter version using `.fvmrc`.
 
-- [ ] **Add Dependencies:**
+- [x] **Add Dependencies:**
    * Add the following core packages to `pubspec.yaml`:
      * `get`: For state management and dependency injection.
      * `hive` & `hive_flutter`: For local storage of user settings.
@@ -17,7 +17,7 @@ This document outlines the development plan for the Day Break application, based
      * `http`: For making requests to the weather API.
    * Run `flutter pub get` to install the dependencies.
 
-- [ ] **Initial Validation:**
+- [x] **Initial Validation:**
    * Run `flutter test` to ensure the default widget test passes and the project is in a clean state.
    * Run `flutter analyze` to check for initial analysis issues.
 

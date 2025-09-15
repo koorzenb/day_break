@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:pub_semver/pub_semver.dart';
 
-void main() {
+void main(List<String> args) {
   print('Running Flutter tests...');
   final testResult = Process.runSync('flutter', ['test'], runInShell: true);
 
@@ -21,7 +21,12 @@ void main() {
   }
 
   // Prompt user for commit message
-  String? commitMessage = _promptForCommitMessage();
+  String? commitMessage;
+  if (args.isNotEmpty) {
+    commitMessage = args.join(' ');
+  } else {
+    commitMessage = _promptForCommitMessage();
+  }
 
   if (commitMessage == null || commitMessage.isEmpty) {
     print('Error: No commit message provided. Aborting.');
