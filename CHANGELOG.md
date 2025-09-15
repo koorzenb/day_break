@@ -1,3 +1,9 @@
+## 0.7.0
+  
+### Tests
+  
+- Implement location-related exceptions for improved error handling
+
 ## 0.6.0
   
 ### Feature

@@ -1,5 +1,6 @@
 import 'package:day_break/geolocator_wrapper.dart';
 import 'package:day_break/location_service.dart';
+import 'package:day_break/location_exceptions.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mockito/annotations.dart';
@@ -41,10 +42,10 @@ void main() {
       expect(position, isA<Position>());
     });
 
-    test('determinePosition throws error when location services are disabled', () async {
+    test('determinePosition throws LocationServicesDisabledException when services are disabled', () async {
       when(mockGeolocator.isLocationServiceEnabled()).thenAnswer((_) async => false);
 
-      expect(locationService.determinePosition(), throwsA('Location services are disabled.'));
+      expect(locationService.determinePosition(), throwsA(isA<LocationServicesDisabledException>()));
     });
 
     test('determinePosition requests permission when denied and then returns position', () async {
@@ -71,11 +72,11 @@ void main() {
       expect(position, isA<Position>());
     });
 
-    test('determinePosition throws error when permission is denied forever', () async {
+    test('determinePosition throws LocationPermissionPermanentlyDeniedException when permission is denied forever', () async {
       when(mockGeolocator.isLocationServiceEnabled()).thenAnswer((_) async => true);
       when(mockGeolocator.checkPermission()).thenAnswer((_) async => LocationPermission.deniedForever);
 
-      expect(locationService.determinePosition(), throwsA('Location permissions are permanently denied, we cannot request permissions.'));
+      expect(locationService.determinePosition(), throwsA(isA<LocationPermissionPermanentlyDeniedException>()));
     });
   });
 }
