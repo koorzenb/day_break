@@ -7,18 +7,13 @@ abstract class LocationException implements Exception {
 }
 
 class LocationServicesDisabledException extends LocationException {
-  const LocationServicesDisabledException()
-      : super('Location services are disabled.');
+  const LocationServicesDisabledException() : super('Location services are disabled.');
 }
 
 class LocationPermissionDeniedException extends LocationException {
-  const LocationPermissionDeniedException()
-      : super('Location permissions are denied');
+  const LocationPermissionDeniedException() : super('Location permissions are denied');
 }
 
 class LocationPermissionPermanentlyDeniedException extends LocationException {
-  const LocationPermissionPermanentlyDeniedException()
-      : super(
-          'Location permissions are permanently denied, we cannot request permissions.',
-        );
+  const LocationPermissionPermanentlyDeniedException() : super('Location permissions are permanently denied, we cannot request permissions.');
 }

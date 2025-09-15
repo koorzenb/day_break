@@ -1,6 +1,6 @@
 import 'package:day_break/geolocator_wrapper.dart';
-import 'package:day_break/location_service.dart';
 import 'package:day_break/location_exceptions.dart';
+import 'package:day_break/location_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mockito/annotations.dart';
