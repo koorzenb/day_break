@@ -1,6 +1,4 @@
 {
-  // Excludes files/folders from the File Explorer view.
-  // This is great for hiding generated files you never need to see.
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,
@@ -12,16 +10,14 @@
     "**/.idea/": true,
     "**/.metadata": true,
     "**/build/": true,
-    "**/*.g.dart": false, // Keep generated files visible if you want
+    "**/*.g.dart": false,
     "**/*.freezed.dart": false,
     "pubspec.lock": true,
-    "linux/": true, // Exclude entire platform folders you don't work on
+    "linux/": true,
     "windows/": true,
     "macos/": true,
     "web/": true
   },
-  // Excludes files/folders from VS Code's search results.
-  // This is the most important one for performance.
   "search.exclude": {
     "**/build/": true,
     "**/.dart_tool/": true,
@@ -34,8 +30,6 @@
     "**/macos/": true,
     "**/web/": true
   },
-  // Excludes files/folders from VS Code's file watcher service.
-  // Reducing the number of watched files saves system resources.
   "files.watcherExclude": {
     "**/.git/objects/**": true,
     "**/.git/subtree-cache/**": true,
@@ -45,5 +39,6 @@
     "**/.dart_tool/**": true,
     "**/ios/Pods/**": true,
     "**/android/app/build/**": true
-  }
+  },
+  "dart.flutterSdkPath": ".fvm/versions/3.35.3"
 }
