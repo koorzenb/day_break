@@ -48,15 +48,15 @@ This document outlines the development plan for the Day Break application, based
 
 ## Phase 4: Weather Service
 
-- [ ] **Create Weather Service:**
+- [x] **Create Weather Service:**
   - Implement a `WeatherService` to fetch data from a weather API using the `http` package.
   - Create data models to parse the JSON response from the API.
 
-- [ ] **Develop API Logic:**
+- [x] **Develop API Logic:**
   - Implement error handling for network issues or API failures.
   - Provide a fallback mechanism if weather data cannot be retrieved.
 
-- [ ] **Testing:**
+- [x] **Testing:**
   - Write unit tests for the `WeatherService`, mocking the `http` client to simulate API responses and error conditions.
   - Ensure all tests pass by running `flutter test`.
 

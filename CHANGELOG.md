@@ -1,3 +1,13 @@
+## 0.8.0
+  
+### Feature
+
+feat: Implement weather service with API integration and error handling
+chore: Add dotenv support for environment variables and API key management
+docs: Update copilot instructions for API key management and dotenv usage
+test: Add unit tests for WeatherService and WeatherSummary classes
+style: Update .gitignore to exclude .env files
+
 ## 0.7.0
   
 ### Tests

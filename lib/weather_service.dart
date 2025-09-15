@@ -1,0 +1,57 @@
+import 'dart:convert';
+
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
+
+import 'http_client_wrapper.dart';
+import 'weather_exceptions.dart';
+import 'weather_summary.dart';
+
+class WeatherService extends GetxService {
+  static const String _baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
+
+  static String get _apiKey {
+    final apiKey = dotenv.env['OPENWEATHER_API_KEY'];
+    if (apiKey == null || apiKey.isEmpty) {
+      throw const WeatherApiException('OpenWeatherMap API key not found. Please set OPENWEATHER_API_KEY in .env file.', 0);
+    }
+    return apiKey;
+  }
+
+  final HttpClientWrapper _httpClient;
+
+  WeatherService([HttpClientWrapper? httpClient]) : _httpClient = httpClient ?? HttpClientWrapper();
+
+  /// Fetches weather data for the given position
+  Future<WeatherSummary> getWeather(Position position) async {
+    final url = Uri.parse('$_baseUrl?lat=${position.latitude}&lon=${position.longitude}&appid=$_apiKey&units=metric');
+
+    try {
+      final response = await _httpClient.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        return WeatherSummary.fromJson(data);
+      } else {
+        throw WeatherApiException('Weather API returned status ${response.statusCode}', response.statusCode);
+      }
+    } catch (e) {
+      if (e is WeatherException) {
+        rethrow;
+      }
+
+      // Handle JSON parsing errors
+      if (e is FormatException) {
+        throw const WeatherParsingException('Failed to parse weather data');
+      }
+
+      // Handle network errors
+      throw WeatherNetworkException('Network error: ${e.toString()}');
+    }
+  }
+
+  void dispose() {
+    _httpClient.close();
+  }
+}

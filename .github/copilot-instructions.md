@@ -5,6 +5,10 @@
 - **PRD (`PRD.md`):** Review this to stay aligned with **what** we are building and **why**. It defines the product's features, users, and overall goals.
 - **Plan (`PLAN.md`):** Review this to track **how** and **when** we will deliver. It outlines our execution strategy, timelines, and key milestones.
 
+## Copilot Integration
+
+**Always Use Context7 MCP**: For every request submitted to Copilot, always use the context7 MCP (Model Context Protocol) to ensure proper context awareness and enhanced code understanding capabilities.
+
 ## Working Effectively
 
 ### Prerequisites and Setup
@@ -145,3 +149,31 @@ Always run these commands before committing changes:
 - If builds fail: verify Flutter 3.35.3 is being used (check with `flutter --version`)
 - If tests fail: check that no breaking changes were made to BurnLogicService time calculations
 - If notifications don't work: verify app has notification permissions on test device
+
+## API Key Management
+
+**Never Hardcode API Keys**
+
+- API keys must **never** be hardcoded anywhere in the codebase.
+- Always store API keys and secrets in environment variables.
+- For mobile apps, use a dotenv-like solution (e.g., [flutter_dotenv](https://pub.dev/packages/flutter_dotenv)) to load environment variables at runtime.
+- Document required environment variables in your setup instructions.
+- Ensure `.env` files are **never** committed to source control (add to `.gitignore`).
+
+**Implementation Guidance**
+
+- When accessing API keys in code, always read them from environment variables using the dotenv package.
+- Example usage in Dart/Flutter:
+
+  ```dart
+  import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+  final apiKey = dotenv.env['API_KEY'];
+  ```
+
+- Update build and deployment scripts to ensure environment variables are set appropriately for each environment (development, staging, production).
+
+**Security Reminder**
+
+- Review code for accidental exposure of secrets before every commit.
+- If an API key is ever exposed, rotate it immediately and update all relevant environments.
