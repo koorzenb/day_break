@@ -1,7 +1,13 @@
 {
 	"version": "0.2",
 	"words": [
+		"fvmrc",
+		"geolocator",
+		"Getx",
 		"Homescreen",
+		"pubspec",
+		"Schyler",
+		"unawaited"
 	],
 	"ignorePaths": [],
 	"enabled": true

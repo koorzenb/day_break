@@ -1,3 +1,15 @@
+## 0.5.0
+  
+### Refactor
+  
+- Mmm, refactored the settings service, I have. Pass the tests, they do. Wise, this change is.
+
+## 0.4.0
+  
+### Feature
+  
+- Settings service is now a dependency injection ninja!  All tests pass, Hive is happy.
+
 ## 0.3.0
   
 ### Feature
@@ -12,14 +24,13 @@
 
 ## 1.2.0
   
-  ### Chore
+### Chore
   
-  - Added PLAN.md and PRD.md
+- Added PLAN.md and PRD.md
   
-  ## 1.1.0
+## 1.1.0
   
-  ### Feat
+### Feat
   
-  - Initial
-  
+- Initial
   
