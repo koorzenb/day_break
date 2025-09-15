@@ -1,3 +1,16 @@
+## 0.9.0
+  
+### Feature
+  
+Implement Notification Service with scheduling and error handling
+
+- Added NotificationService to manage local notifications.
+- Integrated weather updates and settings for daily notifications.
+- Implemented error handling for notification permission and scheduling failures.
+- Created custom exceptions for notification-related errors.
+- Added tests for NotificationService to ensure functionality and error handling.
+- Updated dependencies in pubspec.yaml and pubspec.lock for timezone support.
+
 ## 0.8.0
   
 ### Feature

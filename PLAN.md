@@ -62,15 +62,15 @@ This document outlines the development plan for the Day Break application, based
 
 ## Phase 5: Notification Service
 
-- [ ] **Create Notification Service:**
+- [x] **Create Notification Service:**
   - Implement a `NotificationService` using `flutter_local_notifications`.
   - Configure platform-specific notification settings (Android).
 
-- [ ] **Develop Scheduling Logic:**
+- [x] **Develop Scheduling Logic:**
   - Create a method to schedule a daily notification at the time specified by the user.
   - The notification content will be constructed using data from the `WeatherService`.
 
-- [ ] **Testing:**
+- [x] **Testing:**
   - Write unit tests to verify the notification scheduling logic.
   - Ensure all tests pass by running `flutter test`.
 

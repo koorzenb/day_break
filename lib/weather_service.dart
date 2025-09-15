@@ -38,6 +38,7 @@ class WeatherService extends GetxService {
       }
     } catch (e) {
       if (e is WeatherException) {
+        // TODO: Should announce default message that request failed
         rethrow;
       }
 

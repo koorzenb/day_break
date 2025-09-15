@@ -1,7 +1,12 @@
+import 'package:day_break/http_client_wrapper.dart';
+import 'package:day_break/notification_service.dart';
 import 'package:day_break/settings_service.dart';
+import 'package:day_break/weather_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 
 Future<void> main() async {
   await dotenv.load(fileName: '.env');
@@ -11,6 +16,18 @@ Future<void> main() async {
 
 Future<void> initServices() async {
   await Get.putAsync(() => SettingsService().init());
+
+  // Initialize HTTP client wrapper
+  Get.put(HttpClientWrapper(Get.put(http.Client())));
+
+  // Initialize WeatherService
+  Get.put(WeatherService(Get.find()));
+
+  // Initialize and setup NotificationService
+  final notificationService = NotificationService(notifications: FlutterLocalNotificationsPlugin(), weatherService: Get.find(), settingsService: Get.find());
+
+  await notificationService.initialize();
+  Get.put(notificationService);
 }
 
 class MyApp extends StatelessWidget {
