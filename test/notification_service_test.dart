@@ -78,18 +78,17 @@ void main() {
         );
       });
 
-      test('should throw NotificationPermissionDeniedException when permission denied', () async {
+      test('should continue initialization when permission denied (non-fatal)', () async {
         // Arrange
         when(mockNotifications.initialize(any, onDidReceiveNotificationResponse: anyNamed('onDidReceiveNotificationResponse'))).thenAnswer((_) async => true);
         when(mockNotifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()).thenReturn(mockAndroidPlugin);
         when(mockAndroidPlugin.requestNotificationsPermission()).thenAnswer((_) async => false);
 
-        // Act & Assert
-        expect(
-          () => notificationService.initialize(),
-          throwsA(isA<NotificationPermissionDeniedException>()),
-          reason: 'Should throw NotificationPermissionDeniedException when permission denied',
-        );
+        // Act (should not throw)
+        await notificationService.initialize();
+
+        // Assert
+        verify(mockAndroidPlugin.requestNotificationsPermission()).called(1);
       });
     });
 

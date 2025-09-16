@@ -1,3 +1,4 @@
+import 'package:day_break/app_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -108,6 +109,9 @@ class SettingsController extends GetxController {
 
       // Show success message
       _showSuccessSnackbar('Time Updated ⏰', 'Announcement time set to ${time.format(Get.context!)}');
+
+      // Check if all settings are now complete
+      _checkAndNavigateIfComplete();
     } catch (e) {
       // Show error message
       _showErrorSnackbar('Error ❌', 'Failed to update announcement time');
@@ -158,11 +162,35 @@ class SettingsController extends GetxController {
       } else {
         _showSuccessSnackbar('Location Saved 📍', 'Location set to $newLocation (validation unavailable)');
       }
+
+      // Check if all settings are now complete
+      _checkAndNavigateIfComplete();
     } catch (e) {
       // Show error message for network/API issues
       _showErrorSnackbar('Validation Error ❌', 'Unable to validate location. Please check your internet connection and try again.');
     } finally {
       _isLoading.value = false;
+    }
+  }
+
+  /// Check if settings are complete and navigate back to main screen
+  void _checkAndNavigateIfComplete() {
+    if (isSettingsComplete) {
+      // Use a post-frame callback to ensure the build cycle is complete
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.find<AppController>().checkSettingsStatus();
+
+        if (Get.isSnackbarOpen) {
+          // wait until snackbar is closed
+          Future.delayed(const Duration(seconds: 2), () {
+            // navigate to main screen
+            Get.toNamed('/');
+          });
+        } else {
+          // Navigate back and pass a result to indicate completion
+          Get.toNamed('/');
+        }
+      });
     }
   }
 

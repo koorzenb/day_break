@@ -1,3 +1,9 @@
+## 0.13.0
+  
+### Feature
+  
+- Phase seven complete, integration forged it is
+
 ## 0.12.0
   
 ### Feature

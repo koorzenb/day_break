@@ -77,6 +77,16 @@ class SettingsScreen extends StatelessWidget {
               // Location Section
               const Text('Location 📍', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
+              if (controller.location.isEmpty) ...[
+                Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.grey[600], size: 20),
+                    const SizedBox(width: 8),
+                    const Text('Choose how to set your location:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+              ],
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -125,28 +135,6 @@ class SettingsScreen extends StatelessWidget {
                         ),
                       ] else ...[
                         // Show input options when no location is set
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.blue[50],
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.blue[200]!),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.touch_app, color: Colors.blue[600], size: 18),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Choose how to set your location:',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.blue),
-                              ),
-                              if (!controller.hasWeatherValidation) ...[
-                                const SizedBox(width: 8),
-                                const Icon(Icons.info_outline, size: 16, color: Colors.orange),
-                              ],
-                            ],
-                          ),
-                        ),
                         if (!controller.hasWeatherValidation)
                           const Padding(
                             padding: EdgeInsets.only(top: 4.0),

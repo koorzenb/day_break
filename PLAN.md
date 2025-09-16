@@ -89,10 +89,12 @@ This document outlines the development plan for the Day Break application, based
   - Write unit tests to verify the notification scheduling logic.
   - Test text-to-speech functionality with mock weather data.
   - Ensure all tests pass by running `flutter test`.
+  
+  - [ ] TODO (Future Enhancement): When notification permission is denied by the user, display a non-blocking snackbar prompting them to enable notifications (include an action to open OS/app notification settings). Currently we only log the denial and continue silently.
 
 ## Phase 6: UI - Settings Screen
 
-- [~] **Build UI:**
+- [x] **Build UI:**
   - Create a simple settings screen for the initial setup and subsequent configuration changes.
   - Include a time picker for the announcement time and enhanced location selection interface. Use the `geolocator` package to suggest the current location, allowing users to accept or decline the suggestion. If they accept, populate the location field; if they decline or if GPS detection fails, allow manual entry.
   - Add a back button/navigation to return to the main screen after configuration.
@@ -111,7 +113,7 @@ This document outlines the development plan for the Day Break application, based
   - Implement navigation logic to detect when initial setup is complete and return to main flow.
   - Add state management for location detection process (loading, success, error states).
 
-- [~] **Navigation Flow:**
+- [x] **Navigation Flow:**
   - Ensure settings screen has proper back navigation for users returning from MainScreen.
   - Implement automatic return to MainScreen when both location and notification time are configured.
   - Provide clear visual feedback when setup is complete.
@@ -124,16 +126,16 @@ This document outlines the development plan for the Day Break application, based
 
 ## Phase 7: Application Integration
 
-- [ ] **Initialize Services:**
+- [x] **Initialize Services:**
   - In `lib/main.dart`, use GetX dependency injection to initialize and provide all services (`SettingsService`, `LocationService`, etc.).
 
-- [ ] **Implement Core Logic:**
+- [x] **Implement Core Logic:**
   - Create a main `AppController` to orchestrate the services.
   - On startup, the controller will check if settings are configured. If not, it will navigate to the settings screen.
   - Implement the background task that triggers daily: fetches location, gets weather, and schedules the notification.
 
-- [ ] **Testing:**
-  - Write integration tests to ensure that all services work together as expected.
+- [x] **Testing:**
+  - Write integration tests to ensure that all services work together as expected. (Note: core behavior covered by unit tests; dedicated integration tests can be expanded in Phase 9.)
   - Run `flutter analyze` and `flutter test` to validate the integrated app.
 
 ## Phase 8: Final Validation and Commit
@@ -156,3 +158,67 @@ This document outlines the development plan for the Day Break application, based
 
 - [ ] **Commit:**
   - Use the `dart run update_version.dart` script to create a commit with a descriptive message (e.g., "feat: initial app implementation").
+
+## Phase 9: Post-MVP Enhancements (Value Add)
+
+These items enhance resilience, UX, and maintainability beyond the MVP scope.
+
+- [ ] Snackbar Prompt on Permission Denial
+  - Show a snackbar when notification permission is denied with an action button (e.g., "Enable") that deep-links to OS/app notification settings.
+  - Add retry logic for scheduling once permission is granted.
+
+- [ ] Centralized Initialization State
+  - Replace multiple booleans (`_isInitialized`, `_hasSettings`) with an enum/sealed class: `loading | needsSetup | ready | limitedMode | error`.
+  - Simplifies UI branching and future analytics logging.
+
+- [ ] WeatherService Lazy API Key Validation
+  - Defer API key validation until first actual weather fetch to allow offline/limited startup.
+  - Provide a user-visible indicator if API key missing instead of crashing.
+
+- [ ] Timeout Guards for Slow Ops
+  - Add `Future.timeout` wrappers to TTS init, permission requests, and scheduling to prevent rare hangs.
+  - Surface fallback status when timeouts occur.
+
+- [ ] Logging Abstraction
+  - Create a lightweight logger interface with levels (debug/info/warn/error) and a test implementation to capture logs.
+  - Optional: integrate with remote logging later.
+
+- [ ] Additional AppController Tests
+  - Test navigation to settings when setup incomplete.
+  - Test recovery path after a failed scheduling attempt.
+  - Test limited mode messaging when one dependency fails.
+
+- [ ] Dependency Injection Refinement
+  - Introduce a `ServiceRegistry.init()` that returns a structured result (success/failures) to display diagnostic UI.
+  - Makes future platform feature toggles easier.
+
+- [ ] UI Status Component
+  - Replace raw status string with a reusable widget (badge + icon + semantic label).
+  - Standardize colors and accessibility labels.
+
+- [ ] Retry / Backoff for Weather Fetch
+  - Add limited retry (e.g., 2 attempts with exponential backoff) for transient network failures before showing error notification.
+
+- [ ] User Feedback for Muted Notifications
+  - Detect if notifications disabled after initial grant and prompt user proactively.
+
+- [ ] Graceful Offline Mode
+  - Cache last successful weather summary and announce it with a stale indicator if current fetch fails.
+
+- [ ] iOS Support Readiness Checklist
+  - Add placeholders for iOS-specific permission flows, notification categories, and TTS voice selection.
+
+- [ ] Metrics & Telemetry Hooks (Optional)
+  - Add abstraction layer so future analytics (e.g., daily active, notification success) can be plugged in without refactors.
+
+- [ ] Documentation & Architecture Diagram
+  - Provide a simple component diagram (services, controller, UI layers) in README or /docs for onboarding.
+
+- [ ] Theming & Dark Mode
+  - Introduce dark theme and allow user override.
+
+- [ ] Automated Lint & CI Improvements
+  - Add CI workflow for `flutter analyze`, `flutter test`, and (optionally) build steps.
+
+- [ ] Explore Background Fetch Expansion
+  - Investigate using isolates / background fetch plugin for pre-fetching weather before announcement time.

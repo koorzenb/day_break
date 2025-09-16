@@ -84,8 +84,10 @@ class NotificationService extends GetxService {
 
     if (androidPlugin != null) {
       final granted = await androidPlugin.requestNotificationsPermission();
+      // Don't make permission denial fatal – allow app to continue without notifications
       if (granted != true) {
-        throw const NotificationPermissionDeniedException();
+        Get.log('Notification permission denied by user. Continuing without scheduled notifications.', isError: true);
+        return; // Early return; caller can decide whether to schedule later
       }
     }
   }

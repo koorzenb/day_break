@@ -13,6 +13,9 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 Future<void> main() async {
+  // Ensure Flutter bindings are initialized
+  WidgetsFlutterBinding.ensureInitialized();
+
   await dotenv.load(fileName: '.env');
   await initServices();
   runApp(const MyApp());

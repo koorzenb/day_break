@@ -26,30 +26,36 @@ class AppController extends GetxController {
   }
 
   /// Initialize all services and check app state
-  void _initializeServices() {
+  Future<void> _initializeServices() async {
     try {
       // Get all required services
       _settingsService = Get.find<SettingsService>();
       _notificationService = Get.find<NotificationService>();
 
       // Check if settings are configured
-      _checkSettingsStatus();
+      checkSettingsStatus();
 
       _isInitialized.value = true;
       _currentStatus.value = 'Ready';
 
       // If settings are complete, schedule background tasks
       if (_hasSettings.value) {
-        _scheduleBackgroundTasks();
+        await _scheduleBackgroundTasks();
+      } else {
+        // Navigate to settings if not configured
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          openSettings();
+        });
       }
     } catch (e) {
-      _currentStatus.value = 'Error initializing app: $e';
-      _isInitialized.value = false;
+      // Ensure the UI is released from the loading state even if initialization fails partially
+      _currentStatus.value = 'Limited mode – init error: $e';
+      _isInitialized.value = true; // Allow app to render so user can attempt recovery in settings
     }
   }
 
   /// Check if user has completed the initial setup
-  void _checkSettingsStatus() {
+  void checkSettingsStatus() {
     final location = _settingsService.location;
     final hasLocation = location != null && location.isNotEmpty;
     final hasTime = _settingsService.announcementHour != null && _settingsService.announcementMinute != null;
@@ -58,29 +64,31 @@ class AppController extends GetxController {
   }
 
   /// Navigate to settings screen
-  void openSettings() {
-    Get.toNamed('/settings');
+  Future<void> openSettings() async {
+    final result = await Get.toNamed('/settings');
+
+    // If settings were completed, refresh the status and show snackbar
+    if (result == true) {
+      await refreshSettingsStatus();
+      _showSnackBar('Setup Complete ✅', 'Your daily weather announcements are now configured!', Colors.green);
+    }
   }
 
   /// Refresh settings status (call after returning from settings)
-  void refreshSettingsStatus() {
-    _checkSettingsStatus();
+  Future<void> refreshSettingsStatus() async {
+    checkSettingsStatus();
 
     // If settings are now complete, schedule background tasks
     if (_hasSettings.value) {
-      _scheduleBackgroundTasks();
+      await _scheduleBackgroundTasks();
     }
   }
 
   /// Schedule daily background tasks
-  void _scheduleBackgroundTasks() {
+  Future<void> _scheduleBackgroundTasks() async {
     _currentStatus.value = 'Scheduling daily notifications...';
 
-    // TODO: Implement actual background scheduling
-    // This would typically involve:
-    // 1. Calculating the next announcement time
-    // 2. Scheduling a background task or notification
-    // 3. Setting up periodic tasks for daily execution
+    await _notificationService.scheduleDailyWeatherNotification();
 
     _currentStatus.value = 'Daily notifications scheduled';
   }

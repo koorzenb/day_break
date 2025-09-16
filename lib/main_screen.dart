@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'app_controller.dart';
-import 'settings_screen.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final appController = Get.find<AppController>();
+    // Use Get.put to ensure the controller is created and available
+    final AppController appController = Get.put(AppController());
 
     return Scaffold(
       body: Obx(() {
@@ -21,11 +21,6 @@ class MainScreen extends StatelessWidget {
               children: [CircularProgressIndicator(), SizedBox(height: 16), Text('Initializing Day Break...')],
             ),
           );
-        }
-
-        // If settings are not configured, show settings screen
-        if (!appController.hasSettings) {
-          return const SettingsScreen();
         }
 
         // Main app interface when everything is ready
