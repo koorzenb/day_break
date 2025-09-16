@@ -1,3 +1,9 @@
+## 0.12.0
+  
+### Feature
+  
+- Integrate text-to-speech for weather announcements and enhance notification service
+
 ## 0.11.0
   
 ### Feature

@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -10,6 +11,7 @@ import 'weather_service.dart';
 
 class NotificationService extends GetxService {
   final FlutterLocalNotificationsPlugin _notifications;
+  FlutterTts? _tts;
   final WeatherService _weatherService;
   final SettingsService _settingsService;
 
@@ -17,8 +19,9 @@ class NotificationService extends GetxService {
   static const String _channelName = 'Weather Announcements';
   static const String _channelDescription = 'Daily weather forecast notifications';
 
-  NotificationService({FlutterLocalNotificationsPlugin? notifications, WeatherService? weatherService, SettingsService? settingsService})
+  NotificationService({FlutterLocalNotificationsPlugin? notifications, FlutterTts? tts, WeatherService? weatherService, SettingsService? settingsService})
     : _notifications = notifications ?? FlutterLocalNotificationsPlugin(),
+      _tts = tts, // Don't initialize here, do it lazily
       _weatherService = weatherService ?? Get.find<WeatherService>(),
       _settingsService = settingsService ?? Get.find<SettingsService>();
 
@@ -26,6 +29,9 @@ class NotificationService extends GetxService {
   Future<void> initialize() async {
     // Initialize timezone data
     tz.initializeTimeZones();
+
+    // Initialize TTS
+    await _initializeTts();
 
     // Android initialization settings
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -46,6 +52,30 @@ class NotificationService extends GetxService {
 
     // Create notification channel for Android
     await _createNotificationChannel();
+  }
+
+  /// Initialize and configure TTS settings
+  Future<void> _initializeTts() async {
+    try {
+      // Initialize TTS lazily if not already done
+      _tts ??= FlutterTts();
+
+      // Set language
+      await _tts!.setLanguage('en-US');
+
+      // Configure speech parameters
+      await _tts!.setSpeechRate(0.5); // Slower for clarity
+      await _tts!.setVolume(1.0); // Full volume
+      await _tts!.setPitch(0.9); // Normal pitch
+
+      // Wait for speech completion
+      await _tts!.awaitSpeakCompletion(true);
+    } catch (e) {
+      // TTS initialization failure shouldn't prevent notification service from working
+      // Log error but continue with visual-only notifications
+      Get.log('TTS initialization failed: $e', isError: true);
+      _tts = null; // Set to null to indicate TTS is not available
+    }
   }
 
   /// Request notification permissions
@@ -74,6 +104,124 @@ class NotificationService extends GetxService {
 
     if (androidPlugin != null) {
       await androidPlugin.createNotificationChannel(androidChannel);
+    }
+  }
+
+  /// Speak weather announcement using TTS
+  Future<void> _speakWeatherAnnouncement(String announcement) async {
+    try {
+      if (_tts != null) {
+        await _tts!.speak(announcement);
+      }
+    } catch (e) {
+      // TTS failure shouldn't prevent the notification from showing
+      // Log error but continue with visual-only notification
+      Get.log('TTS speech failed: $e', isError: true);
+    }
+  }
+
+  /// Configure TTS speech rate (0.1 to 2.0)
+  Future<void> configureSpeechRate(double rate) async {
+    try {
+      if (_tts != null) {
+        // Clamp rate to valid range
+        final clampedRate = rate.clamp(0.1, 2.0);
+        await _tts!.setSpeechRate(clampedRate);
+      }
+    } catch (e) {
+      Get.log('Failed to set speech rate: $e', isError: true);
+    }
+  }
+
+  /// Configure TTS pitch (0.1 to 2.0)
+  Future<void> configurePitch(double pitch) async {
+    try {
+      if (_tts != null) {
+        // Clamp pitch to valid range
+        final clampedPitch = pitch.clamp(0.1, 2.0);
+        await _tts!.setPitch(clampedPitch);
+      }
+    } catch (e) {
+      Get.log('Failed to set pitch: $e', isError: true);
+    }
+  }
+
+  /// Configure TTS volume (0.0 to 1.0)
+  Future<void> configureVolume(double volume) async {
+    try {
+      if (_tts != null) {
+        // Clamp volume to valid range
+        final clampedVolume = volume.clamp(0.0, 1.0);
+        await _tts!.setVolume(clampedVolume);
+      }
+    } catch (e) {
+      Get.log('Failed to set volume: $e', isError: true);
+    }
+  }
+
+  /// Configure TTS language
+  Future<void> configureLanguage(String language) async {
+    try {
+      if (_tts != null) {
+        await _tts!.setLanguage(language);
+      }
+    } catch (e) {
+      Get.log('Failed to set language: $e', isError: true);
+    }
+  }
+
+  /// Get available TTS languages
+  Future<List<dynamic>> getAvailableLanguages() async {
+    try {
+      if (_tts != null) {
+        return await _tts!.getLanguages;
+      }
+      return [];
+    } catch (e) {
+      Get.log('Failed to get languages: $e', isError: true);
+      return [];
+    }
+  }
+
+  /// Get available TTS voices
+  Future<List<Map<String, String>>> getAvailableVoices() async {
+    try {
+      if (_tts != null) {
+        final voices = await _tts!.getVoices;
+        return voices.cast<Map<String, String>>();
+      }
+      return [];
+    } catch (e) {
+      Get.log('Failed to get voices: $e', isError: true);
+      return [];
+    }
+  }
+
+  /// Set TTS voice
+  Future<void> configureVoice(Map<String, String> voice) async {
+    try {
+      if (_tts != null) {
+        await _tts!.setVoice(voice);
+      }
+    } catch (e) {
+      Get.log('Failed to set voice: $e', isError: true);
+    }
+  }
+
+  /// Test TTS with a sample announcement
+  Future<void> testTtsAnnouncement() async {
+    const testMessage = 'This is a test of the text-to-speech functionality. The current weather is partly cloudy with a temperature of 72 degrees Fahrenheit.';
+    await _speakWeatherAnnouncement(testMessage);
+  }
+
+  /// Stop current TTS speech
+  Future<void> stopSpeech() async {
+    try {
+      if (_tts != null) {
+        await _tts!.stop();
+      }
+    } catch (e) {
+      Get.log('Failed to stop speech: $e', isError: true);
     }
   }
 
@@ -128,6 +276,23 @@ class NotificationService extends GetxService {
     }
   }
 
+  final _weatherEmojis = <String, String>{
+    'clear': '☀️',
+    'sunny': '☀️',
+    'partly cloudy': '⛅',
+    'cloudy': '☁️',
+    'overcast': '🌥️',
+    'rain': '🌧️',
+    'showers': '🌦️',
+    'thunderstorm': '⛈️',
+    'snow': '❄️',
+    'fog': '🌫️',
+    'mist': '🌫️',
+    'windy': '💨',
+    'hail': '🌨️',
+    'drizzle': '🌦️',
+  };
+
   /// Show immediate weather notification with current weather data
   Future<void> showWeatherNotification(Position position) async {
     try {
@@ -136,12 +301,19 @@ class NotificationService extends GetxService {
 
       try {
         final weather = await _weatherService.getWeather(position);
-        title = 'Weather Update 🌤️';
+        final emoji = _weatherEmojis[weather.description.toLowerCase()] ?? '🌤️';
+        title = 'Weather Update $emoji - ${weather.tempMin}/${weather.tempMax}°C';
         body = weather.formattedAnnouncement;
+
+        // Speak the weather announcement
+        await _speakWeatherAnnouncement(weather.formattedAnnouncement);
       } catch (e) {
         // Show error notification if weather API fails
         title = 'Weather Service Unavailable 📵';
         body = 'Unable to fetch current weather data. Please check your internet connection and try again later.';
+
+        // Speak the error message
+        await _speakWeatherAnnouncement(body);
       }
 
       await _notifications.show(
@@ -178,12 +350,23 @@ class NotificationService extends GetxService {
 
       try {
         final weather = await _weatherService.getWeatherByLocation(locationName);
-        title = 'Weather Update 🌤️';
+        // Map weather descriptions to emojis
+
+        // Get emoji for current weather description, fallback to default
+        final emoji = _weatherEmojis[weather.description.toLowerCase()] ?? '🌤️';
+
+        title = 'Weather Update $emoji - ${weather.tempMin}/${weather.tempMax}°C';
         body = weather.formattedAnnouncement;
+
+        // Speak the weather announcement
+        await _speakWeatherAnnouncement(weather.formattedAnnouncement);
       } catch (e) {
         // Show error notification if weather API fails
         title = 'Weather Service Unavailable 📵';
         body = 'Unable to fetch weather data for $locationName. Please check your internet connection and try again later.';
+
+        // Speak the error message
+        await _speakWeatherAnnouncement(body);
       }
 
       await _notifications.show(

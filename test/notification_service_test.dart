@@ -196,7 +196,7 @@ void main() {
 
         // Assert
         verify(mockWeatherService.getWeather(testPosition)).called(1);
-        verify(mockNotifications.show(1, 'Weather Update 🌤️', testWeather.formattedAnnouncement, any, payload: 'weather_update')).called(1);
+        verify(mockNotifications.show(1, 'Weather Update 🌤️ - 18.0/25.0°C', testWeather.formattedAnnouncement, any, payload: 'weather_update')).called(1);
       });
 
       test('should show error notification when API fails', () async {

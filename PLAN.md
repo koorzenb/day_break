@@ -79,13 +79,13 @@ This document outlines the development plan for the Day Break application, based
   - Create a method to schedule a daily notification at the time specified by the user.
   - The notification content will be constructed using data from the `WeatherService`.
 
-- [ ] **Add Audible Announcements:**
+- [x] **Add Audible Announcements:**
   - Integrate `flutter_tts` for text-to-speech functionality.
   - Implement voice announcements that read the weather forecast aloud when the notification is triggered.
   - Provide configuration options for voice settings (speech rate, pitch, language).
   - Ensure voice announcements work in conjunction with visual notifications.
 
-- [ ] **Testing:**
+- [x] **Testing:**
   - Write unit tests to verify the notification scheduling logic.
   - Test text-to-speech functionality with mock weather data.
   - Ensure all tests pass by running `flutter test`.
@@ -116,7 +116,7 @@ This document outlines the development plan for the Day Break application, based
   - Implement automatic return to MainScreen when both location and notification time are configured.
   - Provide clear visual feedback when setup is complete.
 
-- [ ] **Testing:**
+- [x] **Testing:**
   - Write widget tests for the settings screen to verify that UI elements are present and interact correctly with the controller.
   - Test navigation flow and back button functionality.
   - Test both manual location entry and GPS-based location selection workflows.
