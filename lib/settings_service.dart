@@ -24,4 +24,13 @@ class SettingsService extends GetxService {
 
   int? get announcementMinute => _settingsBox?.get('announcementMinute');
   Future<void> setAnnouncementMinute(int minute) => _settingsBox!.put('announcementMinute', minute);
+
+  Future<void> setAnnouncementTime(int hour, int minute) async {
+    await setAnnouncementHour(hour);
+    await setAnnouncementMinute(minute);
+  }
+
+  Future<void> clearSettings() async {
+    await _settingsBox!.clear();
+  }
 }

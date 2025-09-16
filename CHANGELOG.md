@@ -1,3 +1,9 @@
+## 0.10.0
+  
+### Feature
+  
+- Add SettingsController and SettingsScreen for user configuration of weather announcements
+
 ## 0.9.0
   
 ### Feature

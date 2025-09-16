@@ -76,15 +76,15 @@ This document outlines the development plan for the Day Break application, based
 
 ## Phase 6: UI - Settings Screen
 
-- [ ] **Build UI:**
+- [x] **Build UI:**
   - Create a simple settings screen for the initial setup and subsequent configuration changes.
   - Include a time picker for the announcement time and a field for manual location entry.
 
-- [ ] **State Management:**
+- [x] **State Management:**
   - Use a `GetX` controller (`SettingsController`) to manage the state of the UI and handle user input.
   - Connect the controller to the `SettingsService` to persist the user's choices.
 
-- [ ] **Testing:**
+- [x] **Testing:**
   - Write widget tests for the settings screen to verify that UI elements are present and interact correctly with the controller.
   - Ensure all tests pass by running `flutter test`.
 

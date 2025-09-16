@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -49,6 +50,29 @@ class WeatherService extends GetxService {
 
       // Handle network errors
       throw WeatherNetworkException('Network error: ${e.toString()}');
+    }
+  }
+
+  /// Validates if a location name is valid by testing it with the weather API
+  Future<bool> validateLocation(String locationName) async {
+    if (locationName.trim().isEmpty) return false;
+
+    final url = Uri.parse('$_baseUrl?q=${Uri.encodeComponent(locationName.trim())}&appid=$_apiKey&units=metric');
+
+    try {
+      final response = await _httpClient.get(url);
+
+      if (response.statusCode != 200) {
+        Get.snackbar('Error', 'Failed to validate location');
+      } else {
+        debugPrint('Weather API response: ${response.body}');
+      }
+
+      return response.statusCode == 200;
+    } catch (e) {
+      // show snackbar if status is not 200
+      Get.snackbar('Error', 'Failed to validate location');
+      return false;
     }
   }
 
