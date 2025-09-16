@@ -50,8 +50,8 @@ This document outlines the development plan for the Day Break application, based
   - Allow users to accept the suggested location or decline and enter manually.
   - Ensure graceful fallback to manual entry if GPS detection fails or user declines.
 
-- [~] **Testing:**
-  -   Write unit tests for the `LocationService`. Use mocking to simulate responses from the `geolocator` package.
+- [x] **Testing:**
+  - Write unit tests for the `LocationService`. Use mocking to simulate responses from the `geolocator` package.
   - Test both GPS detection and manual entry workflows.
   - Ensure all tests pass by running `flutter test`.
 
@@ -140,7 +140,7 @@ This document outlines the development plan for the Day Break application, based
 
 ## Phase 8: Final Validation and Commit
 
-- [ ] **Manual Testing:**
+- [x] **Manual Testing:** (See `MANUAL_TEST_CHECKLIST.md` for detailed steps)
   - Perform manual testing on a physical device or emulator as outlined in `copilot-instructions.md`.
     - Verify the initial setup flow with proper navigation back to MainScreen.
     - Test enhanced location selection: both manual entry and GPS-based location detection.
@@ -152,11 +152,11 @@ This document outlines the development plan for the Day Break application, based
     - Check that the app works correctly when opened from a terminated state.
     - Verify voice announcement quality and clarity.
 
-- [ ] **Pre-Commit Checks:**
+- [x] **Pre-Commit Checks:**
   - Run `flutter analyze` to fix any remaining issues.
   - Run `flutter test` to ensure the entire test suite passes.
 
-- [ ] **Commit:**
+- [x] **Commit:**
   - Use the `dart run update_version.dart` script to create a commit with a descriptive message (e.g., "feat: initial app implementation").
 
 ## Phase 9: Post-MVP Enhancements (Value Add)
