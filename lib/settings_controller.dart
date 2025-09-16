@@ -1,22 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import 'location_exceptions.dart';
+import 'location_service.dart';
 import 'settings_service.dart';
 import 'weather_service.dart';
 
 class SettingsController extends GetxController {
   final SettingsService _settingsService = Get.find<SettingsService>();
   WeatherService? _weatherService;
+  LocationService? _locationService;
 
   // Reactive variables for UI state
   final _selectedTime = Rxn<TimeOfDay>();
   final _location = ''.obs;
   final _isLoading = false.obs;
 
+  // Location detection state management
+  final _isDetectingLocation = false.obs;
+  final _detectedLocationSuggestion = Rxn<String>();
+  final _locationDetectionError = Rxn<String>();
+
   // Getters for UI binding
   TimeOfDay? get selectedTime => _selectedTime.value;
   String get location => _location.value;
   bool get isLoading => _isLoading.value;
+
+  // Location detection getters
+  bool get isDetectingLocation => _isDetectingLocation.value;
+  String? get detectedLocationSuggestion => _detectedLocationSuggestion.value;
+  String? get locationDetectionError => _locationDetectionError.value;
+  bool get hasLocationSuggestion => _detectedLocationSuggestion.value != null;
 
   @override
   void onInit() {
@@ -28,6 +42,14 @@ class SettingsController extends GetxController {
     } catch (e) {
       // WeatherService not available - this is fine for testing
       _weatherService = null;
+    }
+
+    // Try to get LocationService if available (optional for testing)
+    try {
+      _locationService = Get.find<LocationService>();
+    } catch (e) {
+      // LocationService not available - this is fine for testing
+      _locationService = null;
     }
 
     _loadSettings();
@@ -54,11 +76,6 @@ class SettingsController extends GetxController {
   /// Show error snackbar with red background
   void _showErrorSnackbar(String title, String message) {
     _showSnackBar(title, message, Colors.red);
-  }
-
-  /// Show warning snackbar with orange background
-  void _showWarningSnackbar(String title, String message) {
-    _showSnackBar(title, message, Colors.orange);
   }
 
   /// Show info snackbar with blue background
@@ -101,8 +118,18 @@ class SettingsController extends GetxController {
 
   /// Update the location with optional validation
   Future<void> updateLocation(String newLocation) async {
+    // Allow clearing the location
     if (newLocation.trim().isEmpty) {
-      _showWarningSnackbar('Invalid Input ⚠️', 'Please enter a valid location');
+      _isLoading.value = true;
+      try {
+        await _settingsService.setLocation('');
+        _location.value = '';
+        _showInfoSnackbar('Location Cleared 🔄', 'You can now set a new location');
+      } catch (e) {
+        _showErrorSnackbar('Error ❌', 'Failed to clear location');
+      } finally {
+        _isLoading.value = false;
+      }
       return;
     }
 
@@ -179,4 +206,69 @@ class SettingsController extends GetxController {
 
   /// Check if weather validation is available
   bool get hasWeatherValidation => _weatherService != null;
+
+  /// Check if location detection is available
+  bool get hasLocationDetection => _locationService != null;
+
+  /// Detect current GPS location and provide suggestion
+  Future<void> detectCurrentLocation() async {
+    if (_locationService == null) {
+      _locationDetectionError.value = 'Location detection not available';
+      return;
+    }
+
+    // Clear any previous state
+    _detectedLocationSuggestion.value = null;
+    _locationDetectionError.value = null;
+    _isDetectingLocation.value = true;
+
+    try {
+      final suggestion = await _locationService!.getCurrentLocationSuggestion();
+      _detectedLocationSuggestion.value = suggestion;
+      _showInfoSnackbar('Location Detected 📍', 'Found: $suggestion');
+    } catch (e) {
+      String errorMessage;
+      if (e is LocationServicesDisabledException) {
+        errorMessage = 'Please enable location services in your device settings';
+      } else if (e is LocationPermissionDeniedException) {
+        errorMessage = 'Location permission denied. Please allow location access in app settings';
+      } else if (e is LocationPermissionPermanentlyDeniedException) {
+        errorMessage = 'Location permission permanently denied. Please enable in device settings';
+      } else if (e is LocationUnknownException) {
+        errorMessage = 'Could not determine location name from GPS coordinates';
+      } else {
+        errorMessage = 'Failed to detect location. Please try again or enter manually';
+      }
+
+      _locationDetectionError.value = errorMessage;
+      _showErrorSnackbar('Location Detection Failed ❌', errorMessage);
+    } finally {
+      _isDetectingLocation.value = false;
+    }
+  }
+
+  /// Accept the detected location suggestion
+  Future<void> acceptLocationSuggestion() async {
+    final suggestion = _detectedLocationSuggestion.value;
+    if (suggestion != null) {
+      await updateLocation(suggestion);
+      // Clear the suggestion after accepting
+      _detectedLocationSuggestion.value = null;
+      _locationDetectionError.value = null;
+    }
+  }
+
+  /// Decline the detected location suggestion and clear it
+  void declineLocationSuggestion() {
+    _detectedLocationSuggestion.value = null;
+    _locationDetectionError.value = null;
+    _showInfoSnackbar('Suggestion Declined 👎', 'You can enter your location manually');
+  }
+
+  /// Clear any location detection state
+  void clearLocationDetectionState() {
+    _detectedLocationSuggestion.value = null;
+    _locationDetectionError.value = null;
+    _isDetectingLocation.value = false;
+  }
 }

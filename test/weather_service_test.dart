@@ -48,7 +48,7 @@ void main() {
           'weather': [
             {'description': 'clear sky'},
           ],
-          'main': {'temp': 22.5, 'feels_like': 24.0, 'humidity': 65},
+          'main': {'temp': 22.5, 'feels_like': 24.0, 'temp_min': 18.0, 'temp_max': 25.0, 'humidity': 65},
           'name': 'San Francisco',
         };
 
@@ -61,6 +61,8 @@ void main() {
         expect(result.description, equals('clear sky'), reason: 'Weather description should match API response');
         expect(result.temperature, equals(22.5), reason: 'Temperature should match API response');
         expect(result.feelsLike, equals(24.0), reason: 'Feels like temperature should match API response');
+        expect(result.tempMin, equals(18.0), reason: 'Temperature minimum should match API response');
+        expect(result.tempMax, equals(25.0), reason: 'Temperature maximum should match API response');
         expect(result.humidity, equals(65), reason: 'Humidity should match API response');
         expect(result.location, equals('San Francisco'), reason: 'Location should match API response');
       });
@@ -71,7 +73,7 @@ void main() {
           'weather': [
             {'description': 'clear sky'},
           ],
-          'main': {'temp': 22.5, 'feels_like': 24.0, 'humidity': 65},
+          'main': {'temp': 22.5, 'feels_like': 24.0, 'temp_min': 18.0, 'temp_max': 25.0, 'humidity': 65},
           'name': 'Test City',
         };
 

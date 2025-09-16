@@ -177,6 +177,8 @@ void main() {
           description: 'clear sky',
           temperature: 22.5,
           feelsLike: 24.0,
+          tempMin: 18.0,
+          tempMax: 25.0,
           humidity: 65,
           location: 'San Francisco',
           timestamp: DateTime.now(),

@@ -53,6 +53,34 @@ class WeatherService extends GetxService {
     }
   }
 
+  /// Fetches weather data for the given location name
+  Future<WeatherSummary> getWeatherByLocation(String locationName) async {
+    final url = Uri.parse('$_baseUrl?q=${Uri.encodeComponent(locationName.trim())}&appid=$_apiKey&units=metric');
+
+    try {
+      final response = await _httpClient.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        return WeatherSummary.fromJson(data);
+      } else {
+        throw WeatherApiException('Weather API returned status ${response.statusCode}', response.statusCode);
+      }
+    } catch (e) {
+      if (e is WeatherException) {
+        rethrow;
+      }
+
+      // Handle JSON parsing errors
+      if (e is FormatException) {
+        throw const WeatherParsingException('Failed to parse weather data');
+      }
+
+      // Handle network errors
+      throw WeatherNetworkException('Network error: ${e.toString()}');
+    }
+  }
+
   /// Validates if a location name is valid by testing it with the weather API
   Future<bool> validateLocation(String locationName) async {
     if (locationName.trim().isEmpty) return false;

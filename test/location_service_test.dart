@@ -72,11 +72,41 @@ void main() {
       expect(position, isA<Position>());
     });
 
-    test('determinePosition throws LocationPermissionPermanentlyDeniedException when permission is denied forever', () async {
+    test('determinePosition throws LocationPermissionDeniedException when permission is denied twice', () async {
       when(mockGeolocator.isLocationServiceEnabled()).thenAnswer((_) async => true);
-      when(mockGeolocator.checkPermission()).thenAnswer((_) async => LocationPermission.deniedForever);
+      when(mockGeolocator.checkPermission()).thenAnswer((_) async => LocationPermission.denied);
+      when(mockGeolocator.requestPermission()).thenAnswer((_) async => LocationPermission.denied);
 
-      expect(locationService.determinePosition(), throwsA(isA<LocationPermissionPermanentlyDeniedException>()));
+      expect(locationService.determinePosition(), throwsA(isA<LocationPermissionDeniedException>()));
+    });
+
+    group('getCurrentLocationSuggestion', () {
+      test('throws LocationServicesDisabledException when location services are disabled', () async {
+        when(mockGeolocator.isLocationServiceEnabled()).thenAnswer((_) async => false);
+
+        expect(locationService.getCurrentLocationSuggestion(), throwsA(isA<LocationServicesDisabledException>()));
+      });
+
+      test('throws LocationPermissionDeniedException when permission is denied', () async {
+        when(mockGeolocator.isLocationServiceEnabled()).thenAnswer((_) async => true);
+        when(mockGeolocator.checkPermission()).thenAnswer((_) async => LocationPermission.denied);
+        when(mockGeolocator.requestPermission()).thenAnswer((_) async => LocationPermission.denied);
+
+        expect(locationService.getCurrentLocationSuggestion(), throwsA(isA<LocationPermissionDeniedException>()));
+      });
+
+      test('throws LocationPermissionPermanentlyDeniedException when permission is denied forever', () async {
+        when(mockGeolocator.isLocationServiceEnabled()).thenAnswer((_) async => true);
+        when(mockGeolocator.checkPermission()).thenAnswer((_) async => LocationPermission.deniedForever);
+
+        expect(locationService.getCurrentLocationSuggestion(), throwsA(isA<LocationPermissionPermanentlyDeniedException>()));
+      });
+
+      // Note: Full integration testing of getCurrentLocationSuggestion() with actual geocoding
+      // would require mocking the geocoding package which uses static methods.
+      // For now, we test the error handling paths through determinePosition().
+      // In a real-world scenario, we might extract the geocoding logic to a wrapper class
+      // that can be injected and mocked, similar to how we handle GeolocatorWrapper.
     });
   });
 }

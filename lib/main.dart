@@ -1,4 +1,7 @@
+import 'package:day_break/app_controller.dart';
 import 'package:day_break/http_client_wrapper.dart';
+import 'package:day_break/location_service.dart';
+import 'package:day_break/main_screen.dart';
 import 'package:day_break/notification_service.dart';
 import 'package:day_break/settings_screen.dart';
 import 'package:day_break/settings_service.dart';
@@ -25,6 +28,10 @@ Future<void> initServices() async {
   final httpClientWrapper = HttpClientWrapper(httpClient);
   Get.put(httpClientWrapper);
 
+  // Initialize LocationService
+  final locationService = LocationService();
+  Get.put(locationService);
+
   // Initialize WeatherService with the wrapper
   final weatherService = WeatherService(httpClientWrapper);
   Get.put(weatherService);
@@ -38,6 +45,14 @@ Future<void> initServices() async {
 
   await notificationService.initialize();
   Get.put(notificationService);
+
+  // // TODO: remove this
+  // final settingService = Get.find<SettingsService>();
+  // await settingService.clearSettings();
+
+  // Initialize AppController (this orchestrates all other services)
+  final appController = AppController();
+  Get.put(appController);
 }
 
 class MyApp extends StatelessWidget {
@@ -48,7 +63,8 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Day Break',
       theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue), useMaterial3: true),
-      home: const SettingsScreen(),
+      home: const MainScreen(),
+      getPages: [GetPage(name: '/settings', page: () => const SettingsScreen())],
     );
   }
 }

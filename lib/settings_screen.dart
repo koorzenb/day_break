@@ -83,36 +83,242 @@ class SettingsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          const Text('Enter your location for weather updates', style: TextStyle(fontSize: 14, color: Colors.grey)),
-                          if (!controller.hasWeatherValidation)
-                            const Padding(
-                              padding: EdgeInsets.only(left: 8.0),
-                              child: Icon(Icons.info_outline, size: 16, color: Colors.orange),
+                      // Show current location when set
+                      if (controller.location.isNotEmpty) ...[
+                        Row(
+                          children: [
+                            Icon(Icons.location_on, color: Colors.green[600], size: 20),
+                            const SizedBox(width: 8),
+                            const Text('Current Location', style: TextStyle(fontWeight: FontWeight.w500)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.green[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.green[200]!),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.green[600], size: 18),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(controller.location, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Center(
+                          child: TextButton.icon(
+                            onPressed: () {
+                              // Clear location to show input options again
+                              controller.updateLocation('');
+                            },
+                            icon: const Icon(Icons.edit_location, size: 18),
+                            label: const Text('Change Location'),
+                            style: TextButton.styleFrom(foregroundColor: Colors.blue[600]),
+                          ),
+                        ),
+                      ] else ...[
+                        // Show input options when no location is set
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.blue[200]!),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.touch_app, color: Colors.blue[600], size: 18),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Choose how to set your location:',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.blue),
+                              ),
+                              if (!controller.hasWeatherValidation) ...[
+                                const SizedBox(width: 8),
+                                const Icon(Icons.info_outline, size: 16, color: Colors.orange),
+                              ],
+                            ],
+                          ),
+                        ),
+                        if (!controller.hasWeatherValidation)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 4.0),
+                            child: Text('Weather validation unavailable', style: TextStyle(fontSize: 12, color: Colors.orange)),
+                          ),
+                        const SizedBox(height: 12),
+
+                        // GPS Detection Section
+                        if (controller.hasLocationDetection) ...[
+                          Row(
+                            children: [
+                              Icon(Icons.gps_fixed, color: Colors.blue[600], size: 20),
+                              const SizedBox(width: 8),
+                              const Text('GPS Detection', style: TextStyle(fontWeight: FontWeight.w500)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          const Text('Detect your current location automatically', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                          const SizedBox(height: 12),
+
+                          // GPS Detection Button and Loading State
+                          if (controller.isDetectingLocation)
+                            const Row(
+                              children: [
+                                SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                                SizedBox(width: 12),
+                                Text('Detecting location...', style: TextStyle(color: Colors.blue)),
+                              ],
+                            )
+                          else if (!controller.hasLocationSuggestion)
+                            ElevatedButton.icon(
+                              onPressed: controller.detectCurrentLocation,
+                              icon: const Icon(Icons.my_location, size: 18),
+                              label: const Text('Detect Current Location'),
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[600], foregroundColor: Colors.white),
                             ),
+
+                          // Location Suggestion Dialog/Popup
+                          if (controller.hasLocationSuggestion) ...[
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.green[50],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.green[200]!),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.check_circle, color: Colors.green[600], size: 20),
+                                      const SizedBox(width: 8),
+                                      const Text('Location Detected', style: TextStyle(fontWeight: FontWeight.w600)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(controller.detectedLocationSuggestion!, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      ElevatedButton.icon(
+                                        onPressed: controller.acceptLocationSuggestion,
+                                        icon: const Icon(Icons.check, size: 18),
+                                        label: const Text('Accept'),
+                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green[600], foregroundColor: Colors.white),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      OutlinedButton.icon(
+                                        onPressed: controller.declineLocationSuggestion,
+                                        icon: const Icon(Icons.close, size: 18),
+                                        label: const Text('Decline'),
+                                        style: OutlinedButton.styleFrom(foregroundColor: Colors.grey[600]),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+
+                          // Location Detection Error
+                          if (controller.locationDetectionError != null) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red[50],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.red[200]!),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.error_outline, color: Colors.red[600], size: 20),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(controller.locationDetectionError!, style: TextStyle(color: Colors.red[700], fontSize: 12)),
+                                  ),
+                                  IconButton(
+                                    onPressed: controller.clearLocationDetectionState,
+                                    icon: const Icon(Icons.close, size: 16),
+                                    color: Colors.red[600],
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+
+                          // Custom "OR" Divider
+                          const SizedBox(height: 20),
+                          Row(
+                            children: [
+                              const Expanded(child: Divider()),
+                              Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.grey[300]!),
+                                ),
+                                child: const Text(
+                                  'OR',
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey),
+                                ),
+                              ),
+                              const Expanded(child: Divider()),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                        ] else ...[
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
+                              const SizedBox(width: 8),
+                              const Text('GPS detection unavailable', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
                         ],
-                      ),
-                      if (!controller.hasWeatherValidation)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 4.0),
-                          child: Text('Weather validation unavailable', style: TextStyle(fontSize: 12, color: Colors.orange)),
+
+                        // Manual location input
+                        Row(
+                          children: [
+                            Icon(Icons.edit_location, color: Colors.grey[600], size: 20),
+                            const SizedBox(width: 8),
+                            const Text('Manual Entry', style: TextStyle(fontWeight: FontWeight.w500)),
+                          ],
                         ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        onChanged: (value) {
-                          // Update location in real-time
-                        },
-                        onSubmitted: controller.updateLocation,
-                        decoration: InputDecoration(
-                          hintText: 'e.g., San Francisco, CA',
-                          prefixIcon: const Icon(Icons.location_on),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          filled: true,
-                          fillColor: Colors.grey[50],
+                        const SizedBox(height: 8),
+                        const Text('Enter your location manually', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        const SizedBox(height: 12),
+                        TextField(
+                          onChanged: (value) {
+                            // Update location in real-time
+                          },
+                          onSubmitted: controller.updateLocation,
+                          decoration: InputDecoration(
+                            hintText: 'e.g., San Francisco, CA',
+                            prefixIcon: const Icon(Icons.location_on),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                          ),
+                          controller: TextEditingController(text: controller.location),
                         ),
-                        controller: TextEditingController(text: controller.location),
-                      ),
+                      ],
                     ],
                   ),
                 ),
@@ -121,31 +327,36 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               // Settings Status
-              if (!controller.isSettingsComplete)
-                Card(
-                  color: Colors.orange[50],
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.warning, color: Colors.orange),
-                        const SizedBox(width: 12),
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Setup Required',
-                                style: TextStyle(fontWeight: FontWeight.w600, color: Colors.orange),
-                              ),
-                              Text('Please set both time and location', style: TextStyle(fontSize: 12, color: Colors.orange)),
-                            ],
-                          ),
+              Card(
+                color: controller.isSettingsComplete ? Colors.green[50] : Colors.orange[50],
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Icon(
+                        controller.isSettingsComplete ? Icons.check_circle : Icons.warning,
+                        color: controller.isSettingsComplete ? Colors.green : Colors.orange,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              controller.isSettingsComplete ? 'Setup Complete' : 'Setup Required',
+                              style: TextStyle(fontWeight: FontWeight.w600, color: controller.isSettingsComplete ? Colors.green : Colors.orange),
+                            ),
+                            Text(
+                              controller.isSettingsComplete ? 'All required settings are configured.' : 'Please set both time and location',
+                              style: TextStyle(fontSize: 12, color: controller.isSettingsComplete ? Colors.green : Colors.orange),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
+              ),
 
               const SizedBox(height: 32),
 

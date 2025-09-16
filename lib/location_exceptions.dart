@@ -17,3 +17,7 @@ class LocationPermissionDeniedException extends LocationException {
 class LocationPermissionPermanentlyDeniedException extends LocationException {
   const LocationPermissionPermanentlyDeniedException() : super('Location permissions are permanently denied, we cannot request permissions.');
 }
+
+class LocationUnknownException extends LocationException {
+  const LocationUnknownException() : super('Unable to determine location name');
+}

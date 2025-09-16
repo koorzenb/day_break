@@ -15,6 +15,7 @@ This document outlines the development plan for the Day Break application, based
     - `geolocator`: For fetching the user's location.
     - `flutter_local_notifications`: For scheduling and displaying daily announcements.
     - `http`: For making requests to the weather API.
+    - `flutter_tts`: For text-to-speech functionality to provide audible weather announcements.
   - Run `flutter pub get` to install the dependencies.
 
 - [x] **Initial Validation:**
@@ -42,8 +43,16 @@ This document outlines the development plan for the Day Break application, based
   - Develop logic to request location permissions on app startup.
   - Handle cases where permission is denied, allowing for manual input as per `PRD.md`.
 
-- [x] **Testing:**
-  - Write unit tests for the `LocationService`. Use mocking to simulate responses from the `geolocator` package.
+- [x] **Enhanced Location Selection:**
+  - Provide dual-mode location selection: manual entry or GPS-based suggestion.
+  - Implement GPS location detection with reverse geocoding to get human-readable location names.
+  - Create location suggestion popup that displays detected location (e.g., "San Francisco, CA").
+  - Allow users to accept the suggested location or decline and enter manually.
+  - Ensure graceful fallback to manual entry if GPS detection fails or user declines.
+
+- [~] **Testing:**
+  -   Write unit tests for the `LocationService`. Use mocking to simulate responses from the `geolocator` package.
+  - Test both GPS detection and manual entry workflows.
   - Ensure all tests pass by running `flutter test`.
 
 ## Phase 4: Weather Service
@@ -70,22 +79,47 @@ This document outlines the development plan for the Day Break application, based
   - Create a method to schedule a daily notification at the time specified by the user.
   - The notification content will be constructed using data from the `WeatherService`.
 
-- [x] **Testing:**
+- [ ] **Add Audible Announcements:**
+  - Integrate `flutter_tts` for text-to-speech functionality.
+  - Implement voice announcements that read the weather forecast aloud when the notification is triggered.
+  - Provide configuration options for voice settings (speech rate, pitch, language).
+  - Ensure voice announcements work in conjunction with visual notifications.
+
+- [ ] **Testing:**
   - Write unit tests to verify the notification scheduling logic.
+  - Test text-to-speech functionality with mock weather data.
   - Ensure all tests pass by running `flutter test`.
 
 ## Phase 6: UI - Settings Screen
 
-- [x] **Build UI:**
+- [~] **Build UI:**
   - Create a simple settings screen for the initial setup and subsequent configuration changes.
-  - Include a time picker for the announcement time and a field for manual location entry.
+  - Include a time picker for the announcement time and enhanced location selection interface. Use the `geolocator` package to suggest the current location, allowing users to accept or decline the suggestion. If they accept, populate the location field; if they decline or if GPS detection fails, allow manual entry.
+  - Add a back button/navigation to return to the main screen after configuration.
+  - Implement automatic navigation back to MainScreen when initial setup is complete.
+
+- [x] **Enhanced Location Selection UI:**
+  - Create dual-mode location input interface with manual entry field and GPS detection button.
+  - Implement location suggestion dialog/popup showing detected location with accept/decline options.
+  - Display clear loading states during GPS location detection.
+  - Show appropriate error messages if GPS detection fails.
+  - Provide smooth transitions between manual and GPS-based location selection.
 
 - [x] **State Management:**
   - Use a `GetX` controller (`SettingsController`) to manage the state of the UI and handle user input.
   - Connect the controller to the `SettingsService` to persist the user's choices.
+  - Implement navigation logic to detect when initial setup is complete and return to main flow.
+  - Add state management for location detection process (loading, success, error states).
 
-- [x] **Testing:**
+- [~] **Navigation Flow:**
+  - Ensure settings screen has proper back navigation for users returning from MainScreen.
+  - Implement automatic return to MainScreen when both location and notification time are configured.
+  - Provide clear visual feedback when setup is complete.
+
+- [ ] **Testing:**
   - Write widget tests for the settings screen to verify that UI elements are present and interact correctly with the controller.
+  - Test navigation flow and back button functionality.
+  - Test both manual location entry and GPS-based location selection workflows.
   - Ensure all tests pass by running `flutter test`.
 
 ## Phase 7: Application Integration
@@ -106,10 +140,15 @@ This document outlines the development plan for the Day Break application, based
 
 - [ ] **Manual Testing:**
   - Perform manual testing on a physical device or emulator as outlined in `copilot-instructions.md`.
-    - Verify the initial setup flow.
-    - Test changing the announcement time and location.
-    - Confirm that a notification is triggered at the correct time.
+    - Verify the initial setup flow with proper navigation back to MainScreen.
+    - Test enhanced location selection: both manual entry and GPS-based location detection.
+    - Verify location suggestion popup shows detected location with accept/decline options.
+    - Test graceful fallback to manual entry when GPS detection fails or is declined.
+    - Test changing the announcement time and location with back button functionality.
+    - Confirm that both visual and audible notifications are triggered at the correct time.
+    - Test text-to-speech functionality with actual weather data.
     - Check that the app works correctly when opened from a terminated state.
+    - Verify voice announcement quality and clarity.
 
 - [ ] **Pre-Commit Checks:**
   - Run `flutter analyze` to fix any remaining issues.

@@ -1,3 +1,18 @@
+## 0.11.0
+  
+### Feature
+  
+Enhance location services and weather notifications
+
+- Added LocationUnknownException to handle unknown location errors.
+- Implemented getCurrentLocationSuggestion method in LocationService to provide human-readable location names.
+- Integrated location suggestion feature into SettingsController for improved user experience.
+- Updated SettingsScreen to display current location and allow GPS detection.
+- Added weather notification functionality in NotificationService using detected location names.
+- Enhanced WeatherService to fetch weather data based on location names.
+- Updated WeatherSummary to include temperature min and max values in announcements.
+- Improved unit tests for location service and weather service to cover new features and error handling.
+
 ## 0.10.0
   
 ### Feature

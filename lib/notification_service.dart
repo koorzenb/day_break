@@ -170,6 +170,47 @@ class NotificationService extends GetxService {
     }
   }
 
+  /// Show immediate weather notification using location name
+  Future<void> showWeatherNotificationByLocation(String locationName) async {
+    try {
+      String title;
+      String body;
+
+      try {
+        final weather = await _weatherService.getWeatherByLocation(locationName);
+        title = 'Weather Update 🌤️';
+        body = weather.formattedAnnouncement;
+      } catch (e) {
+        // Show error notification if weather API fails
+        title = 'Weather Service Unavailable 📵';
+        body = 'Unable to fetch weather data for $locationName. Please check your internet connection and try again later.';
+      }
+
+      await _notifications.show(
+        1, // notification id
+        title,
+        body,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            _channelId,
+            _channelName,
+            channelDescription: _channelDescription,
+            importance: Importance.defaultImportance,
+            priority: Priority.defaultPriority,
+            icon: '@mipmap/ic_launcher',
+          ),
+          iOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
+        ),
+        payload: 'weather_update',
+      );
+    } catch (e) {
+      if (e is NotificationException) {
+        rethrow;
+      }
+      throw NotificationSchedulingException('Failed to show weather notification: $e');
+    }
+  }
+
   /// Cancel all scheduled notifications
   Future<void> cancelAllNotifications() async {
     await _notifications.cancelAll();
