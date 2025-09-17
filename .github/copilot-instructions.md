@@ -18,6 +18,23 @@
 - If FVM not available, install Flutter 3.35.3 manually from Flutter releases
 - Ensure Android SDK is available for APK builds (API level 35+ recommended)
 
+### Timezone Configuration
+
+**All Time-Based Operations Use Halifax, America Timezone**
+
+- **Primary Timezone**: `America/Halifax` (Atlantic Time Zone)
+- **Implementation**: The app is configured to use Halifax timezone for all time-based calculations and notifications
+- **Coverage**: This includes notification scheduling, weather announcement times, and any time-sensitive features
+- **Timezone Handling**: The app automatically handles Atlantic Standard Time (AST) and Atlantic Daylight Time (ADT) transitions
+- **Location Independence**: All times are consistently calculated in Halifax timezone regardless of device physical location
+- **Code References**: Look for `tz.setLocalLocation(tz.getLocation('America/Halifax'))` in `NotificationService.initialize()`
+
+**Important for Development:**
+
+- When testing time-based features, consider Halifax timezone (UTC-4 in summer, UTC-3 in winter)
+- All scheduled notifications and time calculations should be verified against Atlantic Time
+- Manual testing should account for Halifax timezone when setting and verifying notification times
+
 ### Core Development Commands
 
 - Install dependencies: `flutter pub get`
@@ -47,23 +64,9 @@
 
 ## Validation
 
-### Manual Testing Requirements
-
-After making any changes, ALWAYS test the following core functionality:
-
-1. **App Launch**: Verify app starts without crashes and shows burn status
-2. **Status Updates**: Check that burn status displays correctly (Green=Burn, Orange=Restricted, Red=No Burn)
-3. **Time-based Logic**: Test burn permission logic at different times (before 8am, 2pm-7pm, after 7pm)
-4. **Background Processing**: Verify notification system works (requires device permissions)
-5. **Modal Information**: Test info modal shows correct burn guidelines based on current status
-
 ### Testing Strategy
 
 - Always run `flutter test` before making any changes to understand current state
-- The test suite covers:
-  - BurnLogicService: Core burn permission logic with time-based rules
-  - BurnStatus models: Status types and display properties
-  - UI state calculations: Proper text and color display for all scenarios
 - Tests typically complete in 10-30 seconds
 - If any tests fail, fix them before proceeding with changes
 - Make sure that all tests have 'expect' statements. Whenever you comment on an 'expect' statement, rather try to insert this into the 'reason' property for the expect-statement.
@@ -147,7 +150,6 @@ Always run these commands before committing changes:
 
 - If `flutter doctor` shows Android license issues: run `flutter doctor --android-licenses`
 - If builds fail: verify Flutter 3.35.3 is being used (check with `flutter --version`)
-- If tests fail: check that no breaking changes were made to BurnLogicService time calculations
 - If notifications don't work: verify app has notification permissions on test device
 
 ## API Key Management
