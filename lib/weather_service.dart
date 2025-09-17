@@ -13,11 +13,15 @@ class WeatherService extends GetxService {
   static const String _baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
 
   static String get _apiKey {
-    final apiKey = dotenv.env['OPENWEATHER_API_KEY'];
-    if (apiKey == null || apiKey.isEmpty) {
-      throw const WeatherApiException('OpenWeatherMap API key not found. Please set OPENWEATHER_API_KEY in .env file.', 0);
-    }
-    return apiKey;
+    // Prefer compile-time define via --dart-define=OPENWEATHER_API_KEY=... so the key
+    // is baked into the build for production. Fallback to runtime dotenv for dev.
+    const fromDefine = String.fromEnvironment('OPENWEATHER_API_KEY');
+    if (fromDefine.isNotEmpty) return fromDefine;
+
+    final fromDotEnv = dotenv.env['OPENWEATHER_API_KEY'];
+    if (fromDotEnv != null && fromDotEnv.isNotEmpty) return fromDotEnv;
+
+    throw const WeatherApiException('OpenWeatherMap API key not found. Provide it via --dart-define or .env (OPENWEATHER_API_KEY).', 0);
   }
 
   final HttpClientWrapper _httpClient;

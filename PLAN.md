@@ -167,8 +167,15 @@ These items enhance resilience, UX, and maintainability beyond the MVP scope.
   - Show a snackbar when notification permission is denied with an action button (e.g., "Enable") that deep-links to OS/app notification settings.
   - Add retry logic for scheduling once permission is granted.
 
-- [ ] Centralized Initialization State
-  - Replace multiple booleans (`_isInitialized`, `_hasSettings`) with an enum/sealed class: `loading | needsSetup | ready | limitedMode | error`.
+---
+
+- [ ] Debug: Scheduled Background Service Not Performing
+  - [ ] Review background service implementation
+  - [ ] Add logging to scheduled tasks
+  - [ ] Test notification triggers in various app states (foreground, background, closed)
+  - [ ] Validate Android background execution policies
+  - [ ] Update documentation with troubleshooting steps
+
   - Simplifies UI branching and future analytics logging.
 
 - [ ] WeatherService Lazy API Key Validation
