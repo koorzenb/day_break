@@ -1,3 +1,4 @@
+import 'package:day_break/app_constants.dart';
 import 'package:day_break/app_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -64,7 +65,7 @@ class SettingsController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: backgroundColor.withAlpha((0.8 * 255).toInt()),
         colorText: Colors.white,
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: AppConstants.snackbarDuration),
       );
     }
   }
@@ -182,13 +183,13 @@ class SettingsController extends GetxController {
 
         if (Get.isSnackbarOpen) {
           // wait until snackbar is closed
-          Future.delayed(const Duration(seconds: 2), () {
-            // navigate to main screen
-            Get.toNamed('/');
+          Future.delayed(const Duration(seconds: AppConstants.snackbarDuration + 1), () {
+            // Return to previous route and signal completion
+            Get.back(result: true);
           });
         } else {
-          // Navigate back and pass a result to indicate completion
-          Get.toNamed('/');
+          // Return to previous route and signal completion
+          Get.back(result: true);
         }
       });
     }

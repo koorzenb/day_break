@@ -298,7 +298,7 @@ class SettingsScreen extends StatelessWidget {
                           },
                           onSubmitted: controller.updateLocation,
                           decoration: InputDecoration(
-                            hintText: 'e.g., San Francisco, CA',
+                            hintText: 'e.g., Halifax, Nova Scotia',
                             prefixIcon: const Icon(Icons.location_on),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                             filled: true,
