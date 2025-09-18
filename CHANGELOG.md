@@ -1,3 +1,9 @@
+## 0.14.2
+  
+### Chore
+  
+- Add permissions for foreground service and notifications in AndroidManifest.xml; enhance logging in NotificationService for better debugging
+
 ## 0.14.1
   
 ### Refactor

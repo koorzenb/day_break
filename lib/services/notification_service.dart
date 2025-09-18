@@ -242,6 +242,7 @@ class NotificationService extends GetxService {
   /// Schedule daily weather notification
   Future<void> scheduleDailyWeatherNotification() async {
     try {
+      Get.log('[NotificationService] Cancelling all existing notifications before scheduling.', isError: false);
       // Cancel any existing notifications
       await cancelAllNotifications();
 
@@ -249,18 +250,28 @@ class NotificationService extends GetxService {
       final hour = _settingsService.announcementHour;
       final minute = _settingsService.announcementMinute;
 
+      Get.log('[NotificationService] Announcement time from settings: hour=$hour, minute=$minute', isError: false);
+
       if (hour == null || minute == null) {
+        Get.log('[NotificationService] Announcement time not set in settings.', isError: true);
         throw const NotificationSchedulingException('Announcement time not set in settings');
       }
 
       // Schedule for next occurrence of the time
       final now = tz.TZDateTime.now(tz.local);
+      Get.log('[NotificationService] Current Halifax time: $now', isError: false);
+
       var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+
+      Get.log('[NotificationService] Initial scheduledDate: $scheduledDate', isError: false);
 
       // If the scheduled time has already passed today, schedule for tomorrow
       if (scheduledDate.isBefore(now)) {
         scheduledDate = scheduledDate.add(const Duration(days: 1));
+        Get.log('[NotificationService] Scheduled time already passed, rescheduling for tomorrow: $scheduledDate', isError: false);
       }
+
+      Get.log('[NotificationService] Scheduling notification for: $scheduledDate', isError: false);
 
       await _notifications.zonedSchedule(
         0, // notification id
@@ -283,7 +294,17 @@ class NotificationService extends GetxService {
         payload: 'daily_weather',
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle, // Use inexact scheduling for better compatibility
       );
+
+      Get.log('[NotificationService] zonedSchedule called successfully.', isError: false);
+
+      // Check pending notifications for debugging
+      final pending = await getPendingNotifications();
+      Get.log(
+        '[NotificationService] Pending notifications after scheduling: ${pending.map((p) => 'id=${p.id}, title=${p.title}, scheduledDate=$scheduledDate').toList()}',
+        isError: false,
+      );
     } catch (e) {
+      Get.log('[NotificationService] Error scheduling notification: $e', isError: true);
       if (e is NotificationException) {
         rethrow;
       }

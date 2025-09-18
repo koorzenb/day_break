@@ -136,6 +136,8 @@ void main() {
             payload: anyNamed('payload'),
           ),
         ).thenAnswer((_) async {});
+        // Add stub for pendingNotificationRequests
+        when(mockNotifications.pendingNotificationRequests()).thenAnswer((_) async => <PendingNotificationRequest>[]);
       });
 
       test('should schedule daily notification successfully', () async {
