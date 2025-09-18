@@ -5,9 +5,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 
-import 'http_client_wrapper.dart';
-import 'weather_exceptions.dart';
-import 'weather_summary.dart';
+import '../http_client_wrapper.dart';
+import '../models/weather_exceptions.dart';
+import '../models/weather_summary.dart';
 
 class WeatherService extends GetxService {
   static const String _baseUrl = 'https://api.openweathermap.org/data/2.5/weather';

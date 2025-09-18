@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
-import 'notification_exceptions.dart';
+import '../models/notification_exceptions.dart';
 import 'settings_service.dart';
 import 'weather_service.dart';
 

@@ -1,16 +1,17 @@
-import 'package:day_break/app_controller.dart';
-import 'package:day_break/http_client_wrapper.dart';
-import 'package:day_break/location_service.dart';
-import 'package:day_break/main_screen.dart';
-import 'package:day_break/notification_service.dart';
-import 'package:day_break/settings_screen.dart';
-import 'package:day_break/settings_service.dart';
-import 'package:day_break/weather_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+
+import 'controllers/app_controller.dart';
+import 'http_client_wrapper.dart';
+import 'screens/main_screen.dart';
+import 'screens/settings_screen.dart';
+import 'services/location_service.dart';
+import 'services/notification_service.dart';
+import 'services/settings_service.dart';
+import 'services/weather_service.dart';
 
 Future<void> main() async {
   // Ensure Flutter bindings are initialized

@@ -1,12 +1,12 @@
-import 'package:day_break/app_constants.dart';
-import 'package:day_break/app_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'location_exceptions.dart';
-import 'location_service.dart';
-import 'settings_service.dart';
-import 'weather_service.dart';
+import '../models/app_constants.dart';
+import '../models/location_exceptions.dart';
+import '../services/location_service.dart';
+import '../services/settings_service.dart';
+import '../services/weather_service.dart';
+import 'app_controller.dart';
 
 class SettingsController extends GetxController {
   final SettingsService _settingsService = Get.find<SettingsService>();

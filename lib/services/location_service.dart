@@ -2,8 +2,8 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 
-import 'geolocator_wrapper.dart';
-import 'location_exceptions.dart';
+import '../geolocator_wrapper.dart';
+import '../models/location_exceptions.dart';
 
 class LocationService extends GetxService {
   final GeolocatorWrapper _geolocator;

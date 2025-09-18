@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:day_break/http_client_wrapper.dart';
-import 'package:day_break/weather_exceptions.dart';
-import 'package:day_break/weather_service.dart';
+import 'package:day_break/models/weather_exceptions.dart';
+import 'package:day_break/services/weather_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';

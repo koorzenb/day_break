@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'app_controller.dart';
+import '../controllers/app_controller.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});

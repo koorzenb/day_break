@@ -1,8 +1,8 @@
-import 'package:day_break/app_controller.dart';
+import 'package:day_break/controllers/app_controller.dart';
 import 'package:day_break/http_client_wrapper.dart';
-import 'package:day_break/notification_service.dart';
-import 'package:day_break/settings_service.dart';
-import 'package:day_break/weather_service.dart';
+import 'package:day_break/services/notification_service.dart';
+import 'package:day_break/services/settings_service.dart';
+import 'package:day_break/services/weather_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 

@@ -1,4 +1,4 @@
-import 'package:day_break/settings_service.dart';
+import 'package:day_break/services/settings_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mockito/annotations.dart';

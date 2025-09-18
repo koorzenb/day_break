@@ -1,8 +1,8 @@
-import 'package:day_break/notification_exceptions.dart';
-import 'package:day_break/notification_service.dart';
-import 'package:day_break/settings_service.dart';
-import 'package:day_break/weather_service.dart';
-import 'package:day_break/weather_summary.dart';
+import 'package:day_break/models/notification_exceptions.dart';
+import 'package:day_break/models/weather_summary.dart';
+import 'package:day_break/services/notification_service.dart';
+import 'package:day_break/services/settings_service.dart';
+import 'package:day_break/services/weather_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'notification_service.dart';
-import 'settings_service.dart';
+import '../services/notification_service.dart';
+import '../services/settings_service.dart';
 
 class AppController extends GetxController {
   // Service dependencies

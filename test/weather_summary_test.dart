@@ -1,4 +1,4 @@
-import 'package:day_break/weather_summary.dart';
+import 'package:day_break/models/weather_summary.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
