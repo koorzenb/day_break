@@ -68,6 +68,15 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue), useMaterial3: true),
       home: const MainScreen(),
       getPages: [GetPage(name: '/settings', page: () => const SettingsScreen())],
+      enableLog: true,
+      logWriterCallback: (text, {isError = false}) {
+        // Print all Get.log messages to the debug console
+        if (isError) {
+          print('ERROR: $text');
+        } else {
+          print(text);
+        }
+      },
     );
   }
 }

@@ -215,6 +215,12 @@ These items enhance resilience, UX, and maintainability beyond the MVP scope.
 - [ ] iOS Support Readiness Checklist
   - Add placeholders for iOS-specific permission flows, notification categories, and TTS voice selection.
 
+- [ ] Dynamic Timezone Configuration Based on User Location
+  - Update the local timezone (tz.setLocalLocation) to match the user's selected location instead of hardcoded Halifax timezone.
+  - Implement timezone detection from coordinates using location-to-timezone mapping.
+  - Ensure notification scheduling adapts to the correct local time for the user's chosen location.
+  - Maintain Halifax as default fallback if timezone detection fails.
+
 - [ ] Metrics & Telemetry Hooks (Optional)
   - Add abstraction layer so future analytics (e.g., daily active, notification success) can be plugged in without refactors.
 

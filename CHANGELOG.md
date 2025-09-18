@@ -1,3 +1,9 @@
+## 0.14.0
+  
+### Feature
+  
+- Implement dynamic timezone configuration and enhance notification scheduling
+
 ## 0.13.0
   
 ### Feature

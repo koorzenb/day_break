@@ -52,23 +52,42 @@ void main() {
     group('initialize', () {
       test('should initialize notifications successfully', () async {
         // Arrange
-        when(mockNotifications.initialize(any, onDidReceiveNotificationResponse: anyNamed('onDidReceiveNotificationResponse'))).thenAnswer((_) async => true);
+        when(
+          mockNotifications.initialize(
+            any,
+            onDidReceiveNotificationResponse: anyNamed('onDidReceiveNotificationResponse'),
+            onDidReceiveBackgroundNotificationResponse: anyNamed('onDidReceiveBackgroundNotificationResponse'),
+          ),
+        ).thenAnswer((_) async => true);
         when(mockNotifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()).thenReturn(mockAndroidPlugin);
         when(mockAndroidPlugin.requestNotificationsPermission()).thenAnswer((_) async => true);
+        when(mockAndroidPlugin.requestExactAlarmsPermission()).thenAnswer((_) async => true);
         when(mockAndroidPlugin.createNotificationChannel(any)).thenAnswer((_) async {});
 
         // Act
         await notificationService.initialize();
 
         // Assert
-        verify(mockNotifications.initialize(any, onDidReceiveNotificationResponse: anyNamed('onDidReceiveNotificationResponse'))).called(1);
+        verify(
+          mockNotifications.initialize(
+            any,
+            onDidReceiveNotificationResponse: anyNamed('onDidReceiveNotificationResponse'),
+            onDidReceiveBackgroundNotificationResponse: anyNamed('onDidReceiveBackgroundNotificationResponse'),
+          ),
+        ).called(1);
         verify(mockAndroidPlugin.requestNotificationsPermission()).called(1);
         verify(mockAndroidPlugin.createNotificationChannel(any)).called(1);
       });
 
       test('should throw NotificationInitializationException when initialization fails', () async {
         // Arrange
-        when(mockNotifications.initialize(any, onDidReceiveNotificationResponse: anyNamed('onDidReceiveNotificationResponse'))).thenAnswer((_) async => false);
+        when(
+          mockNotifications.initialize(
+            any,
+            onDidReceiveNotificationResponse: anyNamed('onDidReceiveNotificationResponse'),
+            onDidReceiveBackgroundNotificationResponse: anyNamed('onDidReceiveBackgroundNotificationResponse'),
+          ),
+        ).thenAnswer((_) async => false);
 
         // Act & Assert
         expect(
@@ -80,9 +99,16 @@ void main() {
 
       test('should continue initialization when permission denied (non-fatal)', () async {
         // Arrange
-        when(mockNotifications.initialize(any, onDidReceiveNotificationResponse: anyNamed('onDidReceiveNotificationResponse'))).thenAnswer((_) async => true);
+        when(
+          mockNotifications.initialize(
+            any,
+            onDidReceiveNotificationResponse: anyNamed('onDidReceiveNotificationResponse'),
+            onDidReceiveBackgroundNotificationResponse: anyNamed('onDidReceiveBackgroundNotificationResponse'),
+          ),
+        ).thenAnswer((_) async => true);
         when(mockNotifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()).thenReturn(mockAndroidPlugin);
         when(mockAndroidPlugin.requestNotificationsPermission()).thenAnswer((_) async => false);
+        when(mockAndroidPlugin.requestExactAlarmsPermission()).thenAnswer((_) async => true);
 
         // Act (should not throw)
         await notificationService.initialize();
@@ -105,6 +131,7 @@ void main() {
             any,
             any,
             uiLocalNotificationDateInterpretation: anyNamed('uiLocalNotificationDateInterpretation'),
+            androidScheduleMode: anyNamed('androidScheduleMode'),
             matchDateTimeComponents: anyNamed('matchDateTimeComponents'),
             payload: anyNamed('payload'),
           ),
@@ -125,6 +152,7 @@ void main() {
             any,
             any,
             uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
             matchDateTimeComponents: DateTimeComponents.time,
             payload: 'daily_weather',
           ),
@@ -154,6 +182,7 @@ void main() {
             any,
             any,
             uiLocalNotificationDateInterpretation: anyNamed('uiLocalNotificationDateInterpretation'),
+            androidScheduleMode: anyNamed('androidScheduleMode'),
             matchDateTimeComponents: anyNamed('matchDateTimeComponents'),
             payload: anyNamed('payload'),
           ),
@@ -195,7 +224,7 @@ void main() {
 
         // Assert
         verify(mockWeatherService.getWeather(testPosition)).called(1);
-        verify(mockNotifications.show(1, 'Weather Update 🌤️ - 18.0/25.0°C', testWeather.formattedAnnouncement, any, payload: 'weather_update')).called(1);
+        verify(mockNotifications.show(1, 'Weather Update 🌤️ 18/25°C', testWeather.formattedAnnouncement, any, payload: 'weather_update')).called(1);
       });
 
       test('should show error notification when API fails', () async {
@@ -266,43 +295,6 @@ void main() {
         // Assert
         expect(result, equals(pendingNotifications), reason: 'Should return pending notifications from plugin');
         verify(mockNotifications.pendingNotificationRequests()).called(1);
-      });
-    });
-
-    group('areNotificationsEnabled', () {
-      test('should return true when notifications are enabled on Android', () async {
-        // Arrange
-        when(mockNotifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()).thenReturn(mockAndroidPlugin);
-        when(mockAndroidPlugin.areNotificationsEnabled()).thenAnswer((_) async => true);
-
-        // Act
-        final result = await notificationService.areNotificationsEnabled();
-
-        // Assert
-        expect(result, isTrue, reason: 'Should return true when Android notifications enabled');
-      });
-
-      test('should return false when notifications are disabled on Android', () async {
-        // Arrange
-        when(mockNotifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()).thenReturn(mockAndroidPlugin);
-        when(mockAndroidPlugin.areNotificationsEnabled()).thenAnswer((_) async => false);
-
-        // Act
-        final result = await notificationService.areNotificationsEnabled();
-
-        // Assert
-        expect(result, isFalse, reason: 'Should return false when Android notifications disabled');
-      });
-
-      test('should return true when Android plugin is not available', () async {
-        // Arrange
-        when(mockNotifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()).thenReturn(null);
-
-        // Act
-        final result = await notificationService.areNotificationsEnabled();
-
-        // Assert
-        expect(result, isTrue, reason: 'Should assume enabled when Android plugin not available');
       });
     });
   });

@@ -30,7 +30,7 @@ class NotificationService extends GetxService {
     // Initialize timezone data
     tz.initializeTimeZones();
 
-    // Initialize TTS
+    tz.setLocalLocation(tz.getLocation('America/Halifax'));
     await _initializeTts();
 
     // Android initialization settings
@@ -41,7 +41,11 @@ class NotificationService extends GetxService {
 
     const initSettings = InitializationSettings(android: androidSettings, iOS: iosSettings);
 
-    final initialized = await _notifications.initialize(initSettings, onDidReceiveNotificationResponse: _onNotificationResponse);
+    final initialized = await _notifications.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: _onNotificationResponse,
+      onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationResponse,
+    );
 
     if (initialized != true) {
       throw const NotificationInitializationException('Failed to initialize notifications');
@@ -88,6 +92,14 @@ class NotificationService extends GetxService {
       if (granted != true) {
         Get.log('Notification permission denied by user. Continuing without scheduled notifications.', isError: true);
         return; // Early return; caller can decide whether to schedule later
+      }
+
+      // Request exact alarm permission for Android 12+ (API level 31+) on real devices only
+      final exactAlarmGranted = await androidPlugin.requestExactAlarmsPermission();
+      if (exactAlarmGranted != true) {
+        Get.log('Exact alarm permission denied. Will use inexact scheduling.', isError: false);
+      } else {
+        Get.log('[NotificationService] Exact alarm permission granted - notifications will use precise timing');
       }
     }
   }
@@ -269,6 +281,7 @@ class NotificationService extends GetxService {
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.time, // Repeat daily
         payload: 'daily_weather',
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle, // Use inexact scheduling for better compatibility
       );
     } catch (e) {
       if (e is NotificationException) {
@@ -304,7 +317,7 @@ class NotificationService extends GetxService {
       try {
         final weather = await _weatherService.getWeather(position);
         final emoji = _weatherEmojis[weather.description.toLowerCase()] ?? '🌤️';
-        title = 'Weather Update $emoji - ${weather.tempMin}/${weather.tempMax}°C';
+        title = 'Weather Update $emoji ${weather.tempMin.round()}/${weather.tempMax.round()}°C';
         body = weather.formattedAnnouncement;
 
         // Speak the weather announcement
@@ -357,7 +370,7 @@ class NotificationService extends GetxService {
         // Get emoji for current weather description, fallback to default
         final emoji = _weatherEmojis[weather.description.toLowerCase()] ?? '🌤️';
 
-        title = 'Weather Update $emoji - ${weather.tempMin}/${weather.tempMax}°C';
+        title = 'Weather Update $emoji ${weather.tempMin.round()}/${weather.tempMax.round()}°C';
         body = weather.formattedAnnouncement;
 
         // Speak the weather announcement
@@ -422,6 +435,29 @@ class NotificationService extends GetxService {
         // Handle weather update notification tap
         break;
       default:
+        Get.log('Unknown notification payload: ${response.payload}', isError: false);
+        break;
+    }
+  }
+
+  /// Handle background notification response (static method required)
+  @pragma('vm:entry-point')
+  static void _onBackgroundNotificationResponse(NotificationResponse response) {
+    // Note: Get.log won't work in background context, so we use print for debugging
+    print('[NotificationService] Background notification received: payload=${response.payload}');
+
+    // Handle background notification processing here
+    // This is called when the app is not running and user taps notification
+    switch (response.payload) {
+      case 'daily_weather':
+        print('[NotificationService] Background daily weather notification tapped');
+        // Could trigger weather fetch and display when app launches
+        break;
+      case 'weather_update':
+        print('[NotificationService] Background weather update notification tapped');
+        break;
+      default:
+        print('[NotificationService] Unknown background notification payload: ${response.payload}');
         break;
     }
   }
