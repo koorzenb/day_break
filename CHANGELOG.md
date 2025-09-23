@@ -1,3 +1,9 @@
+## 0.14.3
+  
+### Chore
+  
+- Add adb-install.bat for APK installation and launch; update build-prod-apk.bat to use --nt argument for skipping tests
+
 ## 0.14.2
   
 ### Chore

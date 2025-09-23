@@ -1,0 +1,2 @@
+C:\Users\koorz\AppData\Local\Android\Sdk\platform-tools\adb install -r C:\repos\kube\flutter\day_break\release\0.14.2.1402\day_break-0.14.2.1402.apk
+C:\Users\koorz\AppData\Local\Android\Sdk\platform-tools\adb shell am start -n com.example.day_break/com.example.day_break.MainActivity

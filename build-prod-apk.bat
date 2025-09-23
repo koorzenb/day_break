@@ -5,7 +5,7 @@ setlocal EnableDelayedExpansion
 
 @REM if this script has the following args, --no-tests, skip running tests
 
-if "%1"=="--no-tests" (
+if "%1"=="--nt" (
     echo Skipping tests as per --no-tests argument.
     goto :skipTests
 )
@@ -13,6 +13,9 @@ if "%1"=="--no-tests" (
 echo Running all tests...
 call flutter test
 if errorlevel 1 exit /b 1
+
+call flutter clean
+call flutter pub get
 
 :skipTests
 call set-build-env.bat
