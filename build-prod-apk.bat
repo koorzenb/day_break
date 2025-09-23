@@ -3,10 +3,18 @@ REM exit when any command fails
 @REM setlocal
 setlocal EnableDelayedExpansion
 
+@REM if this script has the following args, --no-tests, skip running tests
+
+if "%1"=="--no-tests" (
+    echo Skipping tests as per --no-tests argument.
+    goto :skipTests
+)
+
 echo Running all tests...
 call flutter test
 if errorlevel 1 exit /b 1
 
+:skipTests
 call set-build-env.bat
 
 REM Ensure required API key is present for compile-time define
