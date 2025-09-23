@@ -15,6 +15,8 @@ class NotificationService extends GetxService {
   final WeatherService _weatherService;
   final SettingsService _settingsService;
 
+  bool _exactAlarmsAllowed = false;
+
   static const String _channelId = 'weather_announcements';
   static const String _channelName = 'Weather Announcements';
   static const String _channelDescription = 'Daily weather forecast notifications';
@@ -96,10 +98,12 @@ class NotificationService extends GetxService {
 
       // Request exact alarm permission for Android 12+ (API level 31+) on real devices only
       final exactAlarmGranted = await androidPlugin.requestExactAlarmsPermission();
-      if (exactAlarmGranted != true) {
-        Get.log('Exact alarm permission denied. Will use inexact scheduling.', isError: false);
-      } else {
+      if (exactAlarmGranted == true) {
+        _exactAlarmsAllowed = true;
         Get.log('[NotificationService] Exact alarm permission granted - notifications will use precise timing');
+      } else {
+        _exactAlarmsAllowed = false;
+        Get.log('Exact alarm permission denied. Will use inexact scheduling.', isError: false);
       }
     }
   }
@@ -292,7 +296,7 @@ class NotificationService extends GetxService {
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.time, // Repeat daily
         payload: 'daily_weather',
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle, // Use inexact scheduling for better compatibility
+        androidScheduleMode: _exactAlarmsAllowed ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
       );
 
       Get.log('[NotificationService] zonedSchedule called successfully.', isError: false);
