@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.day_break"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36  // Required for geolocator_android and path_provider_android
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -29,6 +29,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled = true
     }
 
     buildTypes {
@@ -36,6 +37,8 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            isMinifyEnabled = true
         }
     }
 }
@@ -46,5 +49,5 @@ flutter {
 
 dependencies {
     // Required when coreLibraryDesugaringEnabled = true
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

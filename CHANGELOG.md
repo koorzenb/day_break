@@ -1,3 +1,9 @@
+## 0.14.5
+  
+### Fix
+  
+- Fixed issue where notifications did on work on physical Android device
+
 ## 0.14.4
   
 ### Chore
