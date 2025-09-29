@@ -157,13 +157,6 @@ class SettingsController extends GetxController {
       await _settingsService.setLocation(newLocation.trim());
       _location.value = newLocation.trim();
 
-      // Show success message with appropriate context
-      if (hasWeatherValidation) {
-        _showSuccessSnackbar('Location Updated 📍', 'Location set to $newLocation');
-      } else {
-        _showSuccessSnackbar('Location Saved 📍', 'Location set to $newLocation (validation unavailable)');
-      }
-
       // Check if all settings are now complete
       _checkAndNavigateIfComplete();
     } catch (e) {
@@ -182,8 +175,9 @@ class SettingsController extends GetxController {
         Get.find<AppController>().checkSettingsStatus();
 
         if (Get.isSnackbarOpen) {
-          // wait until snackbar is closed
-          Future.delayed(const Duration(seconds: AppConstants.snackbarDuration + 1), () {
+          // wait until snackbar is closed. This is a bit hacky but works for now
+          final delay = AppConstants.snackbarDuration + 1; // add 1 second buffer
+          Future.delayed(Duration(seconds: delay), () {
             // Return to previous route and signal completion
             Get.back(result: true);
           });
@@ -254,7 +248,6 @@ class SettingsController extends GetxController {
     try {
       final suggestion = await _locationService!.getCurrentLocationSuggestion();
       _detectedLocationSuggestion.value = suggestion;
-      _showInfoSnackbar('Location Detected 📍', 'Found: $suggestion');
     } catch (e) {
       String errorMessage;
       if (e is LocationServicesDisabledException) {

@@ -1,3 +1,17 @@
+## 0.14.6
+  
+### Refactor
+  
+Refactor settings and notification services; implement background service
+
+- Removed success snackbar messages from SettingsController after location update.
+- Added background service initialization in main.dart, including notification channel setup.
+- Created a new background_service.dart file to handle background tasks.
+- Updated notification_service.dart to remove pending notifications retrieval and adjust scheduling logic.
+- Refactored weather_service.dart to modularize URL building for weather API requests.
+- Updated notification_service_test.dart to reflect changes in notification scheduling and removed pending notifications test.
+- Adjusted mock classes in notification_service_test.mocks.dart to align with updated service interfaces.
+
 ## 0.14.5
   
 ### Fix

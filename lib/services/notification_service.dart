@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:geolocator/geolocator.dart';
@@ -32,7 +34,6 @@ class NotificationService extends GetxService {
     // Initialize timezone data
     tz.initializeTimeZones();
 
-    tz.setLocalLocation(tz.getLocation('America/Halifax'));
     await _initializeTts();
 
     // Android initialization settings
@@ -293,19 +294,14 @@ class NotificationService extends GetxService {
           ),
           iOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
         ),
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.time, // Repeat daily
         payload: 'daily_weather',
         androidScheduleMode: _exactAlarmsAllowed ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
       );
 
       Get.log('[NotificationService] zonedSchedule called successfully.', isError: false);
-
-      // Check pending notifications for debugging
-      final pending = await getPendingNotifications();
       Get.log(
-        '[NotificationService] Pending notifications after scheduling: ${pending.map((p) => 'id=${p.id}, title=${p.title}, scheduledDate=$scheduledDate').toList()}',
-        isError: false,
+        '[NotificationService] Scheduled for ${scheduledDate.difference(now).inMinutes} minutes and ${scheduledDate.difference(now).inSeconds.remainder(60)} seconds in the future.',
       );
     } catch (e) {
       Get.log('[NotificationService] Error scheduling notification: $e', isError: true);
@@ -442,11 +438,6 @@ class NotificationService extends GetxService {
   /// Cancel specific notification by id
   Future<void> cancelNotification(int id) async {
     await _notifications.cancel(id);
-  }
-
-  /// Get list of pending notifications
-  Future<List<PendingNotificationRequest>> getPendingNotifications() async {
-    return _notifications.pendingNotificationRequests();
   }
 
   /// Handle notification response when user taps notification

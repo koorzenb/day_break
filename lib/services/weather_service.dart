@@ -30,8 +30,28 @@ class WeatherService extends GetxService {
 
   /// Fetches weather data for the given position
   Future<WeatherSummary> getWeather(Position position) async {
-    final url = Uri.parse('$_baseUrl?lat=${position.latitude}&lon=${position.longitude}&appid=$_apiKey&units=metric');
+    final url = _buildUrlForCoordinates(position.latitude, position.longitude);
+    return _fetchWeatherData(url);
+  }
 
+  /// Fetches weather data for the given location name
+  Future<WeatherSummary> getWeatherByLocation(String locationName) async {
+    final url = _buildUrlForLocation(locationName.trim());
+    return _fetchWeatherData(url);
+  }
+
+  /// Builds URL for coordinate-based weather queries
+  Uri _buildUrlForCoordinates(double latitude, double longitude) {
+    return Uri.parse('$_baseUrl?lat=$latitude&lon=$longitude&appid=$_apiKey&units=metric');
+  }
+
+  /// Builds URL for location name-based weather queries
+  Uri _buildUrlForLocation(String locationName) {
+    return Uri.parse('$_baseUrl?q=${Uri.encodeComponent(locationName)}&appid=$_apiKey&units=metric');
+  }
+
+  /// Fetches and parses weather data from the API
+  Future<WeatherSummary> _fetchWeatherData(Uri url) async {
     try {
       final response = await _httpClient.get(url);
 
@@ -57,39 +77,11 @@ class WeatherService extends GetxService {
     }
   }
 
-  /// Fetches weather data for the given location name
-  Future<WeatherSummary> getWeatherByLocation(String locationName) async {
-    final url = Uri.parse('$_baseUrl?q=${Uri.encodeComponent(locationName.trim())}&appid=$_apiKey&units=metric');
-
-    try {
-      final response = await _httpClient.get(url);
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body) as Map<String, dynamic>;
-        return WeatherSummary.fromJson(data);
-      } else {
-        throw WeatherApiException('Weather API returned status ${response.statusCode}', response.statusCode);
-      }
-    } catch (e) {
-      if (e is WeatherException) {
-        rethrow;
-      }
-
-      // Handle JSON parsing errors
-      if (e is FormatException) {
-        throw const WeatherParsingException('Failed to parse weather data');
-      }
-
-      // Handle network errors
-      throw WeatherNetworkException('Network error: ${e.toString()}');
-    }
-  }
-
   /// Validates if a location name is valid by testing it with the weather API
   Future<bool> validateLocation(String locationName) async {
     if (locationName.trim().isEmpty) return false;
 
-    final url = Uri.parse('$_baseUrl?q=${Uri.encodeComponent(locationName.trim())}&appid=$_apiKey&units=metric');
+    final url = _buildUrlForLocation(locationName.trim());
 
     try {
       final response = await _httpClient.get(url);
