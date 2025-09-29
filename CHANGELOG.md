@@ -1,3 +1,9 @@
+## 0.14.4
+  
+### Chore
+  
+- Enhance adb-install.bat for APK installation and improve build-prod-apk.bat with fast build option; update cspell.json for additional terms
+
 ## 0.14.3
   
 ### Chore

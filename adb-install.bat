@@ -1,2 +1,9 @@
-C:\Users\koorz\AppData\Local\Android\Sdk\platform-tools\adb install -r C:\repos\kube\flutter\day_break\release\0.14.2.1402\day_break-0.14.2.1402.apk
+@REM echo Uninstalling existing app (if any) and installing new APK...
+echo Uninstalling previous instance...
+C:\Users\koorz\AppData\Local\Android\Sdk\platform-tools\adb uninstall com.example.day_break
+
+for %%F in (C:\repos\kube\flutter\day_break\build\app\outputs\flutter-apk\app-release.apk) do set BUILD_TIME=%%~tF
+echo Installing new APK (Build Time: %BUILD_TIME%)...
+C:\Users\koorz\AppData\Local\Android\Sdk\platform-tools\adb install -r C:\repos\kube\flutter\day_break\build\app\outputs\flutter-apk\app-release.apk
 C:\Users\koorz\AppData\Local\Android\Sdk\platform-tools\adb shell am start -n com.example.day_break/com.example.day_break.MainActivity
+call flutter logs

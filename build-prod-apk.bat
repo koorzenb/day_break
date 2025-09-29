@@ -5,8 +5,9 @@ setlocal EnableDelayedExpansion
 
 @REM if this script has the following args, --no-tests, skip running tests
 
-if "%1"=="--nt" (
-    echo Skipping tests as per --no-tests argument.
+@REM fast Build
+if "%1"=="--f" (
+    echo Fast build as per --f argument. Skipping tests...
     goto :skipTests
 )
 
@@ -14,10 +15,12 @@ echo Running all tests...
 call flutter test
 if errorlevel 1 exit /b 1
 
-call flutter clean
-call flutter pub get
 
 :skipTests
+@REM Killing any dart.exe processes that interfere with flutter clean
+call taskkill /F /IM dart.exe /T
+call flutter clean
+@REM call flutter pub get
 call set-build-env.bat
 
 REM Ensure required API key is present for compile-time define
@@ -45,14 +48,18 @@ set OUTPUT_FILE=%PROJ_NAME%-%BUILD_VERSION%.apk
 REM Warn user if folder already exists
 echo Output file = .\%OUTPUT_FOLDER%\%OUTPUT_FILE%
 
-
 @REM if "1"=="1" (
 if exist %OUTPUT_FOLDER%\%OUTPUT_FILE% (
-    call :promptUser
+    if "%1"=="--f" (
+        echo .
+        echo Overwriting previous build 
+        goto :continueBuild
+    ) else (
+        call :promptUser
+    )
 ) else (
     call :continueBuild
 )
-exit /b
 
 :promptUser
     set /P REPLY=Press 'y' to overwrite, or any other key to exit: 
@@ -62,17 +69,22 @@ exit /b
 :continueBuild
     if not exist "%OUTPUT_FOLDER%" mkdir "%OUTPUT_FOLDER%"
 
-    call flutter doctor -v > flutter-doctor-win.txt 
-    call flutter pub outdated >> flutter-doctor-win.txt
-
-    @REM for /F "usebackq delims=" %%A in (`define_env -f .env.prod --no-generate ^| sed -r "s/--dart-define=/--dart-define /g"`) do call flutter build apk --release -v -t lib/main_prod.dart --obfuscate --split-debug-info=./debug-info %%A
+    @REM for /F "usebackq delims=" %%A in (`define_env --f .env.prod --no-generate ^| sed -r "s/--dart-define=/--dart-define /g"`) do call flutter build apk --release -v -t lib/main_prod.dart --obfuscate --split-debug-info=./debug-info %%A
     echo Using OPENWEATHER_API_KEY (length: %OPENWEATHER_API_KEY:~0,0%%OPENWEATHER_API_KEY:~0,1%*) for compile-time define.
-    call flutter build apk --release -v --obfuscate --split-debug-info=./debug-info %DART_DEFINES%
+
+    if "%1"=="--f" (
+        call flutter build apk --release %DART_DEFINES%
+    ) else (
+        call flutter doctor -v > flutter-doctor-win.txt 
+        call flutter pub outdated >> flutter-doctor-win.txt
+        call flutter build apk --release -v --obfuscate --split-debug-info=./debug-info --dart-define=OPENWEATHER_API_KEY
+    )
 
     echo.
 
+    @REM Copy the built APK to the release folder with versioned name
     if exist build\app\outputs\flutter-apk\app-release.apk (
-        move /Y build\app\outputs\flutter-apk\app-release.apk %OUTPUT_FOLDER%\%OUTPUT_FILE%
+        copy /Y build\app\outputs\flutter-apk\app-release.apk %OUTPUT_FOLDER%\%OUTPUT_FILE%
         echo Built %BUILD_VERSION% bundle to "%OUTPUT_FOLDER%"
     ) else (
         echo Build failed.
