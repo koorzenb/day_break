@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -13,11 +15,15 @@ class AppController extends GetxController {
   final _isInitialized = false.obs;
   final _hasSettings = false.obs;
   final _currentStatus = ''.obs;
+  final _isTestNotificationCountdown = false.obs;
+  final _testNotificationCountdown = 0.obs;
 
   // Getters for UI binding
   bool get isInitialized => _isInitialized.value;
   bool get hasSettings => _hasSettings.value;
   String get currentStatus => _currentStatus.value;
+  bool get isTestNotificationCountdown => _isTestNotificationCountdown.value;
+  int get testNotificationCountdown => _testNotificationCountdown.value;
 
   @override
   void onInit() {
@@ -91,6 +97,57 @@ class AppController extends GetxController {
     await _notificationService.scheduleDailyWeatherNotification();
 
     _currentStatus.value = 'Daily notifications scheduled';
+  }
+
+  /// Schedule a test notification with specified delay
+  Future<void> scheduleTestNotification(int delaySeconds) async {
+    try {
+      if (_isTestNotificationCountdown.value) {
+        _showSnackBar('Already Scheduled', 'A test notification is already counting down.', Colors.orange);
+        return;
+      }
+
+      // Start countdown
+      _isTestNotificationCountdown.value = true;
+      _testNotificationCountdown.value = delaySeconds;
+
+      // Schedule the test notification
+      await _notificationService.scheduleTestNotification(delaySeconds);
+
+      _showSnackBar('Test Scheduled ⏰', 'Test notification scheduled for $delaySeconds seconds with speech!', Colors.blue);
+
+      // Start countdown timer
+      _startCountdownTimer();
+    } catch (e) {
+      Get.log('Error in scheduleTestNotification: $e', isError: true);
+      _showSnackBar('Error ❌', 'Failed to schedule test notification: $e', Colors.red);
+      _isTestNotificationCountdown.value = false;
+    }
+  }
+
+  /// Start the countdown timer for test notification
+  void _startCountdownTimer() {
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_testNotificationCountdown.value > 0) {
+        _testNotificationCountdown.value--;
+      } else {
+        timer.cancel();
+        _isTestNotificationCountdown.value = false;
+        _showSnackBar('Test Delivered 🔔', 'Test notification should appear with speech announcement!', Colors.green);
+
+        _triggerTestNotificationSpeech();
+      }
+    });
+  }
+
+  /// Trigger TTS for test notification (fallback if notification service timer doesn't work)
+  Future<void> _triggerTestNotificationSpeech() async {
+    try {
+      // Trigger weather TTS announcement for the test
+      await _notificationService.speakTestWeatherAnnouncement();
+    } catch (e) {
+      Get.log('Failed to trigger test notification speech: $e', isError: true);
+    }
   }
 
   /// Manual trigger for testing - fetch current weather and show notification

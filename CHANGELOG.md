@@ -1,3 +1,9 @@
+## 0.14.7
+  
+### Test
+  
+- Implement test notification feature with speech announcement and countdown
+
 ## 0.14.6
   
 ### Refactor

@@ -159,7 +159,47 @@ This document outlines the development plan for the Day Break application, based
 - [x] **Commit:**
   - Use the `dart run update_version.dart` script to create a commit with a descriptive message (e.g., "feat: initial app implementation").
 
-## Phase 9: Post-MVP Enhancements (Value Add)
+## Phase 9: Test Notification with Speech Announcement
+
+- [x] **Implement 15-Second Test Notification:**
+  - Add functionality to schedule a test notification that triggers 15 seconds after being requested.
+  - Ensure the test notification includes both visual notification and text-to-speech announcement.
+  - Test notification should use actual weather data from the WeatherService to simulate real announcement behavior.
+  - Provide clear user feedback during the 15-second countdown period.
+
+- [x] **User Interface Integration:**
+  - Add a "Test Notification (15s)" button to the main screen or settings screen.
+  - Display countdown timer or progress indicator during the 15-second wait period.
+  - Show success/failure feedback after the test notification is triggered.
+
+- [x] **Validation:**
+  - Test that both visual notification and speech announcement work correctly.
+  - Verify that the test uses real weather data and proper speech synthesis.
+  - Ensure the test notification doesn't interfere with regular daily scheduling.
+  - Run `flutter test` to ensure no regressions.
+
+## Phase 10: Locked Device Notification Testing
+
+- [ ] **Device Lock State Testing:**
+  - Verify that notifications appear correctly when the device screen is locked.
+  - Test that text-to-speech announcements play even when device is locked (respecting system volume and do-not-disturb settings).
+  - Ensure notifications wake the device screen appropriately according to system settings.
+
+- [ ] **Permission and System Integration:**
+  - Validate that the app has proper permissions to show notifications on locked screen.
+  - Test notification behavior across different Android versions and lock screen security settings.
+  - Verify that notifications respect system-level notification and volume settings.
+
+- [ ] **Manual Testing Protocol:**
+  - Create specific test cases for locked device scenarios.
+  - Document expected behavior vs. actual behavior for different lock screen configurations.
+  - Test with various system settings (silent mode, do-not-disturb, battery optimization).
+
+- [ ] **Documentation Update:**
+  - Update `MANUAL_TEST_CHECKLIST.md` to include locked device testing procedures.
+  - Document any limitations or requirements for locked device functionality.
+
+## Phase 11: Post-MVP Enhancements (Value Add)
 
 These items enhance resilience, UX, and maintainability beyond the MVP scope.
 
@@ -235,3 +275,9 @@ These items enhance resilience, UX, and maintainability beyond the MVP scope.
 
 - [ ] Explore Background Fetch Expansion
   - Investigate using isolates / background fetch plugin for pre-fetching weather before announcement time.
+
+- [ ] Improve Status Details
+  - Enhance the status display to show when the next scheduled announcement will run (e.g., "Next announcement: Tomorrow at 7:30 AM" or "Next announcement: In 14 hours 23 minutes").
+  - Include countdown timer or relative time display for better user awareness.
+  - Show additional context like last successful announcement time and weather data freshness.
+  - Provide clear indication if scheduling failed or notifications are disabled.

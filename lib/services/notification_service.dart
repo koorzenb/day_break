@@ -23,6 +23,8 @@ class NotificationService extends GetxService {
   static const String _channelName = 'Weather Announcements';
   static const String _channelDescription = 'Daily weather forecast notifications';
 
+  static Duration testNotificationDelay = Duration(seconds: 60);
+
   NotificationService({FlutterLocalNotificationsPlugin? notifications, FlutterTts? tts, WeatherService? weatherService, SettingsService? settingsService})
     : _notifications = notifications ?? FlutterLocalNotificationsPlugin(),
       _tts = tts, // Don't initialize here, do it lazily
@@ -233,6 +235,24 @@ class NotificationService extends GetxService {
     await _speakWeatherAnnouncement(testMessage);
   }
 
+  /// Speak weather announcement for test notification using configured location
+  Future<void> speakTestWeatherAnnouncement() async {
+    try {
+      final location = _settingsService.location;
+      if (location == null || location.isEmpty) {
+        await _speakWeatherAnnouncement('Test notification delivered. No location configured for weather announcement.');
+        return;
+      }
+
+      // Fetch and speak actual weather data
+      final weather = await _weatherService.getWeatherByLocation(location);
+      await _speakWeatherAnnouncement(weather.formattedAnnouncement);
+    } catch (e) {
+      // Fallback TTS message if weather fetch fails
+      await _speakWeatherAnnouncement('Test notification delivered. Weather data is currently unavailable.');
+    }
+  }
+
   /// Stop current TTS speech
   Future<void> stopSpeech() async {
     try {
@@ -241,6 +261,96 @@ class NotificationService extends GetxService {
       }
     } catch (e) {
       Get.log('Failed to stop speech: $e', isError: true);
+    }
+  }
+
+  /// Schedule a notification for testing purposes with real weather data
+  Future<void> scheduleTestNotification(int delaySeconds) async {
+    try {
+      Get.log('[NotificationService] Starting test notification scheduling', isError: false);
+
+      // Cancel any existing notifications
+      await cancelNotification(9999);
+
+      // Verify notifications are enabled
+      final notificationsEnabled = await areNotificationsEnabled();
+      if (!notificationsEnabled) {
+        throw const NotificationSchedulingException('Notifications are disabled. Please enable them in device settings.');
+      }
+
+      // Get location from settings for weather data
+      final location = _settingsService.location;
+      if (location == null || location.isEmpty) {
+        throw const NotificationSchedulingException('No location set in settings. Please configure your location first.');
+      }
+
+      Get.log('[NotificationService] Scheduling test notification with weather data for: $location', isError: false);
+
+      // Update the static delay with the passed parameter
+      testNotificationDelay = Duration(seconds: delaySeconds);
+
+      // Set timezone for Halifax (as per your configuration)
+      tz.initializeTimeZones();
+      tz.setLocalLocation(tz.getLocation('America/Halifax'));
+
+      final now = tz.TZDateTime.now(tz.local);
+      final scheduledDate = now.add(testNotificationDelay);
+
+      // Pre-fetch weather data to include in the scheduled notification
+      String title = 'Test Weather Notification ⏰';
+      String body = 'Fetching weather data for $location...';
+      String speechText = 'This is a test notification. Fetching weather data.';
+
+      try {
+        final weather = await _weatherService.getWeatherByLocation(location);
+        final emoji = _weatherEmojis[weather.description.toLowerCase()] ?? '🌤️';
+        title = 'Test Weather $emoji ${weather.tempMin.round()}/${weather.tempMax.round()}°C';
+        body = weather.formattedAnnouncement;
+        speechText = weather.formattedAnnouncement;
+
+        Get.log('[NotificationService] Weather data fetched successfully for test notification', isError: false);
+      } catch (e) {
+        Get.log('[NotificationService] Failed to fetch weather for test, using fallback: $e', isError: false);
+        body =
+            'Test notification scheduled for ${scheduledDate.hour.toString().padLeft(2, '0')}:${scheduledDate.minute.toString().padLeft(2, '0')}:${scheduledDate.second.toString().padLeft(2, '0')} - Weather data unavailable';
+        speechText = 'This is a test notification. Weather data is currently unavailable.';
+      }
+
+      await _notifications.zonedSchedule(
+        9999,
+        title,
+        body,
+        scheduledDate,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'weather_announcements',
+            'Weather Announcements',
+            channelDescription: 'Daily weather forecast notifications',
+            importance: Importance.high,
+            priority: Priority.high,
+            icon: '@mipmap/ic_launcher',
+          ),
+        ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: 'test_weather_with_speech:$speechText',
+      );
+
+      // Provide immediate TTS demonstration
+      await _speakWeatherAnnouncement('Test notification scheduled successfully');
+
+      // Schedule automatic speech to play when the notification appears
+      Timer(testNotificationDelay, () {
+        _speakWeatherAnnouncement(speechText);
+        Get.log('[NotificationService] Automatic TTS triggered for test notification', isError: false);
+      });
+
+      Get.log('[NotificationService] Test notification scheduled successfully with weather data and automatic TTS.', isError: false);
+    } catch (e) {
+      Get.log('[NotificationService] Error scheduling test notification: $e', isError: true);
+      if (e is NotificationException) {
+        rethrow;
+      }
+      throw NotificationSchedulingException('Failed to schedule test notification: $e');
     }
   }
 
@@ -278,10 +388,33 @@ class NotificationService extends GetxService {
 
       Get.log('[NotificationService] Scheduling notification for: $scheduledDate', isError: false);
 
+      // Get location from settings for weather data
+      final location = _settingsService.location;
+      String title = 'Good Morning! ☀️';
+      String body = 'Fetching your daily weather update...';
+      String speechText = 'Good morning! Fetching your daily weather update.';
+
+      // Pre-fetch weather data if location is available
+      if (location != null && location.isNotEmpty) {
+        try {
+          final weather = await _weatherService.getWeatherByLocation(location);
+          final emoji = _weatherEmojis[weather.description.toLowerCase()] ?? '🌤️';
+          title = 'Good Morning! $emoji ${weather.tempMin.round()}/${weather.tempMax.round()}°C';
+          body = weather.formattedAnnouncement;
+          speechText = 'Good morning! ${weather.formattedAnnouncement}';
+
+          Get.log('[NotificationService] Weather data fetched for daily notification: $location', isError: false);
+        } catch (e) {
+          Get.log('[NotificationService] Failed to fetch weather for daily notification, using fallback: $e', isError: false);
+          body = 'Daily weather update for $location - Weather data will be available when you open the notification.';
+          speechText = 'Good morning! Daily weather update is ready. Weather data will be announced when you interact with the notification.';
+        }
+      }
+
       await _notifications.zonedSchedule(
         0, // notification id
-        'Good Morning! ☀️',
-        'Fetching your daily weather update...',
+        title,
+        body,
         scheduledDate,
         const NotificationDetails(
           android: AndroidNotificationDetails(
@@ -295,7 +428,7 @@ class NotificationService extends GetxService {
           iOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
         ),
         matchDateTimeComponents: DateTimeComponents.time, // Repeat daily
-        payload: 'daily_weather',
+        payload: 'daily_weather_with_speech:$speechText',
         androidScheduleMode: _exactAlarmsAllowed ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
       );
 
@@ -442,17 +575,31 @@ class NotificationService extends GetxService {
 
   /// Handle notification response when user taps notification
   void _onNotificationResponse(NotificationResponse response) {
-    switch (response.payload) {
-      case 'daily_weather':
-        // Handle daily weather notification tap
-        // Could navigate to weather details screen
-        break;
-      case 'weather_update':
-        // Handle weather update notification tap
-        break;
-      default:
-        Get.log('Unknown notification payload: ${response.payload}', isError: false);
-        break;
+    final payload = response.payload ?? '';
+
+    if (payload.startsWith('test_weather_with_speech:')) {
+      // Extract speech text and play it for test notifications
+      final speechText = payload.substring('test_weather_with_speech:'.length);
+      _speakWeatherAnnouncement(speechText);
+      Get.log('[NotificationService] Test notification delivered with speech: $speechText', isError: false);
+    } else if (payload.startsWith('daily_weather_with_speech:')) {
+      // Extract speech text and play it for daily notifications
+      final speechText = payload.substring('daily_weather_with_speech:'.length);
+      _speakWeatherAnnouncement(speechText);
+      Get.log('[NotificationService] Daily weather notification delivered with speech: $speechText', isError: false);
+    } else {
+      switch (payload) {
+        case 'daily_weather':
+          // Legacy daily weather notification (without speech)
+          Get.log('[NotificationService] Legacy daily weather notification tapped', isError: false);
+          break;
+        case 'weather_update':
+          // Handle weather update notification tap
+          break;
+        default:
+          Get.log('Unknown notification payload: $payload', isError: false);
+          break;
+      }
     }
   }
 
@@ -460,21 +607,30 @@ class NotificationService extends GetxService {
   @pragma('vm:entry-point')
   static void _onBackgroundNotificationResponse(NotificationResponse response) {
     // Note: Get.log won't work in background context, so we use print for debugging
-    print('[NotificationService] Background notification received: payload=${response.payload}');
+    final payload = response.payload ?? '';
+    print('[NotificationService] Background notification received: payload=$payload');
 
-    // Handle background notification processing here
-    // This is called when the app is not running and user taps notification
-    switch (response.payload) {
-      case 'daily_weather':
-        print('[NotificationService] Background daily weather notification tapped');
-        // Could trigger weather fetch and display when app launches
-        break;
-      case 'weather_update':
-        print('[NotificationService] Background weather update notification tapped');
-        break;
-      default:
-        print('[NotificationService] Unknown background notification payload: ${response.payload}');
-        break;
+    if (payload.startsWith('test_weather_with_speech:')) {
+      print('[NotificationService] Background test notification - speech would be triggered when app opens');
+      // Note: TTS cannot be triggered from background context, but this logs the intent
+    } else if (payload.startsWith('daily_weather_with_speech:')) {
+      print('[NotificationService] Background daily weather notification - speech would be triggered when app opens');
+      // Note: TTS cannot be triggered from background context, but this logs the intent
+    } else {
+      // Handle background notification processing here
+      // This is called when the app is not running and user taps notification
+      switch (payload) {
+        case 'daily_weather':
+          print('[NotificationService] Background daily weather notification (legacy) tapped');
+          // Could trigger weather fetch and display when app launches
+          break;
+        case 'weather_update':
+          print('[NotificationService] Background weather update notification tapped');
+          break;
+        default:
+          print('[NotificationService] Unknown background notification payload: $payload');
+          break;
+      }
     }
   }
 

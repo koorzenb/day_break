@@ -122,7 +122,22 @@ void main() {
       setUp(() {
         when(mockSettingsService.announcementHour).thenReturn(8);
         when(mockSettingsService.announcementMinute).thenReturn(0);
+        when(mockSettingsService.location).thenReturn('Halifax, Nova Scotia');
         when(mockNotifications.cancelAll()).thenAnswer((_) async {});
+
+        // Mock weather service for daily notification weather fetching
+        when(mockWeatherService.getWeatherByLocation(any)).thenAnswer(
+          (_) async => WeatherSummary(
+            description: 'clear sky',
+            temperature: 22.5,
+            feelsLike: 24.0,
+            tempMin: 18.0,
+            tempMax: 25.0,
+            humidity: 65,
+            location: 'Halifax, Nova Scotia',
+            timestamp: DateTime.now(),
+          ),
+        );
         when(
           mockNotifications.zonedSchedule(
             any,

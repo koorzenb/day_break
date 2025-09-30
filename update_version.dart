@@ -51,6 +51,7 @@ void main(List<String> args) {
         commitType == 'chore' ||
         commitType == 'docs' ||
         commitType == 'test' ||
+        commitType == 'tests' ||
         commitType == 'enh',
   );
   _updateChangelog(nextVersion, commitType, commitDescription, changelogFile);
