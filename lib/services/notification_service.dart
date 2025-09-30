@@ -299,7 +299,7 @@ class NotificationService extends GetxService {
       String speechText = 'Good morning! Fetching your daily weather update.';
       try {
         final weather = await _weatherService.getWeatherByLocation(location);
-        speechText = 'Good morning! ${weather.formattedAnnouncement}';
+        speechText = weather.formattedAnnouncement;
       } catch (e) {
         speechText = 'Good morning! Daily weather update is ready. Weather data will be announced when you interact with the notification.';
       }

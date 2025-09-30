@@ -75,7 +75,7 @@ void main() {
         expect(
           announcement,
           equals(
-            'Good morning! It is clear sky today, with a current temperature of 23°C. '
+            'It is clear sky today, with a current temperature of 23°C. '
             'Today\'s high is 25°C and low is 18°C. ',
           ),
           reason: 'Announcement should include rounded temperatures and all weather details',
@@ -102,7 +102,7 @@ void main() {
         expect(
           announcement,
           equals(
-            'Good morning! It is snow today, with a current temperature of -6°C. '
+            'It is snow today, with a current temperature of -6°C. '
             'Today\'s high is -2°C and low is -10°C. ',
           ),
           reason: 'Announcement should handle negative temperatures correctly',

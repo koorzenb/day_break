@@ -33,7 +33,7 @@ class WeatherSummary {
   }
 
   String get formattedAnnouncement {
-    return 'Good morning! It is $description today, with a current temperature of ${temperature.round()}°C. '
+    return 'It is $description today, with a current temperature of ${temperature.round()}°C. '
         'Today\'s high is ${tempMax.round()}°C and low is ${tempMin.round()}°C. ';
   }
 

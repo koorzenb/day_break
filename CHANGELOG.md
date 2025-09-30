@@ -1,3 +1,9 @@
+## 0.15.5
+  
+### Fix
+  
+- Remove redundant greeting from weather announcement in formattedAnnouncement method
+
 ## 0.15.4
   
 ### Refactor
