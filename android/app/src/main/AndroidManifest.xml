@@ -16,6 +16,11 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" /> <!-- Required for exact alarms on Android 12+ -->
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" /> <!-- Required for exact alarms on Android 12+ -->
     
+    <!-- Lock screen notification permissions -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" /> <!-- Required for full-screen notifications on locked devices -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" /> <!-- Required to wake device when notification is shown -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" /> <!-- Required to show notifications over lock screen -->
+    
     <application
         android:label="day_break"
         android:name="${applicationName}"

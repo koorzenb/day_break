@@ -244,6 +244,11 @@ class NotificationService extends GetxService {
           importance: Importance.high,
           priority: Priority.high,
           icon: '@mipmap/ic_launcher',
+          visibility: NotificationVisibility.public,
+          category: AndroidNotificationCategory.alarm,
+          fullScreenIntent: true,
+          showWhen: true,
+          when: null, // Will be set to current time
         ),
       );
 
@@ -321,6 +326,11 @@ class NotificationService extends GetxService {
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
           icon: '@mipmap/ic_launcher',
+          visibility: NotificationVisibility.public,
+          category: AndroidNotificationCategory.alarm,
+          fullScreenIntent: true,
+          showWhen: true,
+          when: null, // Will be set to current time
         ),
         scheduleMode: _exactAlarmsAllowed ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
         matchDateTimeComponents: DateTimeComponents.time,
@@ -458,6 +468,11 @@ class NotificationService extends GetxService {
             importance: Importance.defaultImportance,
             priority: Priority.defaultPriority,
             icon: '@mipmap/ic_launcher',
+            visibility: NotificationVisibility.public,
+            category: AndroidNotificationCategory.alarm,
+            fullScreenIntent: true,
+            showWhen: true,
+            when: null, // Will be set to current time
           ),
           iOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
         ),
@@ -511,6 +526,11 @@ class NotificationService extends GetxService {
             importance: Importance.defaultImportance,
             priority: Priority.defaultPriority,
             icon: '@mipmap/ic_launcher',
+            visibility: NotificationVisibility.public,
+            category: AndroidNotificationCategory.alarm,
+            fullScreenIntent: true,
+            showWhen: true,
+            when: null, // Will be set to current time
           ),
           iOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
         ),

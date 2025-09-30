@@ -1,3 +1,9 @@
+## 0.16.0
+  
+### Feature
+  
+- Implement locked device notification testing and enhance TTS behavior documentation
+
 ## 0.15.6
   
 ### Refactor
