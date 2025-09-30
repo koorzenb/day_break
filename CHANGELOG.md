@@ -1,3 +1,9 @@
+## 0.15.6
+  
+### Refactor
+  
+- Update test notification display to only show in debug mode
+
 ## 0.15.5
   
 ### Fix
