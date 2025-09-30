@@ -106,7 +106,7 @@ class MainScreen extends StatelessWidget {
             ),
           ),
 
-          // Test notification with 60s countdown
+          // Test notification with 15s countdown
           const SizedBox(height: 12),
           Obx(
             () => SizedBox(
@@ -132,43 +132,9 @@ class MainScreen extends StatelessWidget {
                       ),
                     )
                   : OutlinedButton.icon(
-                      onPressed: controller.hasSettings ? () => controller.scheduleTestNotification(300) : null,
+                      onPressed: controller.hasSettings ? () => controller.scheduleTestNotification(15) : null,
                       icon: const Icon(Icons.notifications_active),
-                      label: const Text('Schedule Test Notification (60s)'),
-                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-                    ),
-            ),
-          ),
-
-          SizedBox(height: 12),
-          // Test notification with 120s countdown
-          Obx(
-            () => SizedBox(
-              width: double.infinity,
-              child: controller.isTestNotificationCountdown
-                  ? Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.blue[50],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.blue[200]!),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blue[600])),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Test notification in ${controller.testNotificationCountdown}s...',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.blue[700]),
-                          ),
-                        ],
-                      ),
-                    )
-                  : OutlinedButton.icon(
-                      onPressed: controller.hasSettings ? () => controller.scheduleTestNotification(600) : null,
-                      icon: const Icon(Icons.notifications_active),
-                      label: const Text('Schedule Test Notification (120s)'),
+                      label: const Text('Schedule Test Notification (15s)'),
                       style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
                     ),
             ),

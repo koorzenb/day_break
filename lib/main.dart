@@ -8,7 +8,6 @@ import 'controllers/app_controller.dart';
 import 'http_client_wrapper.dart';
 import 'screens/main_screen.dart';
 import 'screens/settings_screen.dart';
-import 'services/background_service.dart';
 import 'services/location_service.dart';
 import 'services/notification_service.dart';
 import 'services/settings_service.dart';
@@ -33,7 +32,6 @@ Future<void> main() async {
     androidChannel,
   );
 
-  await initializeBackgroundService();
   await initServices();
   runApp(const MyApp());
 }

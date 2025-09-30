@@ -62,7 +62,7 @@ class AppController extends GetxController {
 
     // If settings are now complete, schedule background tasks
     if (_hasSettings.value) {
-      await _scheduleBackgroundTasks();
+      await _scheduleDailyNotification();
     }
   }
 
@@ -138,7 +138,7 @@ class AppController extends GetxController {
 
       // If settings are complete, schedule background tasks
       if (_hasSettings.value) {
-        await _scheduleBackgroundTasks();
+        await _scheduleDailyNotification();
       } else {
         // Navigate to settings if not configured
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -152,13 +152,11 @@ class AppController extends GetxController {
     }
   }
 
-  /// Schedule daily background tasks
-  Future<void> _scheduleBackgroundTasks() async {
+  /// Schedule daily notifications
+  Future<void> _scheduleDailyNotification() async {
     _currentStatus.value = 'Scheduling daily notifications...';
-
     await _notificationService.scheduleDailyWeatherNotification();
-
-    _currentStatus.value = 'Daily notifications scheduled';
+    _currentStatus.value = 'Daily notifications scheduled for ${_settingsService.announcementHour}:${_settingsService.announcementMinute?.toString().padLeft(2, '0')}';
   }
 
   /// Start the countdown timer for test notification

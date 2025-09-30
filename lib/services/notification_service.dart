@@ -21,7 +21,6 @@ class NotificationService extends GetxService {
   final WeatherService _weatherService;
   final SettingsService _settingsService;
   bool _exactAlarmsAllowed = false;
-
   final _weatherEmojis = <String, String>{
     'clear': '☀️',
     'sunny': '☀️',
@@ -293,9 +292,16 @@ class NotificationService extends GetxService {
   /// Schedule daily weather notification
   Future<void> scheduleDailyWeatherNotification() async {
     try {
-      Get.log('[NotificationService] Cancelling all existing notifications before scheduling.', isError: false);
+      Get.log('[NotificationService] Starting daily weather notification scheduling', isError: false);
+
       // Cancel any existing notifications
       await cancelAllNotifications();
+
+      // Verify notifications are enabled
+      final notificationsEnabled = await areNotificationsEnabled();
+      if (!notificationsEnabled) {
+        throw const NotificationSchedulingException('Notifications are disabled. Please enable them in device settings.');
+      }
 
       // Get announcement time from settings
       final hour = _settingsService.announcementHour;
@@ -307,6 +313,18 @@ class NotificationService extends GetxService {
         Get.log('[NotificationService] Announcement time not set in settings.', isError: true);
         throw const NotificationSchedulingException('Announcement time not set in settings');
       }
+
+      // Get location from settings for weather data
+      final location = _settingsService.location;
+      if (location == null || location.isEmpty) {
+        throw const NotificationSchedulingException('No location set in settings. Please configure your location first.');
+      }
+
+      Get.log('[NotificationService] Scheduling daily weather notification for: $location', isError: false);
+
+      // Set timezone for Halifax (as per your configuration)
+      tz.initializeTimeZones();
+      tz.setLocalLocation(tz.getLocation('America/Halifax'));
 
       // Schedule for next occurrence of the time
       final now = tz.TZDateTime.now(tz.local);
@@ -324,27 +342,23 @@ class NotificationService extends GetxService {
 
       Get.log('[NotificationService] Scheduling notification for: $scheduledDate', isError: false);
 
-      // Get location from settings for weather data
-      final location = _settingsService.location;
+      // Pre-fetch weather data to include in the scheduled notification
       String title = 'Good Morning! ☀️';
-      String body = 'Fetching your daily weather update...';
+      String body = 'Fetching your daily weather update for $location...';
       String speechText = 'Good morning! Fetching your daily weather update.';
 
-      // Pre-fetch weather data if location is available
-      if (location != null && location.isNotEmpty) {
-        try {
-          final weather = await _weatherService.getWeatherByLocation(location);
-          final emoji = _weatherEmojis[weather.description.toLowerCase()] ?? '🌤️';
-          title = 'Good Morning! $emoji ${weather.tempMin.round()}/${weather.tempMax.round()}°C';
-          body = weather.formattedAnnouncement;
-          speechText = 'Good morning! ${weather.formattedAnnouncement}';
+      try {
+        final weather = await _weatherService.getWeatherByLocation(location);
+        final emoji = _weatherEmojis[weather.description.toLowerCase()] ?? '🌤️';
+        title = 'Good Morning! $emoji ${weather.tempMin.round()}/${weather.tempMax.round()}°C';
+        body = weather.formattedAnnouncement;
+        speechText = 'Good morning! ${weather.formattedAnnouncement}';
 
-          Get.log('[NotificationService] Weather data fetched for daily notification: $location', isError: false);
-        } catch (e) {
-          Get.log('[NotificationService] Failed to fetch weather for daily notification, using fallback: $e', isError: false);
-          body = 'Daily weather update for $location - Weather data will be available when you open the notification.';
-          speechText = 'Good morning! Daily weather update is ready. Weather data will be announced when you interact with the notification.';
-        }
+        Get.log('[NotificationService] Weather data fetched successfully for daily notification', isError: false);
+      } catch (e) {
+        Get.log('[NotificationService] Failed to fetch weather for daily notification, using fallback: $e', isError: false);
+        body = 'Daily weather update for $location - Weather data will be available when you open the notification.';
+        speechText = 'Good morning! Daily weather update is ready. Weather data will be announced when you interact with the notification.';
       }
 
       await _notifications.zonedSchedule(

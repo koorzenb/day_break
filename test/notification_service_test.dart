@@ -125,6 +125,10 @@ void main() {
         when(mockSettingsService.location).thenReturn('Halifax, Nova Scotia');
         when(mockNotifications.cancelAll()).thenAnswer((_) async {});
 
+        // Mock Android plugin for notification permission checks
+        when(mockNotifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()).thenReturn(mockAndroidPlugin);
+        when(mockAndroidPlugin.areNotificationsEnabled()).thenAnswer((_) async => true);
+
         // Mock weather service for daily notification weather fetching
         when(mockWeatherService.getWeatherByLocation(any)).thenAnswer(
           (_) async => WeatherSummary(
@@ -162,8 +166,21 @@ void main() {
         expect(true, true, reason: 'Daily notification scheduling completed without errors');
       });
 
-      test('should throw NotificationSchedulingException when announcement time not set', () async {
+      test('should throw NotificationSchedulingException when location not set', () async {
         // Arrange
+        when(mockSettingsService.location).thenReturn(null);
+
+        // Act & Assert
+        expect(
+          () => notificationService.scheduleDailyWeatherNotification(),
+          throwsA(isA<NotificationSchedulingException>().having((e) => e.message, 'message', contains('No location set'))),
+          reason: 'Should throw NotificationSchedulingException when location not set',
+        );
+      });
+
+      test('should throw NotificationSchedulingException when announcement time not set', () async {
+        // Arrange - keep location valid but remove time settings
+        when(mockSettingsService.location).thenReturn('Halifax, Nova Scotia');
         when(mockSettingsService.announcementHour).thenReturn(null);
         when(mockSettingsService.announcementMinute).thenReturn(null);
 
