@@ -1,3 +1,9 @@
+## 0.15.0
+  
+### Refactor
+  
+- Clean up AppController and NotificationService; reorganize service initialization and remove unused methods
+
 ## 0.14.8
   
 ### Docs

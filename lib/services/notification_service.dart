@@ -12,18 +12,32 @@ import 'settings_service.dart';
 import 'weather_service.dart';
 
 class NotificationService extends GetxService {
+  static const String _channelId = 'weather_announcements';
+  static const String _channelName = 'Weather Announcements';
+  static const String _channelDescription = 'Daily weather forecast notifications';
+  static Duration testNotificationDelay = Duration(seconds: 60);
   final FlutterLocalNotificationsPlugin _notifications;
   FlutterTts? _tts;
   final WeatherService _weatherService;
   final SettingsService _settingsService;
-
   bool _exactAlarmsAllowed = false;
 
-  static const String _channelId = 'weather_announcements';
-  static const String _channelName = 'Weather Announcements';
-  static const String _channelDescription = 'Daily weather forecast notifications';
-
-  static Duration testNotificationDelay = Duration(seconds: 60);
+  final _weatherEmojis = <String, String>{
+    'clear': '☀️',
+    'sunny': '☀️',
+    'partly cloudy': '⛅',
+    'cloudy': '☁️',
+    'overcast': '🌥️',
+    'rain': '🌧️',
+    'showers': '🌦️',
+    'thunderstorm': '⛈️',
+    'snow': '❄️',
+    'fog': '🌫️',
+    'mist': '🌫️',
+    'windy': '💨',
+    'hail': '🌨️',
+    'drizzle': '🌦️',
+  };
 
   NotificationService({FlutterLocalNotificationsPlugin? notifications, FlutterTts? tts, WeatherService? weatherService, SettingsService? settingsService})
     : _notifications = notifications ?? FlutterLocalNotificationsPlugin(),
@@ -61,84 +75,6 @@ class NotificationService extends GetxService {
 
     // Create notification channel for Android
     await _createNotificationChannel();
-  }
-
-  /// Initialize and configure TTS settings
-  Future<void> _initializeTts() async {
-    try {
-      // Initialize TTS lazily if not already done
-      _tts ??= FlutterTts();
-
-      // Set language
-      await _tts!.setLanguage('en-US');
-
-      // Configure speech parameters
-      await _tts!.setSpeechRate(0.5); // Slower for clarity
-      await _tts!.setVolume(1.0); // Full volume
-      await _tts!.setPitch(0.9); // Normal pitch
-
-      // Wait for speech completion
-      await _tts!.awaitSpeakCompletion(true);
-    } catch (e) {
-      // TTS initialization failure shouldn't prevent notification service from working
-      // Log error but continue with visual-only notifications
-      Get.log('TTS initialization failed: $e', isError: true);
-      _tts = null; // Set to null to indicate TTS is not available
-    }
-  }
-
-  /// Request notification permissions
-  Future<void> _requestPermissions() async {
-    final androidPlugin = _notifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-
-    if (androidPlugin != null) {
-      final granted = await androidPlugin.requestNotificationsPermission();
-      // Don't make permission denial fatal – allow app to continue without notifications
-      if (granted != true) {
-        Get.log('Notification permission denied by user. Continuing without scheduled notifications.', isError: true);
-        return; // Early return; caller can decide whether to schedule later
-      }
-
-      // Request exact alarm permission for Android 12+ (API level 31+) on real devices only
-      final exactAlarmGranted = await androidPlugin.requestExactAlarmsPermission();
-      if (exactAlarmGranted == true) {
-        _exactAlarmsAllowed = true;
-        Get.log('[NotificationService] Exact alarm permission granted - notifications will use precise timing');
-      } else {
-        _exactAlarmsAllowed = false;
-        Get.log('Exact alarm permission denied. Will use inexact scheduling.', isError: false);
-      }
-    }
-  }
-
-  /// Create notification channel for Android
-  Future<void> _createNotificationChannel() async {
-    const androidChannel = AndroidNotificationChannel(
-      _channelId,
-      _channelName,
-      description: _channelDescription,
-      importance: Importance.defaultImportance,
-      showBadge: true,
-    );
-
-    final androidPlugin = _notifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-
-    if (androidPlugin != null) {
-      await androidPlugin.createNotificationChannel(androidChannel);
-    }
-  }
-
-  /// Speak weather announcement using TTS
-  Future<void> _speakWeatherAnnouncement(String announcement) async {
-    try {
-      if (_tts != null) {
-        await _tts!.speak(announcement);
-      }
-    } catch (e) {
-      // TTS failure shouldn't prevent the notification from showing
-      // Log error but continue with visual-only notification
-      Get.log('TTS speech failed: $e', isError: true);
-    }
   }
 
   /// Configure TTS speech rate (0.1 to 2.0)
@@ -445,23 +381,6 @@ class NotificationService extends GetxService {
     }
   }
 
-  final _weatherEmojis = <String, String>{
-    'clear': '☀️',
-    'sunny': '☀️',
-    'partly cloudy': '⛅',
-    'cloudy': '☁️',
-    'overcast': '🌥️',
-    'rain': '🌧️',
-    'showers': '🌦️',
-    'thunderstorm': '⛈️',
-    'snow': '❄️',
-    'fog': '🌫️',
-    'mist': '🌫️',
-    'windy': '💨',
-    'hail': '🌨️',
-    'drizzle': '🌦️',
-  };
-
   /// Show immediate weather notification with current weather data
   Future<void> showWeatherNotification(Position position) async {
     try {
@@ -571,6 +490,84 @@ class NotificationService extends GetxService {
   /// Cancel specific notification by id
   Future<void> cancelNotification(int id) async {
     await _notifications.cancel(id);
+  }
+
+  /// Initialize and configure TTS settings
+  Future<void> _initializeTts() async {
+    try {
+      // Initialize TTS lazily if not already done
+      _tts ??= FlutterTts();
+
+      // Set language
+      await _tts!.setLanguage('en-US');
+
+      // Configure speech parameters
+      await _tts!.setSpeechRate(0.5); // Slower for clarity
+      await _tts!.setVolume(1.0); // Full volume
+      await _tts!.setPitch(0.9); // Normal pitch
+
+      // Wait for speech completion
+      await _tts!.awaitSpeakCompletion(true);
+    } catch (e) {
+      // TTS initialization failure shouldn't prevent notification service from working
+      // Log error but continue with visual-only notifications
+      Get.log('TTS initialization failed: $e', isError: true);
+      _tts = null; // Set to null to indicate TTS is not available
+    }
+  }
+
+  /// Request notification permissions
+  Future<void> _requestPermissions() async {
+    final androidPlugin = _notifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+
+    if (androidPlugin != null) {
+      final granted = await androidPlugin.requestNotificationsPermission();
+      // Don't make permission denial fatal – allow app to continue without notifications
+      if (granted != true) {
+        Get.log('Notification permission denied by user. Continuing without scheduled notifications.', isError: true);
+        return; // Early return; caller can decide whether to schedule later
+      }
+
+      // Request exact alarm permission for Android 12+ (API level 31+) on real devices only
+      final exactAlarmGranted = await androidPlugin.requestExactAlarmsPermission();
+      if (exactAlarmGranted == true) {
+        _exactAlarmsAllowed = true;
+        Get.log('[NotificationService] Exact alarm permission granted - notifications will use precise timing');
+      } else {
+        _exactAlarmsAllowed = false;
+        Get.log('Exact alarm permission denied. Will use inexact scheduling.', isError: false);
+      }
+    }
+  }
+
+  /// Create notification channel for Android
+  Future<void> _createNotificationChannel() async {
+    const androidChannel = AndroidNotificationChannel(
+      _channelId,
+      _channelName,
+      description: _channelDescription,
+      importance: Importance.defaultImportance,
+      showBadge: true,
+    );
+
+    final androidPlugin = _notifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+
+    if (androidPlugin != null) {
+      await androidPlugin.createNotificationChannel(androidChannel);
+    }
+  }
+
+  /// Speak weather announcement using TTS
+  Future<void> _speakWeatherAnnouncement(String announcement) async {
+    try {
+      if (_tts != null) {
+        await _tts!.speak(announcement);
+      }
+    } catch (e) {
+      // TTS failure shouldn't prevent the notification from showing
+      // Log error but continue with visual-only notification
+      Get.log('TTS speech failed: $e', isError: true);
+    }
   }
 
   /// Handle notification response when user taps notification

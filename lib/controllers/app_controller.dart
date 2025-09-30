@@ -18,7 +18,6 @@ class AppController extends GetxController {
   final _isTestNotificationCountdown = false.obs;
   final _testNotificationCountdown = 0.obs;
 
-  // Getters for UI binding
   bool get isInitialized => _isInitialized.value;
   bool get hasSettings => _hasSettings.value;
   String get currentStatus => _currentStatus.value;
@@ -31,33 +30,10 @@ class AppController extends GetxController {
     _initializeServices();
   }
 
-  /// Initialize all services and check app state
-  Future<void> _initializeServices() async {
-    try {
-      // Get all required services
-      _settingsService = Get.find<SettingsService>();
-      _notificationService = Get.find<NotificationService>();
-
-      // Check if settings are configured
-      checkSettingsStatus();
-
-      _isInitialized.value = true;
-      _currentStatus.value = 'Ready';
-
-      // If settings are complete, schedule background tasks
-      if (_hasSettings.value) {
-        await _scheduleBackgroundTasks();
-      } else {
-        // Navigate to settings if not configured
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          openSettings();
-        });
-      }
-    } catch (e) {
-      // Ensure the UI is released from the loading state even if initialization fails partially
-      _currentStatus.value = 'Limited mode – init error: $e';
-      _isInitialized.value = true; // Allow app to render so user can attempt recovery in settings
-    }
+  /// Clean up resources
+  @override
+  void onClose() {
+    super.onClose();
   }
 
   /// Check if user has completed the initial setup
@@ -90,15 +66,6 @@ class AppController extends GetxController {
     }
   }
 
-  /// Schedule daily background tasks
-  Future<void> _scheduleBackgroundTasks() async {
-    _currentStatus.value = 'Scheduling daily notifications...';
-
-    await _notificationService.scheduleDailyWeatherNotification();
-
-    _currentStatus.value = 'Daily notifications scheduled';
-  }
-
   /// Schedule a test notification with specified delay
   Future<void> scheduleTestNotification(int delaySeconds) async {
     try {
@@ -122,31 +89,6 @@ class AppController extends GetxController {
       Get.log('Error in scheduleTestNotification: $e', isError: true);
       _showSnackBar('Error ❌', 'Failed to schedule test notification: $e', Colors.red);
       _isTestNotificationCountdown.value = false;
-    }
-  }
-
-  /// Start the countdown timer for test notification
-  void _startCountdownTimer() {
-    Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_testNotificationCountdown.value > 0) {
-        _testNotificationCountdown.value--;
-      } else {
-        timer.cancel();
-        _isTestNotificationCountdown.value = false;
-        _showSnackBar('Test Delivered 🔔', 'Test notification should appear with speech announcement!', Colors.green);
-
-        _triggerTestNotificationSpeech();
-      }
-    });
-  }
-
-  /// Trigger TTS for test notification (fallback if notification service timer doesn't work)
-  Future<void> _triggerTestNotificationSpeech() async {
-    try {
-      // Trigger weather TTS announcement for the test
-      await _notificationService.speakTestWeatherAnnouncement();
-    } catch (e) {
-      Get.log('Failed to trigger test notification speech: $e', isError: true);
     }
   }
 
@@ -181,6 +123,69 @@ class AppController extends GetxController {
     }
   }
 
+  /// Initialize all services and check app state
+  Future<void> _initializeServices() async {
+    try {
+      // Get all required services
+      _settingsService = Get.find<SettingsService>();
+      _notificationService = Get.find<NotificationService>();
+
+      // Check if settings are configured
+      checkSettingsStatus();
+
+      _isInitialized.value = true;
+      _currentStatus.value = 'Ready';
+
+      // If settings are complete, schedule background tasks
+      if (_hasSettings.value) {
+        await _scheduleBackgroundTasks();
+      } else {
+        // Navigate to settings if not configured
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          openSettings();
+        });
+      }
+    } catch (e) {
+      // Ensure the UI is released from the loading state even if initialization fails partially
+      _currentStatus.value = 'Limited mode – init error: $e';
+      _isInitialized.value = true; // Allow app to render so user can attempt recovery in settings
+    }
+  }
+
+  /// Schedule daily background tasks
+  Future<void> _scheduleBackgroundTasks() async {
+    _currentStatus.value = 'Scheduling daily notifications...';
+
+    await _notificationService.scheduleDailyWeatherNotification();
+
+    _currentStatus.value = 'Daily notifications scheduled';
+  }
+
+  /// Start the countdown timer for test notification
+  void _startCountdownTimer() {
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_testNotificationCountdown.value > 0) {
+        _testNotificationCountdown.value--;
+      } else {
+        timer.cancel();
+        _isTestNotificationCountdown.value = false;
+        _showSnackBar('Test Delivered 🔔', 'Test notification should appear with speech announcement!', Colors.green);
+
+        _triggerTestNotificationSpeech();
+      }
+    });
+  }
+
+  /// Trigger TTS for test notification (fallback if notification service timer doesn't work)
+  Future<void> _triggerTestNotificationSpeech() async {
+    try {
+      // Trigger weather TTS announcement for the test
+      await _notificationService.speakTestWeatherAnnouncement();
+    } catch (e) {
+      Get.log('Failed to trigger test notification speech: $e', isError: true);
+    }
+  }
+
   /// Show snackbar message
   void _showSnackBar(String title, String message, Color backgroundColor) {
     if (Get.context != null) {
@@ -193,11 +198,5 @@ class AppController extends GetxController {
         duration: const Duration(seconds: 3),
       );
     }
-  }
-
-  /// Clean up resources
-  @override
-  void onClose() {
-    super.onClose();
   }
 }
