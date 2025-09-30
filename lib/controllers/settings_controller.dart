@@ -6,6 +6,7 @@ import '../models/location_exceptions.dart';
 import '../services/location_service.dart';
 import '../services/settings_service.dart';
 import '../services/weather_service.dart';
+import '../utils/snackbar_helper.dart';
 import 'app_controller.dart';
 
 class SettingsController extends GetxController {
@@ -57,33 +58,7 @@ class SettingsController extends GetxController {
     _loadSettings();
   }
 
-  void _showSnackBar(String title, String message, Color backgroundColor) {
-    if (Get.context != null) {
-      Get.snackbar(
-        title,
-        message,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: backgroundColor.withAlpha((0.8 * 255).toInt()),
-        colorText: Colors.white,
-        duration: const Duration(seconds: AppConstants.snackbarDuration),
-      );
-    }
-  }
 
-  /// Show success snackbar with green background
-  void _showSuccessSnackbar(String title, String message) {
-    _showSnackBar(title, message, Colors.green);
-  }
-
-  /// Show error snackbar with red background
-  void _showErrorSnackbar(String title, String message) {
-    _showSnackBar(title, message, Colors.red);
-  }
-
-  /// Show info snackbar with blue background
-  void _showInfoSnackbar(String title, String message) {
-    _showSnackBar(title, message, Colors.blue);
-  }
 
   /// Load existing settings from storage
   void _loadSettings() {
@@ -108,14 +83,11 @@ class SettingsController extends GetxController {
       await _settingsService.setAnnouncementTime(time.hour, time.minute);
       _selectedTime.value = time;
 
-      // Show success message
-      _showSuccessSnackbar('Time Updated ⏰', 'Announcement time set to ${time.format(Get.context!)}');
-
       // Check if all settings are now complete
       _checkAndNavigateIfComplete();
     } catch (e) {
       // Show error message
-      _showErrorSnackbar('Error ❌', 'Failed to update announcement time');
+      SnackBarHelper.showError('Error ❌', 'Failed to update announcement time');
     } finally {
       _isLoading.value = false;
     }
@@ -129,9 +101,8 @@ class SettingsController extends GetxController {
       try {
         await _settingsService.setLocation('');
         _location.value = '';
-        _showInfoSnackbar('Location Cleared 🔄', 'You can now set a new location');
       } catch (e) {
-        _showErrorSnackbar('Error ❌', 'Failed to clear location');
+        SnackBarHelper.showError('Error ❌', 'Failed to clear location');
       } finally {
         _isLoading.value = false;
       }
@@ -145,7 +116,7 @@ class SettingsController extends GetxController {
         final isValid = await _weatherService!.validateLocation(newLocation.trim());
 
         if (!isValid) {
-          _showErrorSnackbar(
+          SnackBarHelper.showError(
             'Invalid Location ❌',
             'Location "$newLocation" not found. Please check spelling or try a different format (e.g., "City, Country")',
           );
@@ -161,7 +132,7 @@ class SettingsController extends GetxController {
       _checkAndNavigateIfComplete();
     } catch (e) {
       // Show error message for network/API issues
-      _showErrorSnackbar('Validation Error ❌', 'Unable to validate location. Please check your internet connection and try again.');
+      SnackBarHelper.showError('Validation Error ❌', 'Unable to validate location. Please check your internet connection and try again.');
     } finally {
       _isLoading.value = false;
     }
@@ -218,10 +189,8 @@ class SettingsController extends GetxController {
       await _settingsService.clearSettings();
       _selectedTime.value = null;
       _location.value = '';
-
-      _showInfoSnackbar('Settings Reset 🔄', 'All settings have been cleared');
     } catch (e) {
-      _showErrorSnackbar('Error ❌', 'Failed to reset settings');
+      SnackBarHelper.showError('Error ❌', 'Failed to reset settings');
     } finally {
       _isLoading.value = false;
     }
@@ -263,7 +232,7 @@ class SettingsController extends GetxController {
       }
 
       _locationDetectionError.value = errorMessage;
-      _showErrorSnackbar('Location Detection Failed ❌', errorMessage);
+      SnackBarHelper.showError('Location Detection Failed ❌', errorMessage);
     } finally {
       _isDetectingLocation.value = false;
     }
@@ -284,7 +253,7 @@ class SettingsController extends GetxController {
   void declineLocationSuggestion() {
     _detectedLocationSuggestion.value = null;
     _locationDetectionError.value = null;
-    _showInfoSnackbar('Suggestion Declined 👎', 'You can enter your location manually');
+    SnackBarHelper.showInfo('Suggestion Declined 👎', 'You can enter your location manually');
   }
 
   /// Clear any location detection state

@@ -1,3 +1,9 @@
+## 0.15.2
+  
+### Refactor
+  
+- Replace custom snackbar methods with SnackbarHelper utility in AppController and SettingsController
+
 ## 0.15.1
   
 ### Refactor

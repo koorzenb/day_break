@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 
 import '../services/notification_service.dart';
 import '../services/settings_service.dart';
+import '../utils/snackbar_helper.dart';
 
 class AppController extends GetxController {
   // Service dependencies
@@ -52,7 +53,7 @@ class AppController extends GetxController {
     // If settings were completed, refresh the status and show snackbar
     if (result == true) {
       await refreshSettingsStatus();
-      _showSnackBar('Setup Complete ✅', 'Your daily weather announcements are now configured!', Colors.green);
+      SnackBarHelper.showSuccess('Setup Complete ✅', 'Your daily weather announcements are now configured!');
     }
   }
 
@@ -70,7 +71,7 @@ class AppController extends GetxController {
   Future<void> scheduleTestNotification(int delaySeconds) async {
     try {
       if (_isTestNotificationCountdown.value) {
-        _showSnackBar('Already Scheduled', 'A test notification is already counting down.', Colors.orange);
+        SnackBarHelper.showWarning('Already Scheduled', 'A test notification is already counting down.');
         return;
       }
 
@@ -81,13 +82,12 @@ class AppController extends GetxController {
       // Schedule the test notification
       await _notificationService.scheduleTestNotification(delaySeconds);
 
-      _showSnackBar('Test Scheduled ⏰', 'Test notification scheduled for $delaySeconds seconds with speech!', Colors.blue);
 
       // Start countdown timer
       _startCountdownTimer();
     } catch (e) {
       Get.log('Error in scheduleTestNotification: $e', isError: true);
-      _showSnackBar('Error ❌', 'Failed to schedule test notification: $e', Colors.red);
+      SnackBarHelper.showError('Error ❌', 'Failed to schedule test notification: $e');
       _isTestNotificationCountdown.value = false;
     }
   }
@@ -95,7 +95,7 @@ class AppController extends GetxController {
   /// Manual trigger for testing - fetch current weather and show notification
   Future<void> triggerWeatherUpdate() async {
     if (!_hasSettings.value) {
-      _showSnackBar('Settings Required', 'Please configure your location and time first.', Colors.orange);
+      SnackBarHelper.showWarning('Settings Required', 'Please configure your location and time first.');
       return;
     }
 
@@ -105,7 +105,7 @@ class AppController extends GetxController {
       // Use the location saved in settings instead of fetching GPS position
       final savedLocation = _settingsService.location;
       if (savedLocation == null || savedLocation.isEmpty) {
-        _showSnackBar('Error', 'No location configured in settings.', Colors.red);
+        SnackBarHelper.showError('Error', 'No location configured in settings.');
         return;
       }
 
@@ -115,11 +115,10 @@ class AppController extends GetxController {
       await _notificationService.showWeatherNotificationByLocation(savedLocation);
 
       _currentStatus.value = 'Weather notification sent';
-      _showSnackBar('Success', 'Weather notification sent!', Colors.green);
     } catch (e) {
       _currentStatus.value = 'Failed to fetch weather';
       print(e);
-      _showSnackBar('Error', 'Failed to fetch weather: $e', Colors.red);
+      SnackBarHelper.showError('Error', 'Failed to fetch weather: $e');
     }
   }
 
@@ -167,8 +166,6 @@ class AppController extends GetxController {
       } else {
         timer.cancel();
         _isTestNotificationCountdown.value = false;
-        _showSnackBar('Test Delivered 🔔', 'Test notification should appear with speech announcement!', Colors.green);
-
         _triggerTestNotificationSpeech();
       }
     });
@@ -184,17 +181,5 @@ class AppController extends GetxController {
     }
   }
 
-  /// Show snackbar message
-  void _showSnackBar(String title, String message, Color backgroundColor) {
-    if (Get.context != null) {
-      Get.snackbar(
-        title,
-        message,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: backgroundColor.withAlpha((0.8 * 255).toInt()),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
-    }
-  }
+
 }
