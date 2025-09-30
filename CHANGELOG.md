@@ -1,3 +1,9 @@
+## 0.15.3
+  
+### Refactor
+  
+- Matched scheduleDailyWeatherNotification() to a working scheduleTestNotification()
+
 ## 0.15.2
   
 ### Refactor

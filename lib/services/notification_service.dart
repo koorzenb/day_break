@@ -219,8 +219,6 @@ class NotificationService extends GetxService {
         throw const NotificationSchedulingException('No location set in settings. Please configure your location first.');
       }
 
-      Get.log('[NotificationService] Scheduling test notification with weather data for: $location', isError: false);
-
       // Update the static delay with the passed parameter
       testNotificationDelay = Duration(seconds: delaySeconds);
 
@@ -303,6 +301,12 @@ class NotificationService extends GetxService {
         throw const NotificationSchedulingException('Notifications are disabled. Please enable them in device settings.');
       }
 
+      // Get location from settings for weather data
+      final location = _settingsService.location;
+      if (location == null || location.isEmpty) {
+        throw const NotificationSchedulingException('No location set in settings. Please configure your location first.');
+      }
+
       // Get announcement time from settings
       final hour = _settingsService.announcementHour;
       final minute = _settingsService.announcementMinute;
@@ -314,33 +318,21 @@ class NotificationService extends GetxService {
         throw const NotificationSchedulingException('Announcement time not set in settings');
       }
 
-      // Get location from settings for weather data
-      final location = _settingsService.location;
-      if (location == null || location.isEmpty) {
-        throw const NotificationSchedulingException('No location set in settings. Please configure your location first.');
-      }
-
-      Get.log('[NotificationService] Scheduling daily weather notification for: $location', isError: false);
-
       // Set timezone for Halifax (as per your configuration)
       tz.initializeTimeZones();
       tz.setLocalLocation(tz.getLocation('America/Halifax'));
 
       // Schedule for next occurrence of the time
       final now = tz.TZDateTime.now(tz.local);
-      Get.log('[NotificationService] Current Halifax time: $now', isError: false);
-
       var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-
-      Get.log('[NotificationService] Initial scheduledDate: $scheduledDate', isError: false);
+      var notificationDelay = scheduledDate.difference(now);
 
       // If the scheduled time has already passed today, schedule for tomorrow
       if (scheduledDate.isBefore(now)) {
         scheduledDate = scheduledDate.add(const Duration(days: 1));
+        notificationDelay = scheduledDate.difference(now);
         Get.log('[NotificationService] Scheduled time already passed, rescheduling for tomorrow: $scheduledDate', isError: false);
       }
-
-      Get.log('[NotificationService] Scheduling notification for: $scheduledDate', isError: false);
 
       // Pre-fetch weather data to include in the scheduled notification
       String title = 'Good Morning! ☀️';
@@ -381,6 +373,11 @@ class NotificationService extends GetxService {
         payload: 'daily_weather_with_speech:$speechText',
         androidScheduleMode: _exactAlarmsAllowed ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
       );
+
+      Timer(notificationDelay, () {
+        _speakWeatherAnnouncement(speechText);
+        Get.log('[NotificationService] Automatic TTS triggered for test notification', isError: false);
+      });
 
       Get.log('[NotificationService] zonedSchedule called successfully.', isError: false);
       Get.log(
