@@ -89,6 +89,26 @@
 - Use async/await for asynchronous operations.
 - Coach me in SOLID principles, GoF design patterns, and clean architecture.
 
+### Class Member Organization
+
+**Organize class members in this order (top to bottom):**
+
+1. **Static constants and variables**
+2. **Instance variables/fields** (private fields first, then public)
+3. **Constructors** (main constructor first, then named constructors)
+4. **Getters and Setters** (getters first, then setters)
+5. **Public methods** (lifecycle methods first, then alphabetical or logical grouping)
+6. **Private methods** (helper methods, utilities)
+
+**Additional Guidelines:**
+
+- Group related methods with comment sections
+- Use `///` documentation comments for public APIs
+- Separate logical sections with blank lines
+- Keep private methods (underscore prefix) at the bottom
+- Within method groups, prioritize lifecycle methods (`initialize()`, `dispose()`) first
+- Use alphabetical ordering within groups when no logical order exists
+
 ### Adding New Features
 
 1. Run `flutter test` for clean state

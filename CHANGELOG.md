@@ -1,3 +1,9 @@
+## 0.14.8
+  
+### Docs
+  
+- Added guidelines for organizing class members in code
+
 ## 0.14.7
   
 ### Test
