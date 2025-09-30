@@ -82,19 +82,6 @@ class MainScreen extends StatelessWidget {
           const Text('Quick Actions', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
           const SizedBox(height: 16),
 
-          // Test Weather Button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: controller.triggerWeatherUpdate,
-              icon: const Icon(Icons.cloud),
-              label: const Text('Test Weather Notification'),
-              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
           // Settings Button
           SizedBox(
             width: double.infinity,
@@ -140,27 +127,18 @@ class MainScreen extends StatelessWidget {
             ),
           ),
 
-          const Spacer(),
-          SizedBox(height: 16),
-
-          // Info Footer
-          Center(
-            child: Column(
-              children: [
-                Text(
-                  'Daily notifications will be sent at your configured time.',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Make sure to allow notifications for this app.',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+          // Info Footer - only show when notifications are not allowed
+          if (!controller.isNotificationsAllowed) ...[
+            const Spacer(),
+            SizedBox(height: 16),
+            Center(
+              child: Text(
+                'Make sure to allow notifications for this app.',
+                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                textAlign: TextAlign.center,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

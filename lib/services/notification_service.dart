@@ -21,6 +21,7 @@ class NotificationService extends GetxService {
   final WeatherService _weatherService;
   final SettingsService _settingsService;
   bool _exactAlarmsAllowed = false;
+  bool _notificationAllowed = false;
   final _weatherEmojis = <String, String>{
     'clear': '☀️',
     'sunny': '☀️',
@@ -43,6 +44,9 @@ class NotificationService extends GetxService {
       _tts = tts, // Don't initialize here, do it lazily
       _weatherService = weatherService ?? Get.find<WeatherService>(),
       _settingsService = settingsService ?? Get.find<SettingsService>();
+
+  /// Get whether both notification permissions and exact alarms are allowed
+  bool get isNotificationsAllowed => _exactAlarmsAllowed && _notificationAllowed;
 
   /// Initialize the notification service
   Future<void> initialize() async {
@@ -202,70 +206,45 @@ class NotificationService extends GetxService {
   /// Schedule a notification for testing purposes with real weather data
   Future<void> scheduleTestNotification(int delaySeconds) async {
     try {
-      Get.log('[NotificationService] Starting test notification scheduling', isError: false);
-
-      // Cancel any existing notifications
       await cancelNotification(9999);
+      String? location = await _validateNotificationAndLocation();
 
-      // Verify notifications are enabled
-      final notificationsEnabled = await areNotificationsEnabled();
-      if (!notificationsEnabled) {
-        throw const NotificationSchedulingException('Notifications are disabled. Please enable them in device settings.');
-      }
-
-      // Get location from settings for weather data
-      final location = _settingsService.location;
-      if (location == null || location.isEmpty) {
-        throw const NotificationSchedulingException('No location set in settings. Please configure your location first.');
-      }
-
-      // Update the static delay with the passed parameter
-      testNotificationDelay = Duration(seconds: delaySeconds);
-
-      // Set timezone for Halifax (as per your configuration)
       tz.initializeTimeZones();
       tz.setLocalLocation(tz.getLocation('America/Halifax'));
+
+      testNotificationDelay = Duration(seconds: delaySeconds);
 
       final now = tz.TZDateTime.now(tz.local);
       final scheduledDate = now.add(testNotificationDelay);
 
-      // Pre-fetch weather data to include in the scheduled notification
-      String title = 'Test Weather Notification ⏰';
-      String body = 'Fetching weather data for $location...';
       String speechText = 'This is a test notification. Fetching weather data.';
-
       try {
         final weather = await _weatherService.getWeatherByLocation(location);
-        final emoji = _weatherEmojis[weather.description.toLowerCase()] ?? '🌤️';
-        title = 'Test Weather $emoji ${weather.tempMin.round()}/${weather.tempMax.round()}°C';
-        body = weather.formattedAnnouncement;
         speechText = weather.formattedAnnouncement;
-
-        Get.log('[NotificationService] Weather data fetched successfully for test notification', isError: false);
       } catch (e) {
-        Get.log('[NotificationService] Failed to fetch weather for test, using fallback: $e', isError: false);
-        body =
-            'Test notification scheduled for ${scheduledDate.hour.toString().padLeft(2, '0')}:${scheduledDate.minute.toString().padLeft(2, '0')}:${scheduledDate.second.toString().padLeft(2, '0')} - Weather data unavailable';
         speechText = 'This is a test notification. Weather data is currently unavailable.';
       }
 
-      await _notifications.zonedSchedule(
-        9999,
-        title,
-        body,
-        scheduledDate,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'weather_announcements',
-            'Weather Announcements',
-            channelDescription: 'Daily weather forecast notifications',
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-          ),
+      // Schedule the test notification with weather data
+      await _scheduleWeatherNotification(
+        notificationId: 9999,
+        scheduledDate: scheduledDate,
+        location: location,
+        defaultTitle: 'Test Weather Notification ⏰',
+        defaultBody: 'Fetching weather data for $location...',
+        fallbackBodyTemplate:
+            'Test notification scheduled for ${scheduledDate.hour.toString().padLeft(2, '0')}:${scheduledDate.minute.toString().padLeft(2, '0')}:${scheduledDate.second.toString().padLeft(2, '0')} - Weather data unavailable',
+        logContext: 'test notification',
+        speechText: speechText,
+        payloadPrefix: 'test_weather_with_speech',
+        androidDetails: const AndroidNotificationDetails(
+          'weather_announcements',
+          'Weather Announcements',
+          channelDescription: 'Daily weather forecast notifications',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
         ),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        payload: 'test_weather_with_speech:$speechText',
       );
 
       // Provide immediate TTS demonstration
@@ -290,42 +269,24 @@ class NotificationService extends GetxService {
   /// Schedule daily weather notification
   Future<void> scheduleDailyWeatherNotification() async {
     try {
-      Get.log('[NotificationService] Starting daily weather notification scheduling', isError: false);
-
-      // Cancel any existing notifications
       await cancelAllNotifications();
+      String? location = await _validateNotificationAndLocation();
 
-      // Verify notifications are enabled
-      final notificationsEnabled = await areNotificationsEnabled();
-      if (!notificationsEnabled) {
-        throw const NotificationSchedulingException('Notifications are disabled. Please enable them in device settings.');
-      }
-
-      // Get location from settings for weather data
-      final location = _settingsService.location;
-      if (location == null || location.isEmpty) {
-        throw const NotificationSchedulingException('No location set in settings. Please configure your location first.');
-      }
-
-      // Get announcement time from settings
       final hour = _settingsService.announcementHour;
       final minute = _settingsService.announcementMinute;
-
-      Get.log('[NotificationService] Announcement time from settings: hour=$hour, minute=$minute', isError: false);
 
       if (hour == null || minute == null) {
         Get.log('[NotificationService] Announcement time not set in settings.', isError: true);
         throw const NotificationSchedulingException('Announcement time not set in settings');
       }
 
-      // Set timezone for Halifax (as per your configuration)
       tz.initializeTimeZones();
       tz.setLocalLocation(tz.getLocation('America/Halifax'));
 
       // Schedule for next occurrence of the time
       final now = tz.TZDateTime.now(tz.local);
       var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-      var notificationDelay = scheduledDate.difference(now);
+      Duration notificationDelay = scheduledDate.difference(now);
 
       // If the scheduled time has already passed today, schedule for tomorrow
       if (scheduledDate.isBefore(now)) {
@@ -334,47 +295,44 @@ class NotificationService extends GetxService {
         Get.log('[NotificationService] Scheduled time already passed, rescheduling for tomorrow: $scheduledDate', isError: false);
       }
 
-      // Pre-fetch weather data to include in the scheduled notification
-      String title = 'Good Morning! ☀️';
-      String body = 'Fetching your daily weather update for $location...';
+      // Prepare speech text for daily notification
       String speechText = 'Good morning! Fetching your daily weather update.';
-
       try {
         final weather = await _weatherService.getWeatherByLocation(location);
-        final emoji = _weatherEmojis[weather.description.toLowerCase()] ?? '🌤️';
-        title = 'Good Morning! $emoji ${weather.tempMin.round()}/${weather.tempMax.round()}°C';
-        body = weather.formattedAnnouncement;
         speechText = 'Good morning! ${weather.formattedAnnouncement}';
-
-        Get.log('[NotificationService] Weather data fetched successfully for daily notification', isError: false);
       } catch (e) {
-        Get.log('[NotificationService] Failed to fetch weather for daily notification, using fallback: $e', isError: false);
-        body = 'Daily weather update for $location - Weather data will be available when you open the notification.';
         speechText = 'Good morning! Daily weather update is ready. Weather data will be announced when you interact with the notification.';
       }
 
-      await _notifications.zonedSchedule(
-        0, // notification id
-        title,
-        body,
-        scheduledDate,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            _channelId,
-            _channelName,
-            channelDescription: _channelDescription,
-            importance: Importance.defaultImportance,
-            priority: Priority.defaultPriority,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
+      await _scheduleWeatherNotification(
+        notificationId: 0,
+        scheduledDate: scheduledDate,
+        location: location,
+        defaultTitle: 'Good Morning! ☀️',
+        defaultBody: 'Fetching your daily weather update for $location...',
+        fallbackBodyTemplate: 'Daily weather update for \$location - Weather data will be available when you open the notification.',
+        logContext: 'daily notification',
+        speechText: speechText,
+        payloadPrefix: 'daily_weather_with_speech',
+        androidDetails: AndroidNotificationDetails(
+          _channelId,
+          _channelName,
+          channelDescription: _channelDescription,
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+          icon: '@mipmap/ic_launcher',
         ),
-        matchDateTimeComponents: DateTimeComponents.time, // Repeat daily
-        payload: 'daily_weather_with_speech:$speechText',
-        androidScheduleMode: _exactAlarmsAllowed ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
+        scheduleMode: _exactAlarmsAllowed ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
       );
 
       Timer(notificationDelay, () {
+        _speakWeatherAnnouncement("Good morning, Bahrint. I'm prepping your weather update while you ${_getFunnyClip()} ");
+      });
+
+      final extendedDelay = notificationDelay + const Duration(seconds: 10);
+
+      Timer(extendedDelay, () {
         _speakWeatherAnnouncement(speechText);
         Get.log('[NotificationService] Automatic TTS triggered for test notification', isError: false);
       });
@@ -390,6 +348,79 @@ class NotificationService extends GetxService {
       }
       throw NotificationSchedulingException('Failed to schedule notification: $e');
     }
+  }
+
+  Future<String> _validateNotificationAndLocation() async {
+    // Verify notifications are enabled
+    final notificationsEnabled = await areNotificationsEnabled();
+    if (!notificationsEnabled) {
+      throw const NotificationSchedulingException('Notifications are disabled. Please enable them in device settings.');
+    }
+
+    // Get location from settings for weather data
+    final location = _settingsService.location;
+    if (location == null || location.isEmpty) {
+      throw const NotificationSchedulingException('No location set in settings. Please configure your location first.');
+    }
+    return location;
+  }
+
+  /// Fetch weather data, prepare notification content, and schedule the notification
+  Future<void> _scheduleWeatherNotification({
+    required int notificationId,
+    required tz.TZDateTime scheduledDate,
+    required String location,
+    required String defaultTitle,
+    required String defaultBody,
+    required String fallbackBodyTemplate,
+    required String logContext,
+    required String speechText,
+    required String payloadPrefix,
+    required AndroidNotificationDetails androidDetails,
+    AndroidScheduleMode? scheduleMode,
+    DateTimeComponents? matchDateTimeComponents,
+  }) async {
+    String title = defaultTitle;
+    String body = defaultBody;
+
+    try {
+      final weather = await _weatherService.getWeatherByLocation(location);
+      final emoji = _weatherEmojis[weather.description.toLowerCase()] ?? '🌤️';
+      title = '${defaultTitle.replaceFirst('☀️', emoji).replaceFirst('⏰', emoji)} ${weather.tempMin.round()}/${weather.tempMax.round()}°C';
+      body = weather.formattedAnnouncement;
+
+      Get.log('[NotificationService] Weather data fetched successfully for $logContext', isError: false);
+    } catch (e) {
+      Get.log('[NotificationService] Failed to fetch weather for $logContext, using fallback: $e', isError: false);
+      body = fallbackBodyTemplate.replaceAll('\$location', location);
+    }
+
+    // Schedule the notification
+    await _notifications.zonedSchedule(
+      notificationId,
+      title,
+      body,
+      scheduledDate,
+      NotificationDetails(android: androidDetails, iOS: const DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true)),
+      androidScheduleMode: scheduleMode ?? AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: matchDateTimeComponents,
+      payload: '$payloadPrefix:$speechText',
+    );
+  }
+
+  String _getFunnyClip() {
+    final clips = [
+      'enjoy your coffee',
+      'pump some iron',
+      'seize the day',
+      'embrace the sunshine',
+      'are serving your kids. Did I say "serving"? I meant to say "slaving over breakfast"',
+      'take on the world',
+      'rise and shine',
+      'conquer the dishes',
+    ];
+    clips.shuffle();
+    return clips.first;
   }
 
   /// Show immediate weather notification with current weather data
@@ -533,8 +564,9 @@ class NotificationService extends GetxService {
 
     if (androidPlugin != null) {
       final granted = await androidPlugin.requestNotificationsPermission();
+      _notificationAllowed = granted ?? false;
       // Don't make permission denial fatal – allow app to continue without notifications
-      if (granted != true) {
+      if (!_notificationAllowed) {
         Get.log('Notification permission denied by user. Continuing without scheduled notifications.', isError: true);
         return; // Early return; caller can decide whether to schedule later
       }

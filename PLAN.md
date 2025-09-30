@@ -203,6 +203,12 @@ This document outlines the development plan for the Day Break application, based
 
 These items enhance resilience, UX, and maintainability beyond the MVP scope.
 
+- [ ] Improve Status Details
+  - Enhance the status display to show when the next scheduled announcement will run (e.g., "Next announcement: Tomorrow at 7:30 AM" or "Next announcement: In 14 hours 23 minutes").
+  - Include countdown timer or relative time display for better user awareness.
+  - Show additional context like last successful announcement time and weather data freshness.
+  - Provide clear indication if scheduling failed or notifications are disabled.
+  
 - [ ] Snackbar Prompt on Permission Denial
   - Show a snackbar when notification permission is denied with an action button (e.g., "Enable") that deep-links to OS/app notification settings.
   - Add retry logic for scheduling once permission is granted.
@@ -276,8 +282,4 @@ These items enhance resilience, UX, and maintainability beyond the MVP scope.
 - [ ] Explore Background Fetch Expansion
   - Investigate using isolates / background fetch plugin for pre-fetching weather before announcement time.
 
-- [ ] Improve Status Details
-  - Enhance the status display to show when the next scheduled announcement will run (e.g., "Next announcement: Tomorrow at 7:30 AM" or "Next announcement: In 14 hours 23 minutes").
-  - Include countdown timer or relative time display for better user awareness.
-  - Show additional context like last successful announcement time and weather data freshness.
-  - Provide clear indication if scheduling failed or notifications are disabled.
+

@@ -24,6 +24,7 @@ class AppController extends GetxController {
   String get currentStatus => _currentStatus.value;
   bool get isTestNotificationCountdown => _isTestNotificationCountdown.value;
   int get testNotificationCountdown => _testNotificationCountdown.value;
+  bool get isNotificationsAllowed => _notificationService.isNotificationsAllowed;
 
   @override
   void onInit() {
@@ -82,43 +83,12 @@ class AppController extends GetxController {
       // Schedule the test notification
       await _notificationService.scheduleTestNotification(delaySeconds);
 
-
       // Start countdown timer
       _startCountdownTimer();
     } catch (e) {
       Get.log('Error in scheduleTestNotification: $e', isError: true);
       SnackBarHelper.showError('Error ❌', 'Failed to schedule test notification: $e');
       _isTestNotificationCountdown.value = false;
-    }
-  }
-
-  /// Manual trigger for testing - fetch current weather and show notification
-  Future<void> triggerWeatherUpdate() async {
-    if (!_hasSettings.value) {
-      SnackBarHelper.showWarning('Settings Required', 'Please configure your location and time first.');
-      return;
-    }
-
-    try {
-      _currentStatus.value = 'Fetching weather...';
-
-      // Use the location saved in settings instead of fetching GPS position
-      final savedLocation = _settingsService.location;
-      if (savedLocation == null || savedLocation.isEmpty) {
-        SnackBarHelper.showError('Error', 'No location configured in settings.');
-        return;
-      }
-
-      _currentStatus.value = 'Sending weather notification...';
-
-      // NotificationService will fetch weather using the saved location
-      await _notificationService.showWeatherNotificationByLocation(savedLocation);
-
-      _currentStatus.value = 'Weather notification sent';
-    } catch (e) {
-      _currentStatus.value = 'Failed to fetch weather';
-      print(e);
-      SnackBarHelper.showError('Error', 'Failed to fetch weather: $e');
     }
   }
 
@@ -155,7 +125,8 @@ class AppController extends GetxController {
   Future<void> _scheduleDailyNotification() async {
     _currentStatus.value = 'Scheduling daily notifications...';
     await _notificationService.scheduleDailyWeatherNotification();
-    _currentStatus.value = 'Daily notifications scheduled for ${_settingsService.announcementHour}:${_settingsService.announcementMinute?.toString().padLeft(2, '0')}';
+    _currentStatus.value =
+        'Daily notifications scheduled for ${_settingsService.announcementHour}:${_settingsService.announcementMinute?.toString().padLeft(2, '0')}';
   }
 
   /// Start the countdown timer for test notification
@@ -180,6 +151,4 @@ class AppController extends GetxController {
       Get.log('Failed to trigger test notification speech: $e', isError: true);
     }
   }
-
-
 }
