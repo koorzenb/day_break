@@ -7,7 +7,9 @@ setlocal EnableDelayedExpansion
 
 @REM fast Build
 if "%1"=="--f" (
+    @REM Killing any dart.exe processes that interfere with flutter clean
     echo Fast build as per --f argument. Skipping tests...
+    call taskkill /F /IM dart.exe /T
     goto :skipTests
 )
 
@@ -15,15 +17,10 @@ echo Running all tests...
 call flutter test
 if errorlevel 1 exit /b 1
 
-
 :skipTests
-@REM Killing any dart.exe processes that interfere with flutter clean
-call taskkill /F /IM dart.exe /T
 call flutter clean
-@REM call flutter pub get
 call set-build-env.bat
 
-REM Ensure required API key is present for compile-time define
 if "%OPENWEATHER_API_KEY%"=="" (
     echo [ERROR] OPENWEATHER_API_KEY environment variable is not set.
     echo         Set it in your shell before running this script, e.g.
@@ -34,7 +31,7 @@ if "%OPENWEATHER_API_KEY%"=="" (
 REM Prepare dart-define flags (future: append more here)
 set DART_DEFINES=--dart-define=OPENWEATHER_API_KEY=%OPENWEATHER_API_KEY%
 
-@REM REM If define_env is not configured, configure it
+@REM @REM If define_env is not configured, configure it
 @REM where /q define_env
 @REM if errorlevel 1 (
 @REM     echo define_env could not be found
@@ -44,11 +41,8 @@ set DART_DEFINES=--dart-define=OPENWEATHER_API_KEY=%OPENWEATHER_API_KEY%
 REM Create folder for build if it doesn't exist
 set OUTPUT_FOLDER=release\%BUILD_VERSION%
 set OUTPUT_FILE=%PROJ_NAME%-%BUILD_VERSION%.apk
-
-REM Warn user if folder already exists
 echo Output file = .\%OUTPUT_FOLDER%\%OUTPUT_FILE%
 
-@REM if "1"=="1" (
 if exist %OUTPUT_FOLDER%\%OUTPUT_FILE% (
     if "%1"=="--f" (
         echo .
