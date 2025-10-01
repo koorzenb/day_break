@@ -45,11 +45,31 @@ void main() {
       test('should return WeatherSummary when API call succeeds', () async {
         // Arrange
         const mockResponse = {
-          'weather': [
-            {'description': 'clear sky'},
+          'cod': '200',
+          'message': 0,
+          'cnt': 2,
+          'list': [
+            {
+              'dt': 1759330800,
+              'main': {'temp': 22.5, 'feels_like': 24.0, 'temp_min': 18.0, 'temp_max': 25.0, 'humidity': 65},
+              'weather': [
+                {'description': 'clear sky'},
+              ],
+            },
+            {
+              'dt': 1759341600,
+              'main': {'temp': 20.0, 'feels_like': 22.0, 'temp_min': 16.0, 'temp_max': 24.0, 'humidity': 70},
+              'weather': [
+                {'description': 'few clouds'},
+              ],
+            },
           ],
-          'main': {'temp': 22.5, 'feels_like': 24.0, 'temp_min': 18.0, 'temp_max': 25.0, 'humidity': 65},
-          'name': 'San Francisco',
+          'city': {
+            'id': 5391959,
+            'name': 'San Francisco',
+            'coord': {'lat': 37.7749, 'lon': -122.4194},
+            'country': 'US',
+          },
         };
 
         when(mockHttpClient.get(any)).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
@@ -58,23 +78,36 @@ void main() {
         final result = await weatherService.getWeather(testPosition);
 
         // Assert
-        expect(result.description, equals('clear sky'), reason: 'Weather description should match API response');
-        expect(result.temperature, equals(22.5), reason: 'Temperature should match API response');
-        expect(result.feelsLike, equals(24.0), reason: 'Feels like temperature should match API response');
-        expect(result.tempMin, equals(18.0), reason: 'Temperature minimum should match API response');
-        expect(result.tempMax, equals(25.0), reason: 'Temperature maximum should match API response');
-        expect(result.humidity, equals(65), reason: 'Humidity should match API response');
-        expect(result.location, equals('San Francisco'), reason: 'Location should match API response');
+        expect(result.description, equals('clear sky'), reason: 'Weather description should match first forecast');
+        expect(result.temperature, equals(22.5), reason: 'Temperature should match first forecast');
+        expect(result.feelsLike, equals(24.0), reason: 'Feels like temperature should match first forecast');
+        expect(result.tempMin, equals(16.0), reason: 'Temperature minimum should be calculated from daily forecasts');
+        expect(result.tempMax, equals(25.0), reason: 'Temperature maximum should be calculated from daily forecasts');
+        expect(result.humidity, equals(65), reason: 'Humidity should match first forecast');
+        expect(result.location, equals('San Francisco'), reason: 'Location should match city name');
       });
 
       test('should include lat/lon in API request URL', () async {
         // Arrange
         const mockResponse = {
-          'weather': [
-            {'description': 'clear sky'},
+          'cod': '200',
+          'message': 0,
+          'cnt': 1,
+          'list': [
+            {
+              'dt': 1759330800,
+              'main': {'temp': 22.5, 'feels_like': 24.0, 'temp_min': 18.0, 'temp_max': 25.0, 'humidity': 65},
+              'weather': [
+                {'description': 'clear sky'},
+              ],
+            },
           ],
-          'main': {'temp': 22.5, 'feels_like': 24.0, 'temp_min': 18.0, 'temp_max': 25.0, 'humidity': 65},
-          'name': 'Test City',
+          'city': {
+            'id': 12345,
+            'name': 'Test City',
+            'coord': {'lat': 37.7749, 'lon': -122.4194},
+            'country': 'US',
+          },
         };
 
         when(mockHttpClient.get(any)).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));

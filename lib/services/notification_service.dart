@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -306,7 +305,7 @@ class NotificationService extends GetxService {
         final weather = await _weatherService.getWeatherByLocation(location);
         speechText = weather.formattedAnnouncement;
       } catch (e) {
-        speechText = 'Good morning! Daily weather update is ready. Weather data will be announced when you interact with the notification.';
+        speechText = 'Good morning! I could not get the weather data right now.';
       }
 
       await _scheduleWeatherNotification(
@@ -402,6 +401,7 @@ class NotificationService extends GetxService {
       Get.log('[NotificationService] Weather data fetched successfully for $logContext', isError: false);
     } catch (e) {
       Get.log('[NotificationService] Failed to fetch weather for $logContext, using fallback: $e', isError: false);
+      speechText = 'Good morning! I could not get the weather data right now.';
       body = fallbackBodyTemplate.replaceAll('\$location', location);
     }
 
@@ -431,117 +431,6 @@ class NotificationService extends GetxService {
     ];
     clips.shuffle();
     return clips.first;
-  }
-
-  /// Show immediate weather notification with current weather data
-  Future<void> showWeatherNotification(Position position) async {
-    try {
-      String title;
-      String body;
-
-      try {
-        final weather = await _weatherService.getWeather(position);
-        final emoji = _weatherEmojis[weather.description.toLowerCase()] ?? '🌤️';
-        title = 'Weather Update $emoji ${weather.tempMin.round()}/${weather.tempMax.round()}°C';
-        body = weather.formattedAnnouncement;
-
-        // Speak the weather announcement
-        await _speakWeatherAnnouncement(weather.formattedAnnouncement);
-      } catch (e) {
-        // Show error notification if weather API fails
-        title = 'Weather Service Unavailable 📵';
-        body = 'Unable to fetch current weather data. Please check your internet connection and try again later.';
-
-        // Speak the error message
-        await _speakWeatherAnnouncement(body);
-      }
-
-      await _notifications.show(
-        1, // notification id
-        title,
-        body,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            _channelId,
-            _channelName,
-            channelDescription: _channelDescription,
-            importance: Importance.defaultImportance,
-            priority: Priority.defaultPriority,
-            icon: '@mipmap/ic_launcher',
-            visibility: NotificationVisibility.public,
-            category: AndroidNotificationCategory.alarm,
-            fullScreenIntent: true,
-            showWhen: true,
-            when: null, // Will be set to current time
-          ),
-          iOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
-        ),
-        payload: 'weather_update',
-      );
-    } catch (e) {
-      if (e is NotificationException) {
-        // TODO: check codebase if all rethrow are handled properly
-        rethrow;
-      }
-      throw NotificationSchedulingException('Failed to show weather notification: $e');
-    }
-  }
-
-  /// Show immediate weather notification using location name
-  Future<void> showWeatherNotificationByLocation(String locationName) async {
-    try {
-      String title;
-      String body;
-
-      try {
-        final weather = await _weatherService.getWeatherByLocation(locationName);
-        // Map weather descriptions to emojis
-
-        // Get emoji for current weather description, fallback to default
-        final emoji = _weatherEmojis[weather.description.toLowerCase()] ?? '🌤️';
-
-        title = 'Weather Update $emoji ${weather.tempMin.round()}/${weather.tempMax.round()}°C';
-        body = weather.formattedAnnouncement;
-
-        // Speak the weather announcement
-        await _speakWeatherAnnouncement(weather.formattedAnnouncement);
-      } catch (e) {
-        // Show error notification if weather API fails
-        title = 'Weather Service Unavailable 📵';
-        body = 'Unable to fetch weather data for $locationName. Please check your internet connection and try again later.';
-
-        // Speak the error message
-        await _speakWeatherAnnouncement(body);
-      }
-
-      await _notifications.show(
-        1, // notification id
-        title,
-        body,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            _channelId,
-            _channelName,
-            channelDescription: _channelDescription,
-            importance: Importance.defaultImportance,
-            priority: Priority.defaultPriority,
-            icon: '@mipmap/ic_launcher',
-            visibility: NotificationVisibility.public,
-            category: AndroidNotificationCategory.alarm,
-            fullScreenIntent: true,
-            showWhen: true,
-            when: null, // Will be set to current time
-          ),
-          iOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
-        ),
-        payload: 'weather_update',
-      );
-    } catch (e) {
-      if (e is NotificationException) {
-        rethrow;
-      }
-      throw NotificationSchedulingException('Failed to show weather notification: $e');
-    }
   }
 
   /// Cancel all scheduled notifications

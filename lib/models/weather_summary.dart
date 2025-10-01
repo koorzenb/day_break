@@ -20,14 +20,55 @@ class WeatherSummary {
   });
 
   factory WeatherSummary.fromJson(Map<String, dynamic> json) {
+    // Extract forecast list and city information
+    final List<dynamic> forecastList = json['list'] as List<dynamic>;
+    final Map<String, dynamic> cityInfo = json['city'] as Map<String, dynamic>;
+
+    if (forecastList.isEmpty) {
+      throw const FormatException('Forecast list is empty');
+    }
+
+    // Use the first forecast entry for current conditions
+    final currentForecast = forecastList.first as Map<String, dynamic>;
+
+    // Calculate daily temperature range from today's forecasts only
+    // Filter forecasts to only include entries from today (before end of day)
+    final now = DateTime.now();
+    final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59);
+    final endOfTodayEpoch = endOfToday.millisecondsSinceEpoch ~/ 1000;
+
+    double dailyMin = double.infinity;
+    double dailyMax = double.negativeInfinity;
+
+    for (final forecast in forecastList) {
+      final forecastMap = forecast as Map<String, dynamic>;
+      final dt = forecastMap['dt'] as int;
+
+      // Break when we reach tomorrow's forecasts (since list is chronologically ordered)
+      if (dt > endOfTodayEpoch) {
+        break;
+      }
+
+      final tempMin = (forecastMap['main']['temp_min'] as num).toDouble();
+      final tempMax = (forecastMap['main']['temp_max'] as num).toDouble();
+      dailyMin = dailyMin < tempMin ? dailyMin : tempMin;
+      dailyMax = dailyMax > tempMax ? dailyMax : tempMax;
+    }
+
+    // Fallback to current forecast min/max if no valid daily range found
+    if (dailyMin == double.infinity || dailyMax == double.negativeInfinity) {
+      dailyMin = (currentForecast['main']['temp_min'] as num).toDouble();
+      dailyMax = (currentForecast['main']['temp_max'] as num).toDouble();
+    }
+
     return WeatherSummary(
-      description: json['weather'][0]['description'] as String,
-      temperature: (json['main']['temp'] as num).toDouble(),
-      feelsLike: (json['main']['feels_like'] as num).toDouble(),
-      tempMin: (json['main']['temp_min'] as num).toDouble(),
-      tempMax: (json['main']['temp_max'] as num).toDouble(),
-      humidity: json['main']['humidity'] as int,
-      location: json['name'] as String,
+      description: currentForecast['weather'][0]['description'] as String,
+      temperature: (currentForecast['main']['temp'] as num).toDouble(),
+      feelsLike: (currentForecast['main']['feels_like'] as num).toDouble(),
+      tempMin: dailyMin,
+      tempMax: dailyMax,
+      humidity: currentForecast['main']['humidity'] as int,
+      location: cityInfo['name'] as String,
       timestamp: DateTime.now(),
     );
   }

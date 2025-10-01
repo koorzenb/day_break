@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:day_break/utils/snackbar_helper.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
@@ -10,7 +11,7 @@ import '../models/weather_exceptions.dart';
 import '../models/weather_summary.dart';
 
 class WeatherService extends GetxService {
-  static const String _baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
+  static const String _baseUrl = 'https://api.openweathermap.org/data/2.5/forecast';
 
   static String get _apiKey {
     // Prefer compile-time define via --dart-define=OPENWEATHER_API_KEY=... so the key
@@ -63,7 +64,6 @@ class WeatherService extends GetxService {
       }
     } catch (e) {
       if (e is WeatherException) {
-        // TODO: Should announce default message that request failed
         rethrow;
       }
 
@@ -86,16 +86,21 @@ class WeatherService extends GetxService {
     try {
       final response = await _httpClient.get(url);
 
+      if (response.statusCode == 401) {
+        SnackBarHelper.showError('Error', 'Invalid API key for weather service');
+        throw const WeatherApiException('Invalid API key for weather service', 401);
+      }
+
       if (response.statusCode != 200) {
-        Get.snackbar('Error', 'Failed to validate location');
+        SnackBarHelper.showError('Error', 'Failed to validate location');
       } else {
         debugPrint('Weather API response: ${response.body}');
       }
 
       return response.statusCode == 200;
     } catch (e) {
-      // show snackbar if status is not 200
-      Get.snackbar('Error', 'Failed to validate location');
+      // show snackbar if status is not 200))
+      SnackBarHelper.showError('Error', 'Failed to validate location');
       return false;
     }
   }

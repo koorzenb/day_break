@@ -1,3 +1,15 @@
+## 1.1.0
+  
+### Feature
+  
+- Enhance WeatherSummary to calculate daily temperature range and update API response handling
+
+1.0.0
+
+### Release
+
+- First release
+
 ## 0.16.1
   
 ### Refactor

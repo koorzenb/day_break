@@ -46,7 +46,6 @@ Future<void> initServices() async {
   final httpClientWrapper = HttpClientWrapper(httpClient);
   Get.put(httpClientWrapper);
 
-  // continue with AI assisted debugging. Remeber to use context7
 
   // Initialize LocationService
   final locationService = LocationService();
@@ -65,10 +64,6 @@ Future<void> initServices() async {
 
   await notificationService.initialize();
   Get.put(notificationService);
-
-  // // TODO: remove this
-  final settingService = Get.find<SettingsService>();
-  await settingService.clearSettings();
 
   // Initialize AppController (this orchestrates all other services)
   final appController = AppController();
