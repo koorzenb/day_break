@@ -179,7 +179,7 @@ void main() {
         // Act & Assert
         expect(
           () => testWeatherService.getWeather(testPosition),
-          throwsA(isA<WeatherApiException>().having((e) => e.message, 'message', contains('OpenWeatherMap API key not found'))),
+          throwsA(isA<WeatherApiException>().having((e) => e.message, 'message', contains('OpenWeatherMap API key not configured'))),
           reason: 'Should throw WeatherApiException when API key is missing',
         );
 
@@ -195,6 +195,156 @@ void main() {
 
         // Assert
         verify(mockHttpClient.close()).called(1);
+      });
+    });
+
+    group('Lazy API Key Validation', () {
+      late WeatherService serviceWithoutKey;
+      late MockHttpClientWrapper mockHttpWithoutKey;
+
+      setUp(() {
+        mockHttpWithoutKey = MockHttpClientWrapper();
+        serviceWithoutKey = WeatherService(mockHttpWithoutKey);
+      });
+
+      test('should initialize service without API key without throwing', () {
+        // Clear any existing API key
+        dotenv.testLoad(fileInput: '');
+
+        // Act & Assert - should not throw
+        expect(() => WeatherService(mockHttpWithoutKey), returnsNormally, reason: 'Service should initialize successfully without API key');
+      });
+
+      test('hasApiKey should return false when no API key is configured', () {
+        // Clear any existing API key
+        dotenv.testLoad(fileInput: '');
+
+        // Act & Assert
+        expect(serviceWithoutKey.hasApiKey, isFalse, reason: 'hasApiKey should return false when no API key is configured');
+      });
+
+      test('hasApiKey should return true when API key is configured', () {
+        // Set up API key
+        dotenv.testLoad(fileInput: 'OPENWEATHER_API_KEY=test_key_123');
+        final serviceWithKey = WeatherService(mockHttpWithoutKey);
+
+        // Act & Assert
+        expect(serviceWithKey.hasApiKey, isTrue, reason: 'hasApiKey should return true when API key is configured');
+      });
+
+      test('apiKeyStatusMessage should return appropriate message when no API key', () {
+        // Clear any existing API key
+        dotenv.testLoad(fileInput: '');
+
+        // Act
+        final message = serviceWithoutKey.apiKeyStatusMessage;
+
+        // Assert
+        expect(message, contains('not configured'), reason: 'Status message should indicate API key is not configured');
+        expect(message, contains('unavailable'), reason: 'Status message should mention weather features will be unavailable');
+      });
+
+      test('apiKeyStatusMessage should return success message when API key configured', () {
+        // Set up API key
+        dotenv.testLoad(fileInput: 'OPENWEATHER_API_KEY=test_key_123');
+        final serviceWithKey = WeatherService(mockHttpWithoutKey);
+
+        // Act
+        final message = serviceWithKey.apiKeyStatusMessage;
+
+        // Assert
+        expect(message, contains('configured'), reason: 'Status message should indicate API key is configured');
+        expect(message, isNot(contains('unavailable')), reason: 'Success message should not mention unavailability');
+      });
+
+      test('getWeather should throw WeatherApiException when no API key configured', () async {
+        // Clear any existing API key
+        dotenv.testLoad(fileInput: '');
+
+        // Act & Assert
+        await expectLater(
+          serviceWithoutKey.getWeather(testPosition),
+          throwsA(
+            isA<WeatherApiException>().having((e) => e.message, 'message', contains('not configured')).having((e) => e.statusCode, 'statusCode', equals(0)),
+          ),
+          reason: 'Should throw WeatherApiException when API key is not configured',
+        );
+      });
+
+      test('getWeatherByLocation should throw WeatherApiException when no API key configured', () async {
+        // Clear any existing API key
+        dotenv.testLoad(fileInput: '');
+
+        // Act & Assert
+        await expectLater(
+          serviceWithoutKey.getWeatherByLocation('San Francisco'),
+          throwsA(
+            isA<WeatherApiException>().having((e) => e.message, 'message', contains('not configured')).having((e) => e.statusCode, 'statusCode', equals(0)),
+          ),
+          reason: 'Should throw WeatherApiException when API key is not configured',
+        );
+      });
+
+      test('validateLocation should return false when no API key configured', () async {
+        // Initialize binding for this test since it uses SnackBarHelper
+        TestWidgetsFlutterBinding.ensureInitialized();
+
+        // Clear any existing API key
+        dotenv.testLoad(fileInput: '');
+
+        // Act
+        final result = await serviceWithoutKey.validateLocation('San Francisco');
+
+        // Assert
+        expect(result, isFalse, reason: 'validateLocation should return false when API key is not configured');
+      });
+
+      test('getWeather should work normally when API key is configured', () async {
+        // Set up API key
+        dotenv.testLoad(fileInput: 'OPENWEATHER_API_KEY=test_key_123');
+
+        // Arrange
+        const mockResponse = {
+          'cod': '200',
+          'message': 0,
+          'cnt': 2,
+          'list': [
+            {
+              'dt': 1609459200,
+              'main': {'temp': 15.5, 'feels_like': 14.2, 'temp_min': 12.0, 'temp_max': 18.0, 'humidity': 65},
+              'weather': [
+                {'description': 'clear sky'},
+              ],
+            },
+            {
+              'dt': 1609462800,
+              'main': {'temp': 16.8, 'feels_like': 15.5, 'temp_min': 14.0, 'temp_max': 19.0, 'humidity': 70},
+              'weather': [
+                {'description': 'few clouds'},
+              ],
+            },
+          ],
+          'city': {
+            'id': 5391959,
+            'name': 'San Francisco',
+            'coord': {'lat': 37.7749, 'lon': -122.4194},
+            'country': 'US',
+          },
+        };
+
+        when(mockHttpWithoutKey.get(any)).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
+
+        // Act
+        final result = await serviceWithoutKey.getWeather(testPosition);
+
+        // Assert
+        expect(result, isNotNull, reason: 'Should return WeatherSummary when API key is configured');
+        expect(result.temperature, equals(15.5), reason: 'Should parse temperature correctly');
+      });
+
+      tearDown(() {
+        // Restore API key for other tests
+        dotenv.testLoad(fileInput: 'OPENWEATHER_API_KEY=test_api_key_12345');
       });
     });
   });

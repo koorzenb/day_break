@@ -1,3 +1,9 @@
+## 1.2.0
+  
+### Feature
+  
+- Implement lazy API key validation and improve error handling for missing API key
+
 ## 1.1.0
   
 ### Feature
