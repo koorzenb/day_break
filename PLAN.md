@@ -4,9 +4,49 @@ This document outlines the development plan for the Day Break application, based
 
 ## Post-MVP Enhancements (Value Add)
 
-- [x] **Phase 12**: WeatherService Lazy API Key Validation
-  - Defer API key validation until first actual weather fetch to allow offline/limited startup.
-  - Provide a user-visible indicator if API key missing instead of crashing.
+- [ ] **Phase 12**: Weather API Migration - AccuWeather to OpenWeatherMap
+  - [ ] **Step 12.1**: Update Environment Configuration
+    - Change environment variable from `ACCUWEATHER_API_KEY` to `OPENWEATHER_API_KEY`
+    - Update `.env.example` and documentation with new API key requirements
+    - Test: Verify environment loading works with new key name
+  - [ ] **Step 12.2**: Update WeatherService API Endpoints
+    - Replace AccuWeather API URLs with OpenWeatherMap forecast endpoints
+    - Update base URL and endpoint paths in `WeatherService`
+    - Test: Mock HTTP calls to ensure new URLs are constructed correctly
+  - [ ] **Step 12.3**: Update API Request Parameters
+    - Modify query parameters to match OpenWeatherMap API requirements (lat/lon, units, API key)
+    - Remove AccuWeather-specific parameters and add OpenWeatherMap equivalents
+    - Test: Verify request URLs contain correct OpenWeatherMap parameters
+  - [ ] **Step 12.4**: Update Weather Data Models
+    - Modify `WeatherSummary` model if needed to accommodate OpenWeatherMap response structure
+    - Update JSON parsing logic to handle OpenWeatherMap's data format
+    - Test: Unit tests for parsing OpenWeatherMap JSON responses
+  - [ ] **Step 12.5**: Update Weather Data Parsing Logic
+    - Replace AccuWeather JSON parsing with OpenWeatherMap format parsing
+    - Handle temperature, humidity, weather descriptions, and location data
+    - Map OpenWeatherMap weather codes/descriptions to app's weather summary
+    - Test: Test parsing with various OpenWeatherMap JSON response samples
+  - [ ] **Step 12.6**: Update Error Handling
+    - Implement OpenWeatherMap-specific error codes and messages
+    - Handle OpenWeatherMap rate limiting and API errors appropriately
+    - Update exception types if needed for OpenWeatherMap error scenarios
+    - Test: Test error handling with mocked OpenWeatherMap error responses
+  - [ ] **Step 12.7**: Update All Weather Service Tests
+    - Replace all AccuWeather mock responses with OpenWeatherMap format
+    - Update test expectations to match new data structure
+    - Ensure all existing test scenarios still pass with new API
+    - Test: Run complete weather service test suite
+  - [ ] **Step 12.8**: Integration Testing
+    - Test weather functionality end-to-end with real OpenWeatherMap API calls
+    - Validate weather data accuracy and app behavior
+    - Test notification announcements with real weather data
+    - Test: Manual testing with real API key and various locations
+  - [ ] **Step 12.9**: Documentation and Configuration Updates
+    - Update README.md with OpenWeatherMap API key setup instructions
+    - Update any configuration files or setup scripts
+    - Document API migration and any breaking changes
+    - Test: Verify setup instructions work for new users
+
 
 - [ ] **Phase 13**: Automated Lint & CI Improvements
   - Add CI workflow for `flutter analyze`, `flutter test`, and (optionally) build steps.
