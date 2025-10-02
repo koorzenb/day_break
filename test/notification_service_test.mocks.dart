@@ -15,27 +15,28 @@ import 'package:flutter_local_notifications/src/initialization_settings.dart'
 import 'package:flutter_local_notifications/src/notification_details.dart'
     as _i9;
 import 'package:flutter_local_notifications/src/platform_flutter_local_notifications.dart'
-    as _i15;
-import 'package:flutter_local_notifications/src/platform_specifics/android/enums.dart'
-    as _i18;
-import 'package:flutter_local_notifications/src/platform_specifics/android/initialization_settings.dart'
     as _i16;
-import 'package:flutter_local_notifications/src/platform_specifics/android/notification_channel.dart'
-    as _i20;
-import 'package:flutter_local_notifications/src/platform_specifics/android/notification_channel_group.dart'
+import 'package:flutter_local_notifications/src/platform_specifics/android/enums.dart'
     as _i19;
-import 'package:flutter_local_notifications/src/platform_specifics/android/notification_details.dart'
+import 'package:flutter_local_notifications/src/platform_specifics/android/initialization_settings.dart'
     as _i17;
+import 'package:flutter_local_notifications/src/platform_specifics/android/notification_channel.dart'
+    as _i21;
+import 'package:flutter_local_notifications/src/platform_specifics/android/notification_channel_group.dart'
+    as _i20;
+import 'package:flutter_local_notifications/src/platform_specifics/android/notification_details.dart'
+    as _i18;
 import 'package:flutter_local_notifications/src/platform_specifics/android/schedule_mode.dart'
     as _i11;
 import 'package:flutter_local_notifications/src/platform_specifics/android/styles/messaging_style_information.dart'
-    as _i21;
+    as _i22;
 import 'package:flutter_local_notifications/src/types.dart' as _i12;
 import 'package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart'
     as _i8;
-import 'package:geolocator/geolocator.dart' as _i14;
+import 'package:geolocator/geolocator.dart' as _i15;
 import 'package:get/get.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i14;
 import 'package:timezone/timezone.dart' as _i10;
 
 // ignore_for_file: type=lint
@@ -65,9 +66,14 @@ class _FakeWeatherSummary_1 extends _i1.SmartFake
     : super(parent, parentInvocation);
 }
 
-class _FakeSettingsService_2 extends _i1.SmartFake
+class _FakeUri_2 extends _i1.SmartFake implements Uri {
+  _FakeUri_2(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeSettingsService_3 extends _i1.SmartFake
     implements _i4.SettingsService {
-  _FakeSettingsService_2(Object parent, Invocation parentInvocation)
+  _FakeSettingsService_3(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -258,6 +264,22 @@ class MockWeatherService extends _i1.Mock implements _i13.WeatherService {
   }
 
   @override
+  bool get hasApiKey =>
+      (super.noSuchMethod(Invocation.getter(#hasApiKey), returnValue: false)
+          as bool);
+
+  @override
+  String get apiKeyStatusMessage =>
+      (super.noSuchMethod(
+            Invocation.getter(#apiKeyStatusMessage),
+            returnValue: _i14.dummyValue<String>(
+              this,
+              Invocation.getter(#apiKeyStatusMessage),
+            ),
+          )
+          as String);
+
+  @override
   _i2.InternalFinalCallback<void> get onStart =>
       (super.noSuchMethod(
             Invocation.getter(#onStart),
@@ -290,7 +312,7 @@ class MockWeatherService extends _i1.Mock implements _i13.WeatherService {
           as bool);
 
   @override
-  _i6.Future<_i3.WeatherSummary> getWeather(_i14.Position? position) =>
+  _i6.Future<_i3.WeatherSummary> getWeather(_i15.Position? position) =>
       (super.noSuchMethod(
             Invocation.method(#getWeather, [position]),
             returnValue: _i6.Future<_i3.WeatherSummary>.value(
@@ -314,6 +336,85 @@ class MockWeatherService extends _i1.Mock implements _i13.WeatherService {
             ),
           )
           as _i6.Future<_i3.WeatherSummary>);
+
+  @override
+  Uri buildTomorrowRealtimeUrlForTesting(
+    double? latitude,
+    double? longitude, {
+    List<String>? fields,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #buildTomorrowRealtimeUrlForTesting,
+              [latitude, longitude],
+              {#fields: fields},
+            ),
+            returnValue: _FakeUri_2(
+              this,
+              Invocation.method(
+                #buildTomorrowRealtimeUrlForTesting,
+                [latitude, longitude],
+                {#fields: fields},
+              ),
+            ),
+          )
+          as Uri);
+
+  @override
+  Uri buildTomorrowForecastUrlForTesting(
+    double? latitude,
+    double? longitude, {
+    String? timesteps = '1h',
+    List<String>? fields,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #buildTomorrowForecastUrlForTesting,
+              [latitude, longitude],
+              {#timesteps: timesteps, #fields: fields},
+            ),
+            returnValue: _FakeUri_2(
+              this,
+              Invocation.method(
+                #buildTomorrowForecastUrlForTesting,
+                [latitude, longitude],
+                {#timesteps: timesteps, #fields: fields},
+              ),
+            ),
+          )
+          as Uri);
+
+  @override
+  _i3.WeatherSummary parseTomorrowRealtime(
+    Map<String, dynamic>? json, {
+    double? latitude,
+    double? longitude,
+    String? fallbackLocation,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #parseTomorrowRealtime,
+              [json],
+              {
+                #latitude: latitude,
+                #longitude: longitude,
+                #fallbackLocation: fallbackLocation,
+              },
+            ),
+            returnValue: _FakeWeatherSummary_1(
+              this,
+              Invocation.method(
+                #parseTomorrowRealtime,
+                [json],
+                {
+                  #latitude: latitude,
+                  #longitude: longitude,
+                  #fallbackLocation: fallbackLocation,
+                },
+              ),
+            ),
+          )
+          as _i3.WeatherSummary);
 
   @override
   _i6.Future<bool> validateLocation(String? locationName) =>
@@ -399,7 +500,7 @@ class MockSettingsService extends _i1.Mock implements _i4.SettingsService {
       (super.noSuchMethod(
             Invocation.method(#init, []),
             returnValue: _i6.Future<_i4.SettingsService>.value(
-              _FakeSettingsService_2(this, Invocation.method(#init, [])),
+              _FakeSettingsService_3(this, Invocation.method(#init, [])),
             ),
           )
           as _i6.Future<_i4.SettingsService>);
@@ -478,14 +579,14 @@ class MockSettingsService extends _i1.Mock implements _i4.SettingsService {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
-    implements _i15.AndroidFlutterLocalNotificationsPlugin {
+    implements _i16.AndroidFlutterLocalNotificationsPlugin {
   MockAndroidFlutterLocalNotificationsPlugin() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
   _i6.Future<bool> initialize(
-    _i16.AndroidInitializationSettings? initializationSettings, {
+    _i17.AndroidInitializationSettings? initializationSettings, {
     _i8.DidReceiveNotificationResponseCallback?
     onDidReceiveNotificationResponse,
     _i8.DidReceiveBackgroundNotificationResponseCallback?
@@ -552,7 +653,7 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
     String? title,
     String? body,
     _i10.TZDateTime? scheduledDate,
-    _i17.AndroidNotificationDetails? notificationDetails, {
+    _i18.AndroidNotificationDetails? notificationDetails, {
     required _i11.AndroidScheduleMode? scheduleMode,
     String? payload,
     _i12.DateTimeComponents? matchDateTimeComponents,
@@ -577,11 +678,11 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
     int? id,
     String? title,
     String? body, {
-    _i17.AndroidNotificationDetails? notificationDetails,
+    _i18.AndroidNotificationDetails? notificationDetails,
     String? payload,
-    _i18.AndroidServiceStartType? startType =
-        _i18.AndroidServiceStartType.startSticky,
-    Set<_i18.AndroidServiceForegroundType>? foregroundServiceTypes,
+    _i19.AndroidServiceStartType? startType =
+        _i19.AndroidServiceStartType.startSticky,
+    Set<_i19.AndroidServiceForegroundType>? foregroundServiceTypes,
   }) =>
       (super.noSuchMethod(
             Invocation.method(
@@ -613,7 +714,7 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
     int? id,
     String? title,
     String? body, {
-    _i17.AndroidNotificationDetails? notificationDetails,
+    _i18.AndroidNotificationDetails? notificationDetails,
     String? payload,
   }) =>
       (super.noSuchMethod(
@@ -633,7 +734,7 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
     String? title,
     String? body,
     _i8.RepeatInterval? repeatInterval, {
-    _i17.AndroidNotificationDetails? notificationDetails,
+    _i18.AndroidNotificationDetails? notificationDetails,
     String? payload,
     _i11.AndroidScheduleMode? scheduleMode = _i11.AndroidScheduleMode.exact,
   }) =>
@@ -658,7 +759,7 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
     String? title,
     String? body,
     Duration? repeatDurationInterval, {
-    _i17.AndroidNotificationDetails? notificationDetails,
+    _i18.AndroidNotificationDetails? notificationDetails,
     String? payload,
     _i11.AndroidScheduleMode? scheduleMode = _i11.AndroidScheduleMode.exact,
   }) =>
@@ -688,7 +789,7 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
 
   @override
   _i6.Future<void> createNotificationChannelGroup(
-    _i19.AndroidNotificationChannelGroup? notificationChannelGroup,
+    _i20.AndroidNotificationChannelGroup? notificationChannelGroup,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#createNotificationChannelGroup, [
@@ -710,7 +811,7 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
 
   @override
   _i6.Future<void> createNotificationChannel(
-    _i20.AndroidNotificationChannel? notificationChannel,
+    _i21.AndroidNotificationChannel? notificationChannel,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#createNotificationChannel, [
@@ -731,7 +832,7 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
           as _i6.Future<void>);
 
   @override
-  _i6.Future<_i21.MessagingStyleInformation?>
+  _i6.Future<_i22.MessagingStyleInformation?>
   getActiveNotificationMessagingStyle(int? id, {String? tag}) =>
       (super.noSuchMethod(
             Invocation.method(
@@ -739,19 +840,19 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
               [id],
               {#tag: tag},
             ),
-            returnValue: _i6.Future<_i21.MessagingStyleInformation?>.value(),
+            returnValue: _i6.Future<_i22.MessagingStyleInformation?>.value(),
           )
-          as _i6.Future<_i21.MessagingStyleInformation?>);
+          as _i6.Future<_i22.MessagingStyleInformation?>);
 
   @override
-  _i6.Future<List<_i20.AndroidNotificationChannel>?>
+  _i6.Future<List<_i21.AndroidNotificationChannel>?>
   getNotificationChannels() =>
       (super.noSuchMethod(
             Invocation.method(#getNotificationChannels, []),
             returnValue:
-                _i6.Future<List<_i20.AndroidNotificationChannel>?>.value(),
+                _i6.Future<List<_i21.AndroidNotificationChannel>?>.value(),
           )
-          as _i6.Future<List<_i20.AndroidNotificationChannel>?>);
+          as _i6.Future<List<_i21.AndroidNotificationChannel>?>);
 
   @override
   _i6.Future<bool?> areNotificationsEnabled() =>

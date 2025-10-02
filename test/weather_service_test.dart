@@ -42,33 +42,12 @@ void main() {
     });
 
     group('getWeather', () {
-      test('should return WeatherSummary when API call succeeds', () async {
-        // Arrange
-        const mockResponse = {
-          'cod': '200',
-          'message': 0,
-          'cnt': 2,
-          'list': [
-            {
-              'dt': 1759330800,
-              'main': {'temp': 22.5, 'feels_like': 24.0, 'temp_min': 18.0, 'temp_max': 25.0, 'humidity': 65},
-              'weather': [
-                {'description': 'clear sky'},
-              ],
-            },
-            {
-              'dt': 1759341600,
-              'main': {'temp': 20.0, 'feels_like': 22.0, 'temp_min': 16.0, 'temp_max': 24.0, 'humidity': 70},
-              'weather': [
-                {'description': 'few clouds'},
-              ],
-            },
-          ],
-          'city': {
-            'id': 5391959,
-            'name': 'San Francisco',
-            'coord': {'lat': 37.7749, 'lon': -122.4194},
-            'country': 'US',
+      test('should return WeatherSummary when realtime API call succeeds (Tomorrow.io)', () async {
+        // Arrange - Tomorrow.io realtime shape
+        final mockResponse = {
+          'data': {
+            'time': DateTime.now().toUtc().toIso8601String(),
+            'values': {'temperature': 22.5, 'temperatureApparent': 24.0, 'humidity': 65, 'weatherCode': 1000},
           },
         };
 
@@ -78,35 +57,21 @@ void main() {
         final result = await weatherService.getWeather(testPosition);
 
         // Assert
-        expect(result.description, equals('clear sky'), reason: 'Weather description should match first forecast');
-        expect(result.temperature, equals(22.5), reason: 'Temperature should match first forecast');
-        expect(result.feelsLike, equals(24.0), reason: 'Feels like temperature should match first forecast');
-        expect(result.tempMin, equals(16.0), reason: 'Temperature minimum should be calculated from daily forecasts');
-        expect(result.tempMax, equals(25.0), reason: 'Temperature maximum should be calculated from daily forecasts');
-        expect(result.humidity, equals(65), reason: 'Humidity should match first forecast');
-        expect(result.location, equals('San Francisco'), reason: 'Location should match city name');
+        expect(result.description, equals('Clear'), reason: 'Weather description should map from weatherCode 1000');
+        expect(result.temperature, equals(22.5), reason: 'Temperature should match realtime temperature');
+        expect(result.feelsLike, equals(24.0), reason: 'Feels like temperature should use temperatureApparent');
+        expect(result.tempMin, equals(22.5), reason: 'Temp min equals current until forecast integration added');
+        expect(result.tempMax, equals(22.5), reason: 'Temp max equals current until forecast integration added');
+        expect(result.humidity, equals(65), reason: 'Humidity should be parsed from realtime values');
+        expect(result.location, equals('37.7749,-122.4194'), reason: 'Location should fallback to lat,lon string');
       });
 
-      test('should include lat/lon in API request URL', () async {
+      test('should include location parameter in realtime API request URL', () async {
         // Arrange
-        const mockResponse = {
-          'cod': '200',
-          'message': 0,
-          'cnt': 1,
-          'list': [
-            {
-              'dt': 1759330800,
-              'main': {'temp': 22.5, 'feels_like': 24.0, 'temp_min': 18.0, 'temp_max': 25.0, 'humidity': 65},
-              'weather': [
-                {'description': 'clear sky'},
-              ],
-            },
-          ],
-          'city': {
-            'id': 12345,
-            'name': 'Test City',
-            'coord': {'lat': 37.7749, 'lon': -122.4194},
-            'country': 'US',
+        final mockResponse = {
+          'data': {
+            'time': DateTime.now().toUtc().toIso8601String(),
+            'values': {'temperature': 22.5, 'temperatureApparent': 24.0, 'humidity': 65, 'weatherCode': 1000},
           },
         };
 
@@ -119,9 +84,9 @@ void main() {
         final captured = verify(mockHttpClient.get(captureAny)).captured;
         final capturedUri = captured.first as Uri;
 
-        expect(capturedUri.queryParameters['lat'], equals('37.7749'), reason: 'Latitude should be included in API request');
-        expect(capturedUri.queryParameters['lon'], equals('-122.4194'), reason: 'Longitude should be included in API request');
+        expect(capturedUri.queryParameters['location'], equals('37.7749,-122.4194'), reason: 'Combined lat,lon should be used as location parameter');
         expect(capturedUri.queryParameters['units'], equals('metric'), reason: 'Metric units should be specified');
+        expect(capturedUri.queryParameters['fields'], contains('temperature'), reason: 'Temperature field should be requested');
       });
 
       test('should throw WeatherApiException when API returns error status', () async {
@@ -289,32 +254,11 @@ void main() {
       test('getWeather should work normally when Tomorrow.io API key is configured', () async {
         dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=test_key_123');
 
-        // Arrange
-        const mockResponse = {
-          'cod': '200',
-          'message': 0,
-          'cnt': 2,
-          'list': [
-            {
-              'dt': 1609459200,
-              'main': {'temp': 15.5, 'feels_like': 14.2, 'temp_min': 12.0, 'temp_max': 18.0, 'humidity': 65},
-              'weather': [
-                {'description': 'clear sky'},
-              ],
-            },
-            {
-              'dt': 1609462800,
-              'main': {'temp': 16.8, 'feels_like': 15.5, 'temp_min': 14.0, 'temp_max': 19.0, 'humidity': 70},
-              'weather': [
-                {'description': 'few clouds'},
-              ],
-            },
-          ],
-          'city': {
-            'id': 5391959,
-            'name': 'San Francisco',
-            'coord': {'lat': 37.7749, 'lon': -122.4194},
-            'country': 'US',
+        // Arrange - Tomorrow.io realtime
+        final mockResponse = {
+          'data': {
+            'time': DateTime.now().toUtc().toIso8601String(),
+            'values': {'temperature': 15.5, 'temperatureApparent': 14.2, 'humidity': 65, 'weatherCode': 1000},
           },
         };
 
@@ -325,10 +269,9 @@ void main() {
 
         // Assert
         expect(result, isNotNull, reason: 'Should return WeatherSummary when API key is configured');
-        expect(result.temperature, equals(15.5), reason: 'Should parse temperature correctly');
+        expect(result.temperature, equals(15.5), reason: 'Should parse realtime temperature correctly');
+        expect(result.description, equals('Clear'), reason: 'Should map weatherCode to description');
       });
-
-     
 
       tearDown(() {
         dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=test_api_key_12345');

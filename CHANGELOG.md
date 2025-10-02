@@ -1,3 +1,16 @@
+## 1.3.0
+  
+### Feature
+  
+Migrate weather service to Tomorrow.io API
+
+- Introduced ForecastRange class to encapsulate min/max temperature logic.
+- Updated WeatherSummary to support copyWith method for temperature overrides.
+- Replaced OpenWeatherMap API calls with Tomorrow.io endpoints for realtime and forecast data.
+- Implemented parsing logic for Tomorrow.io's realtime weather data.
+- Added tests for forecast min/max functionality and Tomorrow.io parsing.
+- Updated existing tests to reflect changes in API response structure and validation.
+
 ## 1.2.1
   
 ### Refactor

@@ -4,32 +4,31 @@ This document outlines the development plan for the Day Break application, based
 
 ## Post-MVP Enhancements (Value Add)
 
-- [ ] **Phase 12**: Weather API Migration (OpenWeatherMap ➜ Tomorrow.io)
-  - [ ] **Step 12.1**: Update Environment Configuration
+ - [ ] **Phase 12**: Weather API Migration (OpenWeatherMap ➜ Tomorrow.io)
+  - [x] **Step 12.1**: Update Environment Configuration
     - Change environment variable from `OPENWEATHER_API_KEY` to `TOMORROWIO_API_KEY`
     - Update `.env.example` and documentation with new API key requirements
     - Note: Tomorrow.io key is used as the `apikey` query parameter
     - Test: Verify environment loading works with new key name
-  - [ ] **Step 12.2**: Update WeatherService API Endpoints
-    - Replace OpenWeatherMap URLs with Tomorrow.io endpoints (e.g., `https://api.tomorrow.io/v4/weather/forecast` and/or `.../realtime`)
-    - Decide which endpoint(s) to use (realtime for current announcement vs forecast timeline for future conditions)
-    - Add configurable fields list (temperature, humidity, weatherCode, windSpeed, precipitationProbability, cloudCover)
-    - Test: Mock HTTP calls to ensure new URLs are constructed correctly
-  - [ ] **Step 12.3**: Update API Request Parameters
-    - Use `location=lat,lon` format, `units=metric` (or configurable), `apikey`, and `timesteps` (e.g., `1h`, `daily` if using forecast)
-    - Remove OpenWeatherMap-specific params (`appid`, `lat`, `lon`, `units`) and map to Tomorrow.io equivalents
-    - Add optional `fields` parameter to limit response payload size
-    - Test: Verify constructed request URLs contain correct Tomorrow.io parameters
-  - [ ] **Step 12.4**: Update Weather Data Models
-    - Adjust `WeatherSummary` to parse Tomorrow.io field names (e.g., `temperature`, `humidity`, `weatherCode`)
-    - Support timeline structure if using forecast (iterate over `timelines.hourly` / `timelines.daily`)
-    - Add mapping method for Tomorrow.io `weatherCode` to internal description & icon
-    - Test: Unit tests for parsing Tomorrow.io JSON responses (realtime + forecast sample)
-  - [ ] **Step 12.5**: Update Weather Data Parsing Logic
-    - Replace OpenWeatherMap JSON parsing with Tomorrow.io schema handling (realtime: `data.values`, forecast: `data.timelines`)
-    - Extract temperature (C), humidity %, wind speed, precipitation probability/intensity, textual description from code map
-    - Handle missing fields gracefully with defaults or nullable checks
-    - Test: Parsing tests using varied Tomorrow.io samples (clear, rain, snow, edge cases)
+  - [x] **Step 12.2**: Update WeatherService API Endpoints
+    - Replaced OpenWeatherMap URLs with Tomorrow.io realtime endpoint (forecast endpoint scaffolded for later min/max)
+    - Decided initial flip uses realtime endpoint for current conditions (low risk); forecast timelines deferred to later sub-steps
+    - Added configurable fields list (temperature, temperatureApparent, humidity, weatherCode, windSpeed, precipitationProbability, cloudCover)
+    - Test: URL construction & service tests updated (all passing)
+  - [x] **Step 12.3**: Update API Request Parameters
+    - Using `location=lat,lon` format, `units=metric`, `apikey`, and `fields`
+    - Removed OpenWeatherMap params (`appid`, separate `lat`/`lon` query items)
+    - Added optional fields parameter to trim payload; validation request uses only `temperature`
+    - Test: Assertions added verifying query parameter set
+  - [x] **Step 12.4**: Update Weather Data Models
+    - `WeatherSummary` now supports Tomorrow.io only (realtime + forecast min/max)
+    - Weather code mapping implemented and tested
+    - Legacy OpenWeather parsing fully removed
+    - Test: Realtime and forecast parsing covered by unit tests
+  - [x] **Step 12.5**: Update Weather Data Parsing Logic
+    - Production fetch path uses Tomorrow.io realtime and forecast timeline for min/max
+    - Handles missing/failed forecast gracefully (falls back to realtime temp)
+    - Test: Adapter and integration tests pass for all cases
   - [ ] **Step 12.6**: Update Error Handling
     - Implement handling for Tomorrow.io HTTP errors (400 invalid request, 401 unauthorized, 403 quota, 429 rate limit)
     - Add retry/backoff hooks for 429 (respect `Retry-After` if provided)

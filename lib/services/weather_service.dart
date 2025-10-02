@@ -11,8 +11,53 @@ import '../models/weather_exceptions.dart';
 import '../models/weather_summary.dart';
 
 class WeatherService extends GetxService {
-  // TODO(Phase 12): Replace OpenWeatherMap base URL with Tomorrow.io endpoint(s) once migration complete.
-  static const String _baseUrl = 'https://api.openweathermap.org/data/2.5/forecast';
+  // Tomorrow.io endpoints (Phase 12.2 scaffold)
+  static const String _tomorrowRealtimeBase = 'https://api.tomorrow.io/v4/weather/realtime';
+  static const String _tomorrowForecastBase = 'https://api.tomorrow.io/v4/weather/forecast';
+
+  // Default fields requested from Tomorrow.io (can be tuned in later steps)
+  static const List<String> _tomorrowDefaultFields = [
+    'temperature',
+    'temperatureApparent',
+    'humidity',
+    'weatherCode',
+    'windSpeed',
+    'precipitationProbability',
+    'cloudCover',
+  ];
+
+  // Weather code mapping (partial; expand/refine as needed). Source: Tomorrow.io Weather Codes reference.
+  static const Map<int, String> _tomorrowWeatherCodeDescriptions = {
+    1000: 'Clear',
+    1001: 'Cloudy',
+    1100: 'Mostly Clear',
+    1101: 'Partly Cloudy',
+    1102: 'Mostly Cloudy',
+    2000: 'Fog',
+    2100: 'Light Fog',
+    3000: 'Light Wind',
+    3001: 'Windy',
+    3002: 'Strong Wind',
+    4000: 'Drizzle',
+    4001: 'Rain',
+    4200: 'Light Rain',
+    4201: 'Heavy Rain',
+    5000: 'Snow',
+    5001: 'Flurries',
+    5100: 'Light Snow',
+    5101: 'Heavy Snow',
+    6000: 'Freezing Drizzle',
+    6001: 'Freezing Rain',
+    6200: 'Light Freezing Rain',
+    6201: 'Heavy Freezing Rain',
+    7000: 'Ice Pellets',
+    7101: 'Heavy Ice Pellets',
+    7102: 'Light Ice Pellets',
+    8000: 'Thunderstorm',
+  };
+
+  @visibleForTesting
+  static String describeTomorrowCode(int code) => _tomorrowWeatherCodeDescriptions[code] ?? 'Unknown';
 
   /// Lazy validation state - null means not yet validated, true/false means validation result
   bool? _isApiKeyValid;
@@ -95,9 +140,11 @@ class WeatherService extends GetxService {
   /// Validates the API key by making a minimal test request to the weather API
   Future<void> _validateApiKeyWithServer(String apiKey) async {
     try {
-      // Make a minimal request to validate the API key
-      final testUrl = Uri.parse('$_baseUrl?q=London&appid=$apiKey&units=metric&cnt=1');
-      final response = await _httpClient.get(testUrl);
+      // Minimal Tomorrow.io realtime request for validation (temperature only)
+      final validationUrl = Uri.parse(
+        _tomorrowRealtimeBase,
+      ).replace(queryParameters: {'location': 'Halifax', 'apikey': apiKey, 'units': 'metric', 'fields': 'temperature'});
+      final response = await _httpClient.get(validationUrl);
 
       if (response.statusCode == 401) {
         _isApiKeyValid = false;
@@ -124,65 +171,188 @@ class WeatherService extends GetxService {
 
   WeatherService([HttpClientWrapper? httpClient]) : _httpClient = httpClient ?? HttpClientWrapper();
 
-  /// Fetches weather data for the given position
+  /// Fetches weather data for the given position (Tomorrow.io realtime)
   Future<WeatherSummary> getWeather(Position position) async {
     await _ensureApiKeyValid(); // Lazy validation happens here
-    final url = _buildUrlForCoordinates(position.latitude, position.longitude);
-    return _fetchWeatherData(url);
+    final url = _buildTomorrowRealtime(position.latitude, position.longitude);
+    final realtime = await _fetchTomorrowRealtime(url, latitude: position.latitude, longitude: position.longitude);
+    // Attempt to enrich with forecast min/max; fall back silently on failure
+    try {
+      final range = await _fetchForecastMinMax(position.latitude, position.longitude);
+      if (range != null) {
+        return realtime.copyWith(minOverride: range.min, maxOverride: range.max);
+      }
+    } catch (_) {/* ignore forecast errors */}
+    return realtime;
   }
 
-  /// Fetches weather data for the given location name
+  /// Fetches weather data for the given location name (Tomorrow.io realtime)
   Future<WeatherSummary> getWeatherByLocation(String locationName) async {
     await _ensureApiKeyValid(); // Lazy validation happens here
-    final url = _buildUrlForLocation(locationName.trim());
-    return _fetchWeatherData(url);
+    final trimmed = locationName.trim();
+    final url = _buildTomorrowRealtimeForLocation(trimmed);
+    final realtime = await _fetchTomorrowRealtime(url, fallbackLocation: trimmed);
+    try {
+      final range = await _fetchForecastMinMaxFromLocation(trimmed);
+      if (range != null) {
+        return realtime.copyWith(minOverride: range.min, maxOverride: range.max);
+      }
+    } catch (_) {/* ignore */}
+    return realtime;
   }
 
-  /// Builds URL for coordinate-based weather queries
-  Uri _buildUrlForCoordinates(double latitude, double longitude) {
-    final apiKey = _apiKeyOrNull!; // At this point, _ensureApiKeyValid has already validated
-    return Uri.parse('$_baseUrl?lat=$latitude&lon=$longitude&appid=$apiKey&units=metric');
+  // (Removed legacy OpenWeather builders)
+
+  // --- Tomorrow.io URL Builders (not yet wired into public methods) ---
+  Uri _buildTomorrowRealtime(double latitude, double longitude, {List<String>? fields}) {
+    final apiKey = _apiKeyOrNull!;
+    final selectedFields = (fields ?? _tomorrowDefaultFields).join(',');
+    final qp = <String, String>{'location': '$latitude,$longitude', 'apikey': apiKey, 'units': 'metric', 'fields': selectedFields};
+    return Uri.parse(_tomorrowRealtimeBase).replace(queryParameters: qp);
   }
 
-  /// Builds URL for location name-based weather queries
-  Uri _buildUrlForLocation(String locationName) {
-    final apiKey = _apiKeyOrNull!; // At this point, _ensureApiKeyValid has already validated
-    return Uri.parse('$_baseUrl?q=${Uri.encodeComponent(locationName)}&appid=$apiKey&units=metric');
+  Uri _buildTomorrowForecast(double latitude, double longitude, {String timesteps = '1h', List<String>? fields}) {
+    final apiKey = _apiKeyOrNull!;
+    final selectedFields = (fields ?? _tomorrowDefaultFields).join(',');
+    final qp = <String, String>{'location': '$latitude,$longitude', 'apikey': apiKey, 'units': 'metric', 'timesteps': timesteps, 'fields': selectedFields};
+    return Uri.parse(_tomorrowForecastBase).replace(queryParameters: qp);
   }
 
-  /// Fetches and parses weather data from the API
-  Future<WeatherSummary> _fetchWeatherData(Uri url) async {
+  Uri _buildTomorrowRealtimeForLocation(String locationName, {List<String>? fields}) {
+    final apiKey = _apiKeyOrNull!;
+    final selectedFields = (fields ?? _tomorrowDefaultFields).join(',');
+    final qp = <String, String>{'location': locationName, 'apikey': apiKey, 'units': 'metric', 'fields': selectedFields};
+    return Uri.parse(_tomorrowRealtimeBase).replace(queryParameters: qp);
+  }
+
+  @visibleForTesting
+  Uri buildTomorrowRealtimeUrlForTesting(double latitude, double longitude, {List<String>? fields}) =>
+      _buildTomorrowRealtime(latitude, longitude, fields: fields);
+
+  @visibleForTesting
+  Uri buildTomorrowForecastUrlForTesting(double latitude, double longitude, {String timesteps = '1h', List<String>? fields}) =>
+      _buildTomorrowForecast(latitude, longitude, timesteps: timesteps, fields: fields);
+
+  // --- Tomorrow.io Parsing Adapter (Phase 12.2/12.3 placeholder) ---
+  // This does NOT alter current production flow; getWeather() still uses legacy endpoint
+  // until full migration (Phase 12.4/12.5). Tests can validate correctness early.
+  @visibleForTesting
+  WeatherSummary parseTomorrowRealtime(Map<String, dynamic> json, {double? latitude, double? longitude, String? fallbackLocation}) {
+    final data = json['data'];
+    if (data == null || data is! Map) {
+      throw const WeatherParsingException('Missing realtime data');
+    }
+    final values = data['values'];
+    if (values == null || values is! Map) {
+      throw const WeatherParsingException('Missing realtime values');
+    }
+
+    String locationLabel = fallbackLocation ?? 'Unknown';
+    if (latitude != null && longitude != null && (fallbackLocation == null || fallbackLocation.isEmpty)) {
+      locationLabel = '${latitude.toStringAsFixed(4)},${longitude.toStringAsFixed(4)}';
+    }
+
+    final temp = _toDouble(values['temperature']);
+    final feels = _toDouble(values['temperatureApparent'] ?? values['temperature']);
+    final humidity = (values['humidity'] is num) ? (values['humidity'] as num).round() : 0;
+    final code = (values['weatherCode'] is num) ? (values['weatherCode'] as num).toInt() : 0;
+    final desc = describeTomorrowCode(code);
+    final tsIso = data['time'] as String?; // e.g. 2025-10-02T12:34:56Z
+    DateTime ts;
+    try {
+      ts = tsIso != null ? DateTime.parse(tsIso).toLocal() : DateTime.now();
+    } catch (_) {
+      ts = DateTime.now();
+    }
+
+    return WeatherSummary.realtime(description: desc, temperature: temp, feelsLike: feels, humidity: humidity, location: locationLabel, timestamp: ts);
+  }
+
+  double _toDouble(dynamic v) {
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v) ?? 0.0;
+    return 0.0;
+  }
+
+
+  Future<ForecastRange?> _fetchForecastMinMax(double latitude, double longitude) async {
+    final forecastUrl = _buildTomorrowForecast(latitude, longitude, timesteps: '1h', fields: const ['temperature']);
+    try {
+      final resp = await _httpClient.get(forecastUrl);
+      if (resp.statusCode != 200) return null;
+      final jsonBody = json.decode(resp.body) as Map<String, dynamic>;
+      final temps = _extractHourlyTemperatures(jsonBody);
+      if (temps.isEmpty) return null;
+      double min = temps.first;
+      double max = temps.first;
+      for (final t in temps) {
+        if (t < min) min = t;
+        if (t > max) max = t;
+      }
+      return ForecastRange(min, max);
+    } catch (_) {
+      return null; // swallow forecast errors
+    }
+  }
+
+  Future<ForecastRange?> _fetchForecastMinMaxFromLocation(String locationName) async {
+    // Without geocoding we cannot map name to coordinates reliably; return null for now.
+    return null;
+  }
+
+  List<double> _extractHourlyTemperatures(Map<String, dynamic> body) {
+    final temps = <double>[];
+    // Support two possible Tomorrow.io structures.
+    // Format A: { data: { timelines: [ { intervals: [ { startTime: ..., values: { temperature: 12.3 } } ] } ] } }
+    final data = body['data'];
+    if (data is Map) {
+      final timelines = data['timelines'];
+      if (timelines is List) {
+        for (final tl in timelines) {
+          if (tl is Map) {
+            final intervals = tl['intervals'];
+            if (intervals is List) {
+              for (final it in intervals) {
+                if (it is Map) {
+                  final values = it['values'];
+                  if (values is Map && values['temperature'] != null) {
+                    temps.add(_toDouble(values['temperature']));
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return temps;
+  }
+
+  /// Fetches and parses Tomorrow.io realtime weather data
+  Future<WeatherSummary> _fetchTomorrowRealtime(Uri url, {double? latitude, double? longitude, String? fallbackLocation}) async {
     try {
       final response = await _httpClient.get(url);
-
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
-        return WeatherSummary.fromJson(data);
+        return parseTomorrowRealtime(data, latitude: latitude, longitude: longitude, fallbackLocation: fallbackLocation);
       } else {
         throw WeatherApiException('Weather API returned status ${response.statusCode}', response.statusCode);
       }
     } catch (e) {
-      if (e is WeatherException) {
-        rethrow;
-      }
-
-      // Handle JSON parsing errors
+      if (e is WeatherException) rethrow;
       if (e is FormatException) {
         throw const WeatherParsingException('Failed to parse weather data');
       }
-
-      // Handle network errors
       throw WeatherNetworkException('Network error: ${e.toString()}');
     }
   }
 
-  /// Validates if a location name is valid by testing it with the weather API
+  /// Validates if a location name is valid by requesting Tomorrow.io realtime data
   Future<bool> validateLocation(String locationName) async {
     if (locationName.trim().isEmpty) return false;
-
     try {
-      await _ensureApiKeyValid(); // Lazy validation happens here
-      final url = _buildUrlForLocation(locationName.trim());
+      await _ensureApiKeyValid();
+      final url = _buildTomorrowRealtimeForLocation(locationName.trim(), fields: const ['temperature']);
       final response = await _httpClient.get(url);
 
       if (response.statusCode == 401) {
@@ -193,13 +363,11 @@ class WeatherService extends GetxService {
       if (response.statusCode != 200) {
         SnackBarHelper.showError('Error', 'Failed to validate location');
       } else {
-        debugPrint('Weather API response: ${response.body}');
+        debugPrint('Weather API response (validation): ${response.body}');
       }
-
       return response.statusCode == 200;
     } catch (e) {
       if (e is WeatherApiException && e.statusCode == 0) {
-        // API key not configured
         SnackBarHelper.showError('Error', 'Weather API key not configured');
       } else {
         SnackBarHelper.showError('Error', 'Failed to validate location');
