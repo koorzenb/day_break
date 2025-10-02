@@ -21,7 +21,7 @@ void main() {
 
     setUpAll(() async {
       // Initialize dotenv for tests
-      dotenv.testLoad(fileInput: 'OPENWEATHER_API_KEY=test_api_key_12345');
+      dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=test_api_key_12345');
     });
 
     setUp(() {
@@ -171,20 +171,15 @@ void main() {
     });
 
     group('environment variable', () {
-      test('should throw WeatherApiException when API key is not set in dotenv', () {
-        // Arrange - create a new dotenv instance without the API key
+      test('should throw WeatherApiException when no supported API key is set', () {
         dotenv.testLoad(fileInput: '');
         final testWeatherService = WeatherService(mockHttpClient);
-
-        // Act & Assert
         expect(
           () => testWeatherService.getWeather(testPosition),
-          throwsA(isA<WeatherApiException>().having((e) => e.message, 'message', contains('OpenWeatherMap API key not configured'))),
-          reason: 'Should throw WeatherApiException when API key is missing',
+          throwsA(isA<WeatherApiException>().having((e) => e.message, 'message', contains('Weather API key not configured'))),
+          reason: 'Should throw WeatherApiException with generic message when key missing',
         );
-
-        // Cleanup - restore the API key
-        dotenv.testLoad(fileInput: 'OPENWEATHER_API_KEY=test_api_key_12345');
+        dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=test_api_key_12345');
       });
     });
 
@@ -223,13 +218,10 @@ void main() {
         expect(serviceWithoutKey.hasApiKey, isFalse, reason: 'hasApiKey should return false when no API key is configured');
       });
 
-      test('hasApiKey should return true when API key is configured', () {
-        // Set up API key
-        dotenv.testLoad(fileInput: 'OPENWEATHER_API_KEY=test_key_123');
+      test('hasApiKey should return true when Tomorrow.io API key is configured', () {
+        dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=test_key_123');
         final serviceWithKey = WeatherService(mockHttpWithoutKey);
-
-        // Act & Assert
-        expect(serviceWithKey.hasApiKey, isTrue, reason: 'hasApiKey should return true when API key is configured');
+        expect(serviceWithKey.hasApiKey, isTrue, reason: 'hasApiKey should return true when new Tomorrow.io API key is configured');
       });
 
       test('apiKeyStatusMessage should return appropriate message when no API key', () {
@@ -244,17 +236,12 @@ void main() {
         expect(message, contains('unavailable'), reason: 'Status message should mention weather features will be unavailable');
       });
 
-      test('apiKeyStatusMessage should return success message when API key configured', () {
-        // Set up API key
-        dotenv.testLoad(fileInput: 'OPENWEATHER_API_KEY=test_key_123');
+      test('apiKeyStatusMessage should return success message when Tomorrow.io key configured', () {
+        dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=test_key_123');
         final serviceWithKey = WeatherService(mockHttpWithoutKey);
-
-        // Act
         final message = serviceWithKey.apiKeyStatusMessage;
-
-        // Assert
-        expect(message, contains('configured'), reason: 'Status message should indicate API key is configured');
-        expect(message, isNot(contains('unavailable')), reason: 'Success message should not mention unavailability');
+        expect(message, contains('configured'), reason: 'Status should indicate configured key');
+        expect(message, isNot(contains('unavailable')), reason: 'Configured message should not mention unavailability');
       });
 
       test('getWeather should throw WeatherApiException when no API key configured', () async {
@@ -299,9 +286,8 @@ void main() {
         expect(result, isFalse, reason: 'validateLocation should return false when API key is not configured');
       });
 
-      test('getWeather should work normally when API key is configured', () async {
-        // Set up API key
-        dotenv.testLoad(fileInput: 'OPENWEATHER_API_KEY=test_key_123');
+      test('getWeather should work normally when Tomorrow.io API key is configured', () async {
+        dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=test_key_123');
 
         // Arrange
         const mockResponse = {
@@ -342,9 +328,10 @@ void main() {
         expect(result.temperature, equals(15.5), reason: 'Should parse temperature correctly');
       });
 
+     
+
       tearDown(() {
-        // Restore API key for other tests
-        dotenv.testLoad(fileInput: 'OPENWEATHER_API_KEY=test_api_key_12345');
+        dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=test_api_key_12345');
       });
     });
   });

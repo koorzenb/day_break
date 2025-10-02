@@ -1,3 +1,9 @@
+## 1.2.1
+  
+### Refactor
+  
+- Update codebase to replace OpenWeatherMap API key references with Tomorrow.io API key
+
 ## 1.2.0
   
 ### Feature

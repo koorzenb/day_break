@@ -21,15 +21,13 @@ if errorlevel 1 exit /b 1
 call flutter clean
 call set-build-env.bat
 
-if "%OPENWEATHER_API_KEY%"=="" (
-    echo [ERROR] OPENWEATHER_API_KEY environment variable is not set.
-    echo         Set it in your shell before running this script, e.g.
-    echo         set OPENWEATHER_API_KEY=your_key_here
+REM Require Tomorrow.io key explicitly (no embedded fallback)
+if "%TOMORROWIO_API_KEY%"=="" (
+    echo TOMORROWIO_API_KEY environment variable is not set. Aborting build.
     exit /b 1
 )
 
-REM Prepare dart-define flags (future: append more here)
-set DART_DEFINES=--dart-define=OPENWEATHER_API_KEY=%OPENWEATHER_API_KEY%
+set DART_DEFINES=--dart-define=TOMORROWIO_API_KEY=%TOMORROWIO_API_KEY%
 
 @REM @REM If define_env is not configured, configure it
 @REM where /q define_env
@@ -64,14 +62,14 @@ if exist %OUTPUT_FOLDER%\%OUTPUT_FILE% (
     if not exist "%OUTPUT_FOLDER%" mkdir "%OUTPUT_FOLDER%"
 
     @REM for /F "usebackq delims=" %%A in (`define_env --f .env.prod --no-generate ^| sed -r "s/--dart-define=/--dart-define /g"`) do call flutter build apk --release -v -t lib/main_prod.dart --obfuscate --split-debug-info=./debug-info %%A
-    echo Using OPENWEATHER_API_KEY (length: %OPENWEATHER_API_KEY:~0,0%%OPENWEATHER_API_KEY:~0,1%*) for compile-time define.
+    echo Using TOMORROWIO_API_KEY for compile-time define.
 
     if "%1"=="--f" (
         call flutter build apk --release %DART_DEFINES%
     ) else (
         call flutter doctor -v > flutter-doctor-win.txt 
         call flutter pub outdated >> flutter-doctor-win.txt
-        call flutter build apk --release -v --obfuscate --split-debug-info=./debug-info --dart-define=OPENWEATHER_API_KEY
+    call flutter build apk --release -v --obfuscate --split-debug-info=./debug-info --dart-define=TOMORROWIO_API_KEY
     )
 
     echo.

@@ -11,6 +11,7 @@ import '../models/weather_exceptions.dart';
 import '../models/weather_summary.dart';
 
 class WeatherService extends GetxService {
+  // TODO(Phase 12): Replace OpenWeatherMap base URL with Tomorrow.io endpoint(s) once migration complete.
   static const String _baseUrl = 'https://api.openweathermap.org/data/2.5/forecast';
 
   /// Lazy validation state - null means not yet validated, true/false means validation result
@@ -26,18 +27,20 @@ class WeatherService extends GetxService {
   String? get _apiKeyOrNull {
     if (_cachedApiKey != null) return _cachedApiKey;
 
-    // Prefer compile-time define via --dart-define=OPENWEATHER_API_KEY=... so the key
+    // Prefer compile-time define via --dart-define=TOMORROWIO_API_KEY=... so the key
     // is baked into the build for production. Fallback to runtime dotenv for dev.
-    const fromDefine = String.fromEnvironment('OPENWEATHER_API_KEY');
+
+    const fromDefine = String.fromEnvironment('TOMORROWIO_API_KEY');
     if (fromDefine.isNotEmpty) {
       _cachedApiKey = fromDefine;
       return fromDefine;
     }
 
-    final fromDotEnv = dotenv.env['OPENWEATHER_API_KEY'];
-    if (fromDotEnv != null && fromDotEnv.isNotEmpty) {
-      _cachedApiKey = fromDotEnv;
-      return fromDotEnv;
+    // Check dotenv for new key
+    final fromDotEnvNew = dotenv.env['TOMORROWIO_API_KEY'];
+    if (fromDotEnvNew != null && fromDotEnvNew.isNotEmpty) {
+      _cachedApiKey = fromDotEnvNew;
+      return fromDotEnvNew;
     }
 
     return null;
@@ -71,7 +74,7 @@ class WeatherService extends GetxService {
     final apiKey = _apiKeyOrNull;
     if (apiKey == null) {
       _isApiKeyValid = false;
-      _lastValidationError = 'OpenWeatherMap API key not configured. Provide it via --dart-define or .env (OPENWEATHER_API_KEY).';
+      _lastValidationError = 'Weather API key not configured. Provide TOMORROWIO_API_KEY (preferred) via --dart-define or .env.';
       throw WeatherApiException(_lastValidationError!, 0);
     }
 

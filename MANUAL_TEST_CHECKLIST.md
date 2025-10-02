@@ -5,7 +5,7 @@ This checklist ensures core Day Break functionality works end-to-end before rele
 ## Environment Prep
 
 - Fresh install OR clear app data.
-- Confirm .env contains valid OPENWEATHER_API_KEY.
+- Confirm .env contains valid TOMORROWIO_API_KEY.
 - Device notification + location permissions reset.
 
 ## 1. Initial Launch & Setup Flow
@@ -86,7 +86,7 @@ This checklist ensures core Day Break functionality works end-to-end before rele
 
 - Disable network mid-fetch:
   - [ ] App handles error gracefully without crash.
-- Corrupt or missing .env API key:
+- Corrupt or missing TOMORROWIO_API_KEY:
   - [ ] Weather fetch path logs or surfaces meaningful message (current behavior: exception—documented; improvement planned Phase 9).
 
 ## 14. Performance
