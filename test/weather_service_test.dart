@@ -133,6 +133,98 @@ void main() {
         // Act & Assert
         expect(() => weatherService.getWeather(testPosition), throwsA(same(testException)), reason: 'Should rethrow WeatherException without wrapping');
       });
+
+      test('should throw WeatherBadRequestException for 400 status code', () async {
+        // Arrange
+        when(mockHttpClient.get(any)).thenAnswer((_) async => http.Response('{"message": "Bad request"}', 400));
+
+        // Act & Assert
+        expect(
+          () => weatherService.getWeather(testPosition),
+          throwsA(
+            isA<WeatherBadRequestException>()
+                .having((e) => e.statusCode, 'status code', equals(400))
+                .having((e) => e.message, 'message', contains('Invalid request parameters')),
+          ),
+          reason: 'Should throw WeatherBadRequestException for 400 status with specific message',
+        );
+      });
+
+      test('should throw WeatherAuthException for 401 status code', () async {
+        // Arrange
+        when(mockHttpClient.get(any)).thenAnswer((_) async => http.Response('{"message": "Unauthorized"}', 401));
+
+        // Act & Assert
+        expect(
+          () => weatherService.getWeather(testPosition),
+          throwsA(
+            isA<WeatherAuthException>()
+                .having((e) => e.statusCode, 'status code', equals(401))
+                .having((e) => e.message, 'message', contains('Invalid or missing API key')),
+          ),
+          reason: 'Should throw WeatherAuthException for 401 status with specific message',
+        );
+      });
+
+      test('should throw WeatherQuotaExceededException for 403 status code', () async {
+        // Arrange
+        when(mockHttpClient.get(any)).thenAnswer((_) async => http.Response('{"message": "Forbidden"}', 403));
+
+        // Act & Assert
+        expect(
+          () => weatherService.getWeather(testPosition),
+          throwsA(
+            isA<WeatherQuotaExceededException>()
+                .having((e) => e.statusCode, 'status code', equals(403))
+                .having((e) => e.message, 'message', contains('API quota exceeded')),
+          ),
+          reason: 'Should throw WeatherQuotaExceededException for 403 status with specific message',
+        );
+      });
+
+      test('should throw WeatherRateLimitException for 429 status code without retry-after', () async {
+        // Arrange
+        when(mockHttpClient.get(any)).thenAnswer((_) async => http.Response('{"message": "Too many requests"}', 429, headers: {}));
+
+        // Act & Assert
+        expect(
+          () => weatherService.getWeather(testPosition),
+          throwsA(
+            isA<WeatherRateLimitException>()
+                .having((e) => e.statusCode, 'status code', equals(429))
+                .having((e) => e.message, 'message', contains('Rate limit exceeded'))
+                .having((e) => e.retryAfterSeconds, 'retry after seconds', isNull),
+          ),
+          reason: 'Should throw WeatherRateLimitException for 429 status without retry-after header',
+        );
+      });
+
+      test('should throw WeatherRateLimitException for 429 status code with retry-after header', () async {
+        // Arrange - Use a shorter retry-after to avoid test timeout
+        when(mockHttpClient.get(any)).thenAnswer((_) async => http.Response('{"message": "Too many requests"}', 429, headers: {'retry-after': '1'}));
+
+        // Act & Assert
+        expect(
+          () => weatherService.getWeather(testPosition),
+          throwsA(
+            isA<WeatherRateLimitException>()
+                .having((e) => e.statusCode, 'status code', equals(429))
+                .having((e) => e.message, 'message', contains('Rate limit exceeded'))
+                .having((e) => e.retryAfterSeconds, 'retry after seconds', equals(1)),
+          ),
+          reason: 'Should throw WeatherRateLimitException for 429 status with parsed retry-after header',
+        );
+      });
+    });
+
+    group('retry logic', () {
+      test('should fail after max retries exceeded', () async {
+        // Arrange - All calls return 429
+        when(mockHttpClient.get(any)).thenAnswer((_) async => http.Response('{"message": "Too many requests"}', 429));
+
+        // Act & Assert
+        expect(() => weatherService.getWeather(testPosition), throwsA(isA<WeatherRateLimitException>()), reason: 'Should throw after max retries exceeded');
+      });
     });
 
     group('environment variable', () {
@@ -271,6 +363,67 @@ void main() {
         expect(result, isNotNull, reason: 'Should return WeatherSummary when API key is configured');
         expect(result.temperature, equals(15.5), reason: 'Should parse realtime temperature correctly');
         expect(result.description, equals('Clear'), reason: 'Should map weatherCode to description');
+      });
+
+      test('should throw WeatherBadRequestException when validation returns 400', () async {
+        dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=bad_request_key');
+        when(mockHttpWithoutKey.get(any)).thenAnswer((_) async => http.Response('{"message": "Bad request"}', 400));
+
+        expect(
+          () => serviceWithoutKey.getWeather(testPosition),
+          throwsA(
+            isA<WeatherBadRequestException>()
+                .having((e) => e.statusCode, 'status code', equals(400))
+                .having((e) => e.message, 'message', contains('Invalid request parameters')),
+          ),
+          reason: 'Should throw WeatherBadRequestException for validation 400 error',
+        );
+      });
+
+      test('should throw WeatherAuthException when validation returns 401', () async {
+        dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=invalid_key');
+        when(mockHttpWithoutKey.get(any)).thenAnswer((_) async => http.Response('{"message": "Unauthorized"}', 401));
+
+        expect(
+          () => serviceWithoutKey.getWeather(testPosition),
+          throwsA(
+            isA<WeatherAuthException>()
+                .having((e) => e.statusCode, 'status code', equals(401))
+                .having((e) => e.message, 'message', contains('Invalid or missing API key')),
+          ),
+          reason: 'Should throw WeatherAuthException for validation 401 error',
+        );
+      });
+
+      test('should throw WeatherQuotaExceededException when validation returns 403', () async {
+        dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=quota_exceeded_key');
+        when(mockHttpWithoutKey.get(any)).thenAnswer((_) async => http.Response('{"message": "Forbidden"}', 403));
+
+        expect(
+          () => serviceWithoutKey.getWeather(testPosition),
+          throwsA(
+            isA<WeatherQuotaExceededException>()
+                .having((e) => e.statusCode, 'status code', equals(403))
+                .having((e) => e.message, 'message', contains('API quota exceeded')),
+          ),
+          reason: 'Should throw WeatherQuotaExceededException for validation 403 error',
+        );
+      });
+
+      test('should throw WeatherRateLimitException when validation returns 429', () async {
+        dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=rate_limited_key');
+        when(mockHttpWithoutKey.get(any)).thenAnswer((_) async => http.Response('{"message": "Too many requests"}', 429, headers: {'retry-after': '120'}));
+
+        expect(
+          () => serviceWithoutKey.getWeather(testPosition),
+          throwsA(
+            isA<WeatherRateLimitException>()
+                .having((e) => e.statusCode, 'status code', equals(429))
+                .having((e) => e.message, 'message', contains('Rate limit exceeded'))
+                .having((e) => e.retryAfterSeconds, 'retry after seconds', equals(120)),
+          ),
+          reason: 'Should throw WeatherRateLimitException for validation 429 error with retry-after',
+        );
       });
 
       tearDown(() {

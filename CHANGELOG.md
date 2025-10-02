@@ -1,3 +1,9 @@
+## 1.4.0
+  
+### Feature
+  
+- Enhance weather service error handling and implement retry logic for API requests
+
 ## 1.3.0
   
 ### Feature

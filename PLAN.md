@@ -29,7 +29,7 @@ This document outlines the development plan for the Day Break application, based
     - Production fetch path uses Tomorrow.io realtime and forecast timeline for min/max
     - Handles missing/failed forecast gracefully (falls back to realtime temp)
     - Test: Adapter and integration tests pass for all cases
-  - [ ] **Step 12.6**: Update Error Handling
+  - [x] **Step 12.6**: Update Error Handling
     - Implement handling for Tomorrow.io HTTP errors (400 invalid request, 401 unauthorized, 403 quota, 429 rate limit)
     - Add retry/backoff hooks for 429 (respect `Retry-After` if provided)
     - Introduce specific exception messages for quota exceeded vs auth failure

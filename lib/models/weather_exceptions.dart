@@ -32,3 +32,40 @@ class WeatherParsingException extends WeatherException {
   @override
   String toString() => 'WeatherParsingException: $message';
 }
+
+/// Thrown when API quota is exceeded
+class WeatherQuotaExceededException extends WeatherApiException {
+  const WeatherQuotaExceededException(super.message, super.statusCode);
+
+  @override
+  String toString() => 'WeatherQuotaExceededException ($statusCode): $message';
+}
+
+/// Thrown when API request is invalid (400)
+class WeatherBadRequestException extends WeatherApiException {
+  const WeatherBadRequestException(super.message, super.statusCode);
+
+  @override
+  String toString() => 'WeatherBadRequestException ($statusCode): $message';
+}
+
+/// Thrown when API authentication fails
+class WeatherAuthException extends WeatherApiException {
+  const WeatherAuthException(super.message, super.statusCode);
+
+  @override
+  String toString() => 'WeatherAuthException ($statusCode): $message';
+}
+
+/// Thrown when API rate limit is exceeded
+class WeatherRateLimitException extends WeatherApiException {
+  final int? retryAfterSeconds;
+
+  const WeatherRateLimitException(super.message, super.statusCode, [this.retryAfterSeconds]);
+
+  @override
+  String toString() {
+    final retryInfo = retryAfterSeconds != null ? ' (retry after ${retryAfterSeconds}s)' : '';
+    return 'WeatherRateLimitException ($statusCode): $message$retryInfo';
+  }
+}
