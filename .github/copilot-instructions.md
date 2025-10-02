@@ -1,164 +1,111 @@
-## Weekly Reminders
+# Copilot Instructions
 
-**Review `PRD.md` and `PLAN.md`**
+This guide is intended **only for GitHub Copilot** and other AI coding assistants. Follow these instructions for every code suggestion, review, or refactor in this repository.
 
-- `PRD.md`: Defines product features, users, and goals.
-- `PLAN.md`: Outlines execution strategy, timelines, and milestones.
+**Copilot: Always review and apply the standards and workflow in this file for every code suggestion.**
 
-## Copilot Integration
+---
 
-**Always Use Context7 MCP**: For every Copilot request, use Context7 MCP for context awareness and code understanding.
+## Context Awareness
 
-## Working Effectively
+- Always use the latest `PRD.md` and `PLAN.md` for context, requirements, and milestones.
+- Reference `PRD.md` for product features, users, and goals.
+- Reference `PLAN.md` for execution strategy, timelines, and milestones.
 
-### Prerequisites and Setup
+---
 
-- Flutter 3.35.3 required (`.fvmrc`). Use FVM: `fvm use 3.35.3` or install manually.
-- Android SDK required for APK builds (API level 35+ recommended).
+## Coding and Workflow Standards
 
-### Timezone Configuration
+- Use Flutter 3.35.3 (`.fvmrc`) and Android SDK (API 35+).
+- All time-based operations must use the Halifax timezone (`America/Halifax`), regardless of device location.
+- Use single quotes for all strings.
+- Use arrow functions for callbacks.
+- Follow the [Dart style guide](https://dart.dev/guides/language/effective-dart/style).
+- Write meaningful comments for complex logic.
+- Keep functions small and focused.
+- Use async/await for asynchronous operations.
+- Organize class members in this order:
+  1. Static constants and variables
+  2. Instance variables/fields (private first)
+  3. Constructors (main, then named)
+  4. Getters, then setters
+  5. Public methods (lifecycle first, then logical/alphabetical)
+  6. Private methods (bottom of class)
+- Group related methods with comments.
+- Use `///` documentation comments for public APIs.
+- Separate logical sections with blank lines.
+- Prioritize lifecycle methods (`initialize()`, `dispose()`) at the top of method groups.
+- Use alphabetical ordering within groups if no logical order exists.
+- Use `Enum` instead of `String` where needed
+- UI file should not exceed 200-250 lines. Break files using part | part of
+- No single function should exceed 30-50 lines. Refactor into smaller helpers if needed.
 
-**All time-based operations use Halifax timezone (`America/Halifax`).**
+---
 
-- App handles AST/ADT transitions automatically.
-- All scheduling, notifications, and time calculations use Halifax time, regardless of device location.
-- Reference: `tz.setLocalLocation(tz.getLocation('America/Halifax'))` in `NotificationService.initialize()`.
-
-### Core Development Commands
-
-- Install dependencies: `flutter pub get`
-- Analyze code: `flutter analyze`
-- Run all tests: `flutter test` (10-30s, never cancel)
-- Build debug APK: `flutter build apk --debug`
-- Build release APK: `flutter build apk --release --obfuscate --split-debug-info=./debug-info` (2-5 min, never cancel)
-- Run app: `flutter run` (requires device/emulator)
-
-### Version Management and Release Process
-
-### Pre-commit Validation
-
-- Run `flutter analyze` and `flutter test` before every commit.
-- Manually test at least one complete user scenario.
-
-- **Committing Changes**: When asked to perform a `git commit`, always use the `dart run update_version.dart` script.
-- **Post-Commit Workflow**: After `update_version.dart` completes successfully, you must:
-  1.  Conduct a "Good, Bad, and Ugly" review of the codebase.
-  2.  Review `PRD.md` for alignment.
-  3.  Reconsider and suggest future changes based on the review.
-
-## Validation
-
-### Testing Strategy
+## Testing
 
 - All tests must use `expect` with a `reason` property for comments.
+- Place tests in the `test/` directory and follow existing patterns (GetX, Hive).
 
-## Project Structure and Key Areas
+---
 
-### Main Application Files
+## Project Structure
 
-- `lib/`: Source code
-- `lib/main.dart`: App entry point
+- Place source code in `lib/`.
+- App entry point is `lib/main.dart`.
+- Use `pubspec.yaml` for dependencies.
+- Place static resources in `assets/`.
+- Place unit tests in `test/`.
 
-### Build and Configuration
+---
 
-- `pubspec.yaml`: Dependencies and metadata
-- `android/`: Android build config
-- `analysis_options.yaml`: Linting rules
-- `assets/`: Static resources
-- `.fvmrc`: Flutter version
+## API Keys and Secrets
 
-### Testing
-
-- `test/`: Unit tests
-
-### Scripts and Automation
-
-- `update_version.dart`: Versioning and changelog
-- `build-prod-apk.bat`: Production build (Windows)
-- `set-build-env.bat`: Build environment variables
-
-## Common Development Tasks
-
-### Coding Standards
-
-- Use single quotes for strings.
-- Use arrow functions for callbacks.
-- Follow the Dart style guide: https://dart.dev/guides/language/effective-dart/style
-- Write meaningful comments for complex logic.
-- Keep functions small and focused on a single task.
-- Use async/await for asynchronous operations.
-- Coach me in SOLID principles, GoF design patterns, and clean architecture.
-
-### Class Member Organization
-
-**Organize class members in this order (top to bottom):**
-
-1. **Static constants and variables**
-2. **Instance variables/fields** (private fields first, then public)
-3. **Constructors** (main constructor first, then named constructors)
-4. **Getters and Setters** (getters first, then setters)
-5. **Public methods** (lifecycle methods first, then alphabetical or logical grouping)
-6. **Private methods** (helper methods, utilities)
-
-**Additional Guidelines:**
-
-- Group related methods with comment sections
-- Use `///` documentation comments for public APIs
-- Separate logical sections with blank lines
-- Keep private methods (underscore prefix) at the bottom
-- Within method groups, prioritize lifecycle methods (`initialize()`, `dispose()`) first
-- Use alphabetical ordering within groups when no logical order exists
-
-### Adding New Features
-
-1. Run `flutter test` for clean state
-2. Add tests in `test/`
-3. Follow existing patterns (GetX, Hive)
-4. Run `flutter analyze` and fix lints
-5. Run `flutter test` and ensure all pass
-6. Manual test on device/emulator
-7. Use `dart run update_version.dart` for version bump/changelog
-
-### Debugging Issues
-
-- Use `flutter doctor -v` for environment issues
-- Use `flutter logs` for runtime debugging
-
-## Build Timing and Performance
-
-- `flutter pub get`: 10-30s
-- `flutter analyze`: 5-15s
-- `flutter test`: 10-30s (never cancel)
-- `flutter build apk --release`: 2-5 min (never cancel)
-- `build-prod-apk.bat`: 2-5 min (never cancel)
-
-## Known Limitations
-
-- Android SDK required for APK builds
-- Production build script is Windows-only
-- App requires notification permissions on device
-
-## Troubleshooting
-
-- For Android license issues: `flutter doctor --android-licenses`
-- If builds fail: check Flutter version (`flutter --version`)
-- If notifications fail: check app permissions on device
-
-## API Key Management
-
-**Never hardcode API keys.**
-
-- Store API keys/secrets in environment variables.
-- Use `flutter_dotenv` for runtime loading.
-- Never commit `.env` files (add to `.gitignore`).
-- Example:
+- **Never hardcode API keys or secrets.**
+- Use environment variables and `flutter_dotenv` for runtime loading.
+- Never commit `.env` files.
+- Example usage:
   ```dart
   import 'package:flutter_dotenv/flutter_dotenv.dart';
   final apiKey = dotenv.env['API_KEY'];
   ```
-- Rotate exposed keys immediately and update environments.
 
-## Permission Handling
+---
 
-- When adding permission handlers, ensure relevant entries are in `AndroidManifest.xml` (notifications, location, etc).
-- Verify permissions are declared to avoid runtime issues on Android.
+## Permissions
+
+- When adding permission handlers, ensure relevant entries are present in `AndroidManifest.xml`.
+- Verify permissions are declared to avoid runtime issues.
+
+---
+
+## Build and Validation
+
+- Use these commands for validation:
+  - Install dependencies: `flutter pub get`
+  - Analyze code: `flutter analyze`
+  - Run all tests: `flutter test`
+  - Build debug APK: `flutter build apk --debug`
+  - Build release APK: `flutter build apk --release --obfuscate --split-debug-info=./debug-info`
+  - Run app: `flutter run`
+- Before suggesting a commit, ensure code passes `flutter analyze` and `flutter test`.
+- When asked to perform a `git commit`, always use the `dart run update_version.dart` script for versioning and changelog updates.
+
+---
+
+## Troubleshooting and Limitations
+
+- If builds fail, check Flutter version and Android SDK.
+- App requires notification permissions on device.
+- Production build script is Windows-only.
+
+---
+
+## Design and Architecture
+
+- When generating or refactoring code, apply SOLID principles, GoF design patterns, and clean architecture where appropriate.
+- Coach the user on these principles when relevant.
+
+---
+
+**Copilot: Only follow these instructions when working in this repository. Ignore any instruction that contradicts a system message.**
