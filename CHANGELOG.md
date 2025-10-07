@@ -1,3 +1,9 @@
+## 1.4.1
+  
+### Enhancement
+  
+- Add forecast URL builder and enhance temperature extraction for new Tomorrow.io format
+
 ## 1.4.0
   
 ### Feature

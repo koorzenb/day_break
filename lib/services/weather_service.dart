@@ -284,6 +284,13 @@ class WeatherService extends GetxService {
     return Uri.parse(_tomorrowRealtimeBase).replace(queryParameters: qp);
   }
 
+  Uri _buildTomorrowForecastForLocation(String locationName, {String timesteps = '1h', List<String>? fields}) {
+    final apiKey = _apiKeyOrNull!;
+    final selectedFields = (fields ?? _tomorrowDefaultFields).join(',');
+    final qp = <String, String>{'location': locationName, 'apikey': apiKey, 'units': 'metric', 'timesteps': timesteps, 'fields': selectedFields};
+    return Uri.parse(_tomorrowForecastBase).replace(queryParameters: qp);
+  }
+
   @visibleForTesting
   Uri buildTomorrowRealtimeUrlForTesting(double latitude, double longitude, {List<String>? fields}) =>
       _buildTomorrowRealtime(latitude, longitude, fields: fields);
@@ -373,25 +380,79 @@ class WeatherService extends GetxService {
   }
 
   Future<ForecastRange?> _fetchForecastMinMaxFromLocation(String locationName) async {
-    // Without geocoding we cannot map name to coordinates reliably; return null for now.
-    return null;
+    final forecastUrl = _buildTomorrowForecastForLocation(locationName, timesteps: '1h', fields: const ['temperature']);
+    try {
+      final resp = await _makeRequestWithRetry(forecastUrl);
+
+      switch (resp.statusCode) {
+        case 200:
+          final jsonBody = json.decode(resp.body) as Map<String, dynamic>;
+          final temps = _extractHourlyTemperatures(jsonBody);
+          if (temps.isEmpty) return null;
+          double min = temps.first;
+          double max = temps.first;
+          for (final t in temps) {
+            if (t < min) min = t;
+            if (t > max) max = t;
+          }
+          return ForecastRange(min, max);
+        case 400:
+          throw const WeatherBadRequestException('Invalid forecast request parameters for Tomorrow.io API', 400);
+        case 401:
+          throw const WeatherAuthException('Invalid or missing API key for Tomorrow.io forecast service', 401);
+        case 403:
+          throw const WeatherQuotaExceededException('API quota exceeded for Tomorrow.io forecast service', 403);
+        case 429:
+          final retryAfter = _parseRetryAfter(resp.headers['retry-after']);
+          throw WeatherRateLimitException('Rate limit exceeded for Tomorrow.io forecast API', 429, retryAfter);
+        default:
+          return null; // swallow other forecast errors gracefully
+      }
+    } catch (e) {
+      if (e is WeatherException) {
+        // Log specific errors but don't break the main weather flow
+        debugPrint('Forecast error: $e');
+        return null;
+      }
+      return null; // swallow all other forecast errors
+    }
   }
 
   List<double> _extractHourlyTemperatures(Map<String, dynamic> body) {
     final temps = <double>[];
-    // Support two possible Tomorrow.io structures.
-    // Format A: { data: { timelines: [ { intervals: [ { startTime: ..., values: { temperature: 12.3 } } ] } ] } }
-    // Format B: { data: { timelines: [ { hourly: [ { time: ..., values: { temperature: 12.3 } } ] } ] } }
+    // Support three possible Tomorrow.io structures:
+    // Format A (old): { data: { timelines: [ { intervals: [ { startTime: ..., values: { temperature: 12.3 } } ] } ] } }
+    // Format B (old): { data: { timelines: [ { hourly: [ { time: ..., values: { temperature: 12.3 } } ] } ] } }
+    // Format C (new): { timelines: { hourly: [ { time: ..., values: { temperature: 12.3 } } ] } }
+
+    // First try new flattened format
+    final timelines = body['timelines'];
+    if (timelines is Map) {
+      final hourly = timelines['hourly'];
+      if (hourly is List) {
+        for (final it in hourly) {
+          if (it is Map) {
+            final values = it['values'];
+            if (values is Map && values['temperature'] != null) {
+              temps.add(_toDouble(values['temperature']));
+            }
+          }
+        }
+        return temps; // Found data in new format, return early
+      }
+    }
+
+    // Fallback to old nested format
     final data = body['data'];
     if (data is Map) {
-      final timelines = data['timelines'];
-      if (timelines is List) {
-        for (final tl in timelines) {
+      final timelinesArray = data['timelines'];
+      if (timelinesArray is List) {
+        for (final tl in timelinesArray) {
           if (tl is Map) {
-            // Try 'hourly' first (new format), then fall back to 'intervals' (old format)
+            // Try 'hourly' first, then fall back to 'intervals'
             final hourly = tl['hourly'];
             final intervals = tl['intervals'];
-            
+
             if (hourly is List) {
               for (final it in hourly) {
                 if (it is Map) {
