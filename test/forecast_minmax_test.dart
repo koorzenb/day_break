@@ -39,7 +39,7 @@ void main() {
       );
     });
 
-    test('min/max from forecast overrides realtime', () async {
+    test('min/max from forecast with intervals format overrides realtime', () async {
       // Arrange: realtime returns 10.0, forecast returns [7.0, 10.0, 13.0]
       final realtimePayload = {
         'data': {
