@@ -381,14 +381,27 @@ class WeatherService extends GetxService {
     final temps = <double>[];
     // Support two possible Tomorrow.io structures.
     // Format A: { data: { timelines: [ { intervals: [ { startTime: ..., values: { temperature: 12.3 } } ] } ] } }
+    // Format B: { data: { timelines: [ { hourly: [ { time: ..., values: { temperature: 12.3 } } ] } ] } }
     final data = body['data'];
     if (data is Map) {
       final timelines = data['timelines'];
       if (timelines is List) {
         for (final tl in timelines) {
           if (tl is Map) {
+            // Try 'hourly' first (new format), then fall back to 'intervals' (old format)
+            final hourly = tl['hourly'];
             final intervals = tl['intervals'];
-            if (intervals is List) {
+            
+            if (hourly is List) {
+              for (final it in hourly) {
+                if (it is Map) {
+                  final values = it['values'];
+                  if (values is Map && values['temperature'] != null) {
+                    temps.add(_toDouble(values['temperature']));
+                  }
+                }
+              }
+            } else if (intervals is List) {
               for (final it in intervals) {
                 if (it is Map) {
                   final values = it['values'];
