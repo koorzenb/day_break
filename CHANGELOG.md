@@ -1,3 +1,9 @@
+## 1.4.4
+  
+### Docs
+  
+- Update Plan.md  to convert project to package and define public API interface for core weather functionality
+
 ## 1.4.3
   
 ### Docs
