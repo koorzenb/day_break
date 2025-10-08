@@ -37,7 +37,7 @@ This guide is intended **only for GitHub Copilot** and other AI coding assistant
 - Prioritize lifecycle methods (`initialize()`, `dispose()`) at the top of method groups.
 - Use alphabetical ordering within groups if no logical order exists.
 - Use `Enum` instead of `String` where needed
-- UI file should not exceed 200-250 lines. Break files using part | part of
+- UI file should not exceed 200-250 lines. Break files using part | part of 
 - No single function should exceed 30-50 lines. Refactor into smaller helpers if needed.
 
 ---

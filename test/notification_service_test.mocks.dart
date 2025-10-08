@@ -5,6 +5,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i6;
 
+import 'package:day_break/models/recurrence_pattern.dart' as _i16;
 import 'package:day_break/models/weather_summary.dart' as _i3;
 import 'package:day_break/services/settings_service.dart' as _i4;
 import 'package:day_break/services/weather_service.dart' as _i13;
@@ -15,21 +16,21 @@ import 'package:flutter_local_notifications/src/initialization_settings.dart'
 import 'package:flutter_local_notifications/src/notification_details.dart'
     as _i9;
 import 'package:flutter_local_notifications/src/platform_flutter_local_notifications.dart'
-    as _i16;
-import 'package:flutter_local_notifications/src/platform_specifics/android/enums.dart'
-    as _i19;
-import 'package:flutter_local_notifications/src/platform_specifics/android/initialization_settings.dart'
     as _i17;
-import 'package:flutter_local_notifications/src/platform_specifics/android/notification_channel.dart'
-    as _i21;
-import 'package:flutter_local_notifications/src/platform_specifics/android/notification_channel_group.dart'
+import 'package:flutter_local_notifications/src/platform_specifics/android/enums.dart'
     as _i20;
-import 'package:flutter_local_notifications/src/platform_specifics/android/notification_details.dart'
+import 'package:flutter_local_notifications/src/platform_specifics/android/initialization_settings.dart'
     as _i18;
+import 'package:flutter_local_notifications/src/platform_specifics/android/notification_channel.dart'
+    as _i22;
+import 'package:flutter_local_notifications/src/platform_specifics/android/notification_channel_group.dart'
+    as _i21;
+import 'package:flutter_local_notifications/src/platform_specifics/android/notification_details.dart'
+    as _i19;
 import 'package:flutter_local_notifications/src/platform_specifics/android/schedule_mode.dart'
     as _i11;
 import 'package:flutter_local_notifications/src/platform_specifics/android/styles/messaging_style_information.dart'
-    as _i22;
+    as _i23;
 import 'package:flutter_local_notifications/src/types.dart' as _i12;
 import 'package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart'
     as _i8;
@@ -464,6 +465,27 @@ class MockSettingsService extends _i1.Mock implements _i4.SettingsService {
   }
 
   @override
+  bool get isRecurring =>
+      (super.noSuchMethod(Invocation.getter(#isRecurring), returnValue: false)
+          as bool);
+
+  @override
+  _i16.RecurrencePattern get recurrencePattern =>
+      (super.noSuchMethod(
+            Invocation.getter(#recurrencePattern),
+            returnValue: _i16.RecurrencePattern.daily,
+          )
+          as _i16.RecurrencePattern);
+
+  @override
+  List<int> get recurrenceDays =>
+      (super.noSuchMethod(
+            Invocation.getter(#recurrenceDays),
+            returnValue: <int>[],
+          )
+          as List<int>);
+
+  @override
   _i2.InternalFinalCallback<void> get onStart =>
       (super.noSuchMethod(
             Invocation.getter(#onStart),
@@ -542,6 +564,50 @@ class MockSettingsService extends _i1.Mock implements _i4.SettingsService {
           as _i6.Future<void>);
 
   @override
+  _i6.Future<void> setIsRecurring(bool? isRecurring) =>
+      (super.noSuchMethod(
+            Invocation.method(#setIsRecurring, [isRecurring]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> setRecurrencePattern(_i16.RecurrencePattern? pattern) =>
+      (super.noSuchMethod(
+            Invocation.method(#setRecurrencePattern, [pattern]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> setRecurrenceDays(List<int>? days) =>
+      (super.noSuchMethod(
+            Invocation.method(#setRecurrenceDays, [days]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> setRecurringConfig({
+    required bool? isRecurring,
+    _i16.RecurrencePattern? pattern = _i16.RecurrencePattern.daily,
+    List<int>? customDays,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#setRecurringConfig, [], {
+              #isRecurring: isRecurring,
+              #pattern: pattern,
+              #customDays: customDays,
+            }),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
   _i6.Future<void> clearSettings() =>
       (super.noSuchMethod(
             Invocation.method(#clearSettings, []),
@@ -579,14 +645,14 @@ class MockSettingsService extends _i1.Mock implements _i4.SettingsService {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
-    implements _i16.AndroidFlutterLocalNotificationsPlugin {
+    implements _i17.AndroidFlutterLocalNotificationsPlugin {
   MockAndroidFlutterLocalNotificationsPlugin() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
   _i6.Future<bool> initialize(
-    _i17.AndroidInitializationSettings? initializationSettings, {
+    _i18.AndroidInitializationSettings? initializationSettings, {
     _i8.DidReceiveNotificationResponseCallback?
     onDidReceiveNotificationResponse,
     _i8.DidReceiveBackgroundNotificationResponseCallback?
@@ -653,7 +719,7 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
     String? title,
     String? body,
     _i10.TZDateTime? scheduledDate,
-    _i18.AndroidNotificationDetails? notificationDetails, {
+    _i19.AndroidNotificationDetails? notificationDetails, {
     required _i11.AndroidScheduleMode? scheduleMode,
     String? payload,
     _i12.DateTimeComponents? matchDateTimeComponents,
@@ -678,11 +744,11 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
     int? id,
     String? title,
     String? body, {
-    _i18.AndroidNotificationDetails? notificationDetails,
+    _i19.AndroidNotificationDetails? notificationDetails,
     String? payload,
-    _i19.AndroidServiceStartType? startType =
-        _i19.AndroidServiceStartType.startSticky,
-    Set<_i19.AndroidServiceForegroundType>? foregroundServiceTypes,
+    _i20.AndroidServiceStartType? startType =
+        _i20.AndroidServiceStartType.startSticky,
+    Set<_i20.AndroidServiceForegroundType>? foregroundServiceTypes,
   }) =>
       (super.noSuchMethod(
             Invocation.method(
@@ -714,7 +780,7 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
     int? id,
     String? title,
     String? body, {
-    _i18.AndroidNotificationDetails? notificationDetails,
+    _i19.AndroidNotificationDetails? notificationDetails,
     String? payload,
   }) =>
       (super.noSuchMethod(
@@ -734,7 +800,7 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
     String? title,
     String? body,
     _i8.RepeatInterval? repeatInterval, {
-    _i18.AndroidNotificationDetails? notificationDetails,
+    _i19.AndroidNotificationDetails? notificationDetails,
     String? payload,
     _i11.AndroidScheduleMode? scheduleMode = _i11.AndroidScheduleMode.exact,
   }) =>
@@ -759,7 +825,7 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
     String? title,
     String? body,
     Duration? repeatDurationInterval, {
-    _i18.AndroidNotificationDetails? notificationDetails,
+    _i19.AndroidNotificationDetails? notificationDetails,
     String? payload,
     _i11.AndroidScheduleMode? scheduleMode = _i11.AndroidScheduleMode.exact,
   }) =>
@@ -789,7 +855,7 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
 
   @override
   _i6.Future<void> createNotificationChannelGroup(
-    _i20.AndroidNotificationChannelGroup? notificationChannelGroup,
+    _i21.AndroidNotificationChannelGroup? notificationChannelGroup,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#createNotificationChannelGroup, [
@@ -811,7 +877,7 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
 
   @override
   _i6.Future<void> createNotificationChannel(
-    _i21.AndroidNotificationChannel? notificationChannel,
+    _i22.AndroidNotificationChannel? notificationChannel,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#createNotificationChannel, [
@@ -832,7 +898,7 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
           as _i6.Future<void>);
 
   @override
-  _i6.Future<_i22.MessagingStyleInformation?>
+  _i6.Future<_i23.MessagingStyleInformation?>
   getActiveNotificationMessagingStyle(int? id, {String? tag}) =>
       (super.noSuchMethod(
             Invocation.method(
@@ -840,19 +906,19 @@ class MockAndroidFlutterLocalNotificationsPlugin extends _i1.Mock
               [id],
               {#tag: tag},
             ),
-            returnValue: _i6.Future<_i22.MessagingStyleInformation?>.value(),
+            returnValue: _i6.Future<_i23.MessagingStyleInformation?>.value(),
           )
-          as _i6.Future<_i22.MessagingStyleInformation?>);
+          as _i6.Future<_i23.MessagingStyleInformation?>);
 
   @override
-  _i6.Future<List<_i21.AndroidNotificationChannel>?>
+  _i6.Future<List<_i22.AndroidNotificationChannel>?>
   getNotificationChannels() =>
       (super.noSuchMethod(
             Invocation.method(#getNotificationChannels, []),
             returnValue:
-                _i6.Future<List<_i21.AndroidNotificationChannel>?>.value(),
+                _i6.Future<List<_i22.AndroidNotificationChannel>?>.value(),
           )
-          as _i6.Future<List<_i21.AndroidNotificationChannel>?>);
+          as _i6.Future<List<_i22.AndroidNotificationChannel>?>);
 
   @override
   _i6.Future<bool?> areNotificationsEnabled() =>

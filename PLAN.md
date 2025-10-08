@@ -58,7 +58,7 @@ This document outlines the development plan for the Day Break application, based
     - Add `recurrenceDays` list for custom day selection (1=Monday, 7=Sunday)
     - Update Hive adapter for new fields with proper versioning/migration
     - Test: Verify settings persist and load correctly with new fields
-  - [ ] **Step 13.2**: Update Settings UI
+  - [x] **Step 13.2**: Update Settings UI
     - Add toggle switch for "Recurring announcement" below time picker
     - Show recurrence options when recurring is enabled (daily, weekdays, weekends, custom)
     - For custom pattern, show day-of-week checkboxes (Mon, Tue, Wed, etc.)

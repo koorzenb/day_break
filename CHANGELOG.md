@@ -1,3 +1,16 @@
+## 1.5.1
+  
+### Enhancement
+  
+Add location and recurring schedule sections to settings screen
+
+- Implemented _GPSDetectionSection for automatic location detection with suggestions and error handling.
+- Created _LocationSection to manage location settings, including manual input and GPS detection.
+- Added _RecurringScheduleSection to configure recurring announcements with pattern and day selection.
+- Introduced _SettingsStatusSection to display setup status and provide reset functionality.
+- Developed _TimePickerSection for daily announcement time selection.
+- Enhanced settings controller with recurring functionality tests and mock implementations.
+
 ## 1.5.0
   
 ### Feature

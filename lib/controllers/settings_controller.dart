@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../models/app_constants.dart';
 import '../models/location_exceptions.dart';
+import '../models/recurrence_pattern.dart';
 import '../services/location_service.dart';
 import '../services/settings_service.dart';
 import '../services/weather_service.dart';
@@ -19,6 +20,11 @@ class SettingsController extends GetxController {
   final _location = ''.obs;
   final _isLoading = false.obs;
 
+  // Recurring announcement state management
+  final _isRecurring = false.obs;
+  final _recurrencePattern = RecurrencePattern.daily.obs;
+  final _recurrenceDays = <int>[].obs;
+
   // Location detection state management
   final _isDetectingLocation = false.obs;
   final _detectedLocationSuggestion = Rxn<String>();
@@ -28,6 +34,11 @@ class SettingsController extends GetxController {
   TimeOfDay? get selectedTime => _selectedTime.value;
   String get location => _location.value;
   bool get isLoading => _isLoading.value;
+
+  // Recurring announcement getters
+  bool get isRecurring => _isRecurring.value;
+  RecurrencePattern get recurrencePattern => _recurrencePattern.value;
+  List<int> get recurrenceDays => _recurrenceDays.toList();
 
   // Location detection getters
   bool get isDetectingLocation => _isDetectingLocation.value;
@@ -72,6 +83,11 @@ class SettingsController extends GetxController {
     if (savedLocation != null) {
       _location.value = savedLocation;
     }
+
+    // Load recurring settings
+    _isRecurring.value = _settingsService.isRecurring;
+    _recurrencePattern.value = _settingsService.recurrencePattern;
+    _recurrenceDays.assignAll(_settingsService.recurrenceDays);
   }
 
   /// Update the selected announcement time
@@ -180,6 +196,71 @@ class SettingsController extends GetxController {
     return _selectedTime.value!.format(context);
   }
 
+  /// Toggle recurring announcement setting
+  Future<void> toggleRecurring(bool isRecurring) async {
+    try {
+      await _settingsService.setIsRecurring(isRecurring);
+      _isRecurring.value = isRecurring;
+
+      // If enabling recurring, ensure pattern and days are set
+      if (isRecurring && _recurrenceDays.isEmpty) {
+        await updateRecurrencePattern(_recurrencePattern.value);
+      }
+    } catch (e) {
+      SnackBarHelper.showError('Error ❌', 'Failed to update recurring setting');
+    }
+  }
+
+  /// Update recurrence pattern and refresh days
+  Future<void> updateRecurrencePattern(RecurrencePattern pattern) async {
+    try {
+      await _settingsService.setRecurrencePattern(pattern);
+      _recurrencePattern.value = pattern;
+
+      // Update days to pattern defaults for non-custom patterns
+      if (pattern != RecurrencePattern.custom) {
+        final defaultDays = pattern.defaultDays;
+        await _settingsService.setRecurrenceDays(defaultDays);
+        _recurrenceDays.assignAll(defaultDays);
+      }
+    } catch (e) {
+      SnackBarHelper.showError('Error ❌', 'Failed to update recurrence pattern');
+    }
+  }
+
+  /// Toggle a specific day for custom recurrence
+  Future<void> toggleRecurrenceDay(int day) async {
+    try {
+      final currentDays = List<int>.from(_recurrenceDays);
+
+      if (currentDays.contains(day)) {
+        currentDays.remove(day);
+      } else {
+        currentDays.add(day);
+      }
+
+      // Sort the days for consistent ordering
+      currentDays.sort();
+
+      await _settingsService.setRecurrenceDays(currentDays);
+      _recurrenceDays.assignAll(currentDays);
+    } catch (e) {
+      SnackBarHelper.showError('Error ❌', 'Failed to update recurring days');
+    }
+  }
+
+  /// Get display name for a day of week (1=Monday, 7=Sunday)
+  String getDayName(int day) {
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return dayNames[day - 1];
+  }
+
+  /// Get full display name for a day of week
+  String getFullDayName(int day) {
+    const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return dayNames[day - 1];
+  }
+
   /// Reset all settings (for testing or fresh start)
   Future<void> resetSettings() async {
     _isLoading.value = true;
@@ -213,7 +294,8 @@ class SettingsController extends GetxController {
     _isDetectingLocation.value = true;
 
     try {
-      final suggestion = await _locationService!.getCurrentLocationSuggestion(); // "location":{"lat":44.77346420288086,"lon":-63.688419342041016,"name":"Lower Sackville, Halifax Regional Municipality, Halifax County, Nova Scotia, Canada","type":"administrative"}}
+      final suggestion = await _locationService!
+          .getCurrentLocationSuggestion(); // "location":{"lat":44.77346420288086,"lon":-63.688419342041016,"name":"Lower Sackville, Halifax Regional Municipality, Halifax County, Nova Scotia, Canada","type":"administrative"}}
 
       _detectedLocationSuggestion.value = suggestion; // Lower Sackville, Nova Scotia, Canada
     } catch (e) {
