@@ -1,3 +1,9 @@
+## 1.4.3
+  
+### Docs
+  
+- Update README.md with Tomorrow.io API setup instructions and migration details
+
 ## 1.4.2
   
 ### Enhancement

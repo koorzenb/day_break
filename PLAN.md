@@ -4,54 +4,54 @@ This document outlines the development plan for the Day Break application, based
 
 ## Post-MVP Enhancements (Value Add)
 
- - [ ] **Phase 12**: Weather API Migration (OpenWeatherMap ➜ Tomorrow.io)
-  - [x] **Step 12.1**: Update Environment Configuration
-    - Change environment variable from `OPENWEATHER_API_KEY` to `TOMORROWIO_API_KEY`
-    - Update `.env.example` and documentation with new API key requirements
-    - Note: Tomorrow.io key is used as the `apikey` query parameter
-    - Test: Verify environment loading works with new key name
-  - [x] **Step 12.2**: Update WeatherService API Endpoints
-    - Replaced OpenWeatherMap URLs with Tomorrow.io realtime endpoint (forecast endpoint scaffolded for later min/max)
-    - Decided initial flip uses realtime endpoint for current conditions (low risk); forecast timelines deferred to later sub-steps
-    - Added configurable fields list (temperature, temperatureApparent, humidity, weatherCode, windSpeed, precipitationProbability, cloudCover)
-    - Test: URL construction & service tests updated (all passing)
-  - [x] **Step 12.3**: Update API Request Parameters
-    - Using `location=lat,lon` format, `units=metric`, `apikey`, and `fields`
-    - Removed OpenWeatherMap params (`appid`, separate `lat`/`lon` query items)
-    - Added optional fields parameter to trim payload; validation request uses only `temperature`
-    - Test: Assertions added verifying query parameter set
-  - [x] **Step 12.4**: Update Weather Data Models
-    - `WeatherSummary` now supports Tomorrow.io only (realtime + forecast min/max)
-    - Weather code mapping implemented and tested
-    - Legacy OpenWeather parsing fully removed
-    - Test: Realtime and forecast parsing covered by unit tests
-  - [x] **Step 12.5**: Update Weather Data Parsing Logic
-    - Production fetch path uses Tomorrow.io realtime and forecast timeline for min/max
-    - Handles missing/failed forecast gracefully (falls back to realtime temp)
-    - Test: Adapter and integration tests pass for all cases
-  - [x] **Step 12.6**: Update Error Handling
-    - Implement handling for Tomorrow.io HTTP errors (400 invalid request, 401 unauthorized, 403 quota, 429 rate limit)
-    - Add retry/backoff hooks for 429 (respect `Retry-After` if provided)
-    - Introduce specific exception messages for quota exceeded vs auth failure
-    - Test: Mock error responses for each code path
-  - [ ] **Step 12.7**: Update All Weather Service Tests
+- [ ] **Phase 12**: Weather API Migration (OpenWeatherMap ➜ Tomorrow.io)
+- [x] **Step 12.1**: Update Environment Configuration
+  - Change environment variable from `OPENWEATHER_API_KEY` to `TOMORROWIO_API_KEY`
+  - Update `.env.example` and documentation with new API key requirements
+  - Note: Tomorrow.io key is used as the `apikey` query parameter
+  - Test: Verify environment loading works with new key name
+- [x] **Step 12.2**: Update WeatherService API Endpoints
+  - Replaced OpenWeatherMap URLs with Tomorrow.io realtime endpoint (forecast endpoint scaffolded for later min/max)
+  - Decided initial flip uses realtime endpoint for current conditions (low risk); forecast timelines deferred to later sub-steps
+  - Added configurable fields list (temperature, temperatureApparent, humidity, weatherCode, windSpeed, precipitationProbability, cloudCover)
+  - Test: URL construction & service tests updated (all passing)
+- [x] **Step 12.3**: Update API Request Parameters
+  - Using `location=lat,lon` format, `units=metric`, `apikey`, and `fields`
+  - Removed OpenWeatherMap params (`appid`, separate `lat`/`lon` query items)
+  - Added optional fields parameter to trim payload; validation request uses only `temperature`
+  - Test: Assertions added verifying query parameter set
+- [x] **Step 12.4**: Update Weather Data Models
+  - `WeatherSummary` now supports Tomorrow.io only (realtime + forecast min/max)
+  - Weather code mapping implemented and tested
+  - Legacy OpenWeather parsing fully removed
+  - Test: Realtime and forecast parsing covered by unit tests
+- [x] **Step 12.5**: Update Weather Data Parsing Logic
+  - Production fetch path uses Tomorrow.io realtime and forecast timeline for min/max
+  - Handles missing/failed forecast gracefully (falls back to realtime temp)
+  - Test: Adapter and integration tests pass for all cases
+- [x] **Step 12.6**: Update Error Handling
+  - Implement handling for Tomorrow.io HTTP errors (400 invalid request, 401 unauthorized, 403 quota, 429 rate limit)
+  - Add retry/backoff hooks for 429 (respect `Retry-After` if provided)
+  - Introduce specific exception messages for quota exceeded vs auth failure
+  - Test: Mock error responses for each code path
+  - [x] **Step 12.7**: Update All Weather Service Tests
     - Replace OpenWeatherMap mock JSON fixtures with Tomorrow.io equivalents (realtime + forecast)
     - Update expectations for weather code mapping and field names
     - Ensure legacy tests still validate scheduling / controller integration
     - Test: Run complete weather service test suite
-  - [ ] **Step 12.8**: Integration Testing
+  - [x] **Step 12.8**: Integration Testing
     - Run end-to-end with real Tomorrow.io key (limited calls; cache locally during manual tests)
     - Validate accuracy of announced conditions & units
     - Confirm performance (payload size vs chosen fields)
     - Test notification announcements with real weather data
     - Test: Manual testing with real API key and varied locations (urban, coastal, rural)
-  - [ ] **Step 12.9**: Documentation and Configuration Updates
+  - [x] **Step 12.9**: Documentation and Configuration Updates
     - Update README.md with Tomorrow.io API key acquisition & quota notes
     - Provide example minimal `fields` set and optional advanced configuration
     - Document migration rationale and any breaking response shape changes
-    - Test: Follow README from clean clone to successful weather fetch
+    - Test: Follow README from clean clone to successful weather fetch- [ ] **Phase 13**: Recurring Announcement Scheduling
 
-- [ ] **Phase 13**: Recurring Announcement Scheduling
+  -Phase 13
   - [ ] **Step 13.1**: Extend Settings Data Model
     - Add `isRecurring` boolean field to `UserSettings` class
     - Add `recurrencePattern` enum (daily, weekdays, weekends, custom days)

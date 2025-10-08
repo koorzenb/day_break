@@ -1,6 +1,7 @@
 {
 	"version": "0.2",
 	"words": [
+		"apikey",
 		"Bahrint",
 		"Behaviour",
 		"defineadb",
@@ -19,6 +20,7 @@
 		"Schyler",
 		"setlocal",
 		"taskkill",
+		"TOMORROWIO",
 		"unawaited",
 		"usebackq"
 	],
