@@ -58,8 +58,6 @@ class SettingsController extends GetxController {
     _loadSettings();
   }
 
-
-
   /// Load existing settings from storage
   void _loadSettings() {
     // Load announcement time
@@ -215,8 +213,9 @@ class SettingsController extends GetxController {
     _isDetectingLocation.value = true;
 
     try {
-      final suggestion = await _locationService!.getCurrentLocationSuggestion();
-      _detectedLocationSuggestion.value = suggestion;
+      final suggestion = await _locationService!.getCurrentLocationSuggestion(); // "location":{"lat":44.77346420288086,"lon":-63.688419342041016,"name":"Lower Sackville, Halifax Regional Municipality, Halifax County, Nova Scotia, Canada","type":"administrative"}}
+
+      _detectedLocationSuggestion.value = suggestion; // Lower Sackville, Nova Scotia, Canada
     } catch (e) {
       String errorMessage;
       if (e is LocationServicesDisabledException) {

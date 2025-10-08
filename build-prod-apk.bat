@@ -23,7 +23,9 @@ call set-build-env.bat
 
 REM Require Tomorrow.io key explicitly (no embedded fallback)
 if "%TOMORROWIO_API_KEY%"=="" (
-    echo TOMORROWIO_API_KEY environment variable is not set. Aborting build.
+    echo TOMORROWIO_API_KEY environment variable is not set. 
+    echo Use: set TOMORROWIO_API_KEY=your_api_key
+    echo Aborting build.
     exit /b 1
 )
 

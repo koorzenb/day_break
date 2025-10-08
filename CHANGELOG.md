@@ -1,3 +1,9 @@
+## 1.4.2
+  
+### Enhancement
+  
+- Improve TOMORROWIO_API_KEY error message and provide usage instructions
+
 ## 1.4.1
   
 ### Enhancement
