@@ -4,7 +4,7 @@ This document outlines the development plan for the Day Break application, based
 
 ## Post-MVP Enhancements (Value Add)
 
-- [ ] **Phase 12**: Weather API Migration (OpenWeatherMap ➜ Tomorrow.io)
+- [x] **Phase 12**: Weather API Migration (OpenWeatherMap ➜ Tomorrow.io)
 - [x] **Step 12.1**: Update Environment Configuration
   - Change environment variable from `OPENWEATHER_API_KEY` to `TOMORROWIO_API_KEY`
   - Update `.env.example` and documentation with new API key requirements
@@ -49,10 +49,10 @@ This document outlines the development plan for the Day Break application, based
     - Update README.md with Tomorrow.io API key acquisition & quota notes
     - Provide example minimal `fields` set and optional advanced configuration
     - Document migration rationale and any breaking response shape changes
-    - Test: Follow README from clean clone to successful weather fetch- [ ] **Phase 13**: Recurring Announcement Scheduling
+    - Test: Follow README from clean clone to successful weather fetch
 
-  -Phase 13
-  - [ ] **Step 13.1**: Extend Settings Data Model
+- [ ] **Phase 13**: Recurring Announcement Scheduling
+  - [x] **Step 13.1**: Extend Settings Data Model
     - Add `isRecurring` boolean field to `UserSettings` class
     - Add `recurrencePattern` enum (daily, weekdays, weekends, custom days)
     - Add `recurrenceDays` list for custom day selection (1=Monday, 7=Sunday)
@@ -101,71 +101,170 @@ This document outlines the development plan for the Day Break application, based
 - [ ] **Phase 14**: Automated Lint & CI Improvements
   - Add CI workflow for `flutter analyze`, `flutter test`, and (optionally) build steps.
 
-- [ ] **Phase 15**: UI Status Component
+- [ ] **Phase 15**: Convert Project to Package
+  - [ ] **Step 15.1**: Create Package Structure
+    - Extract core weather announcement functionality into a reusable Flutter package
+    - Create `day_break_core` package with proper directory structure (`lib/`, `example/`, `test/`)
+    - Move weather service, notification service, and settings models to package
+    - Update pubspec.yaml for package configuration with proper metadata
+    - Test: Package structure follows pub.dev conventions
+  - [ ] **Step 15.2**: Define Public API Interface
+    - Create clean public API that hides internal implementation details
+    - Design `DayBreakCore` class as main entry point for package consumers
+    - Provide builder pattern for configuration and customization options
+    - Example interface design:
+
+    ```dart
+    // Public API for day_break_core package
+    class DayBreakCore {
+      static Future<DayBreakCore> initialize({
+        required String apiKey,
+        required DayBreakConfig config,
+      }) async { /* ... */ }
+      
+      Future<void> scheduleWeatherAnnouncement({
+        required TimeOfDay announcementTime,
+        required Position location,
+        RecurrencePattern? recurrence,
+      }) async { /* ... */ }
+      
+      Future<WeatherSummary> getCurrentWeather(Position location) async { /* ... */ }
+      
+      Future<void> cancelScheduledAnnouncements() async { /* ... */ }
+      
+      Stream<AnnouncementStatus> get statusStream;
+    }
+    
+    class DayBreakConfig {
+      final List<String> weatherFields;
+      final Duration timeout;
+      final bool enableTTS;
+      final NotificationConfig notificationConfig;
+      
+      const DayBreakConfig({
+        this.weatherFields = const ['temperature', 'weatherCode'],
+        this.timeout = const Duration(seconds: 30),
+        this.enableTTS = true,
+        required this.notificationConfig,
+      });
+    }
+    
+    class NotificationConfig {
+      final String channelId;
+      final String channelName;
+      final String channelDescription;
+      final Importance importance;
+      
+      const NotificationConfig({
+        this.channelId = 'weather_announcements',
+        this.channelName = 'Weather Announcements',
+        this.channelDescription = 'Daily weather forecast notifications',
+        this.importance = Importance.high,
+      });
+    }
+    
+    enum AnnouncementStatus { scheduled, delivering, completed, failed }
+    enum RecurrencePattern { daily, weekdays, weekends, custom }
+    ```
+
+    - Test: API design is intuitive and follows Flutter package conventions
+  - [ ] **Step 15.3**: Extract Core Services to Package
+    - Move `WeatherService`, `NotificationService`, and `SettingsService` to package
+    - Refactor services to remove app-specific dependencies (GetX, specific UI components)
+    - Create abstract interfaces for dependency injection (HTTP client, storage, etc.)
+    - Maintain backward compatibility with existing app implementation
+    - Test: Core services work independently of app-specific frameworks
+  - [ ] **Step 15.4**: Create Example App
+    - Build comprehensive example app demonstrating package usage
+    - Show different configuration options and use cases
+    - Include examples for one-time and recurring announcements
+    - Demonstrate error handling and status monitoring
+    - Test: Example app compiles and runs successfully with package
+  - [ ] **Step 15.5**: Package Documentation and Publishing Preparation
+    - Write comprehensive README.md for the package with usage examples
+    - Add API documentation with dartdoc comments
+    - Create CHANGELOG.md following semantic versioning
+    - Add LICENSE file (MIT or Apache 2.0)
+    - Prepare for pub.dev publishing with proper package metadata
+    - Test: Documentation is clear and examples work as described
+  - [ ] **Step 15.6**: Refactor Main App to Use Package
+    - Update main Day Break app to consume the new package as a dependency
+    - Replace direct service calls with package API calls
+    - Maintain existing app functionality while using cleaner architecture
+    - Update existing tests to work with new package-based architecture
+    - Test: App functionality remains identical after package integration
+  - [ ] **Step 15.7**: Package Testing and Validation
+    - Create comprehensive test suite for package public API
+    - Add integration tests for core workflows (scheduling, weather fetching, notifications)
+    - Test package isolation and independence from app-specific code
+    - Validate package works in different Flutter environments
+    - Test: Package test coverage matches or exceeds current app coverage
+
+- [ ] **Phase 16**: UI Status Component
   - Replace raw status string with a reusable widget (badge + icon + semantic label).
   - Standardize colors and accessibility labels.
 
-- [ ] **Phase 16**: Retry / Backoff for Weather Fetch
+- [ ] **Phase 17**: Retry / Backoff for Weather Fetch
   - Add limited retry (e.g., 2 attempts with exponential backoff) for transient network failures before showing error notification.
 
-- [ ] **Phase 17**: Improve Status Details
+- [ ] **Phase 18**: Improve Status Details
   - Enhance the status display to show when the next scheduled announcement will run (e.g., "Next announcement: Tomorrow at 7:30 AM" or "Next announcement: In 14 hours 23 minutes").
   - Include countdown timer or relative time display for better user awareness.
   - Show additional context like last successful announcement time and weather data freshness.
   - Provide clear indication if scheduling failed or notifications are disabled.
 
-- [ ] **Phase 18**: Snackbar Prompt on Permission Denial
+- [ ] **Phase 19**: Snackbar Prompt on Permission Denial
   - Show a snackbar when notification permission is denied with an action button (e.g., "Enable") that deep-links to OS/app notification settings.
   - Add retry logic for scheduling once permission is granted.
   - Currently the app only logs the denial and continues silently.
 
-- [ ] **Phase 19**: Debug: Scheduled Background Service Not Performing
+- [ ] **Phase 20**: Debug: Scheduled Background Service Not Performing
   - Review background service implementation.
   - Add logging to scheduled tasks.
   - Test notification triggers in various app states (foreground, background, closed).
   - Validate Android background execution policies.
   - Update documentation with troubleshooting steps.
 
-- [ ] **Phase 20**: Timeout Guards for Slow Ops
+- [ ] **Phase 21**: Timeout Guards for Slow Ops
   - Add `Future.timeout` wrappers to TTS init, permission requests, and scheduling to prevent rare hangs.
   - Surface fallback status when timeouts occur.
 
-- [ ] **Phase 21**: Logging Abstraction
+- [ ] **Phase 22**: Logging Abstraction
   - Create a lightweight logger interface with levels (debug/info/warn/error) and a test implementation to capture logs.
   - Optional: integrate with remote logging later.
 
-- [ ] **Phase 22**: Additional AppController Tests
+- [ ] **Phase 23**: Additional AppController Tests
   - Test navigation to settings when setup incomplete.
   - Test recovery path after a failed scheduling attempt.
   - Test limited mode messaging when one dependency fails.
 
-- [ ] **Phase 23**: Dependency Injection Refinement
+- [ ] **Phase 24**: Dependency Injection Refinement
   - Introduce a `ServiceRegistry.init()` that returns a structured result (success/failures) to display diagnostic UI.
   - Makes future platform feature toggles easier.
 
-- [ ] **Phase 24**: User Feedback for Muted Notifications
+- [ ] **Phase 25**: User Feedback for Muted Notifications
   - Detect if notifications disabled after initial grant and prompt user proactively.
 
-- [ ] **Phase 25**: Graceful Offline Mode
+- [ ] **Phase 26**: Graceful Offline Mode
   - Cache last successful weather summary and announce it with a stale indicator if current fetch fails.
 
-- [ ] **Phase 26**: iOS Support Readiness Checklist
+- [ ] **Phase 27**: iOS Support Readiness Checklist
   - Add placeholders for iOS-specific permission flows, notification categories, and TTS voice selection.
 
-- [ ] **Phase 27**: Dynamic Timezone Configuration Based on User Location
+- [ ] **Phase 28**: Dynamic Timezone Configuration Based on User Location
   - Update the local timezone (tz.setLocalLocation) to match the user's selected location instead of hardcoded Halifax timezone.
   - Implement timezone detection from coordinates using location-to-timezone mapping.
   - Ensure notification scheduling adapts to the correct local time for the user's chosen location.
   - Maintain Halifax as default fallback if timezone detection fails.
 
-- [ ] **Phase 28**: Metrics & Telemetry Hooks (Optional)
+- [ ] **Phase 29**: Metrics & Telemetry Hooks (Optional)
   - Add abstraction layer so future analytics (e.g., daily active, notification success) can be plugged in without refactors.
 
-- [ ] **Phase 29**: Documentation & Architecture Diagram
+- [ ] **Phase 30**: Documentation & Architecture Diagram
   - Provide a simple component diagram (services, controller, UI layers) in README or /docs for onboarding.
 
-- [ ] **Phase 30**: Theming & Dark Mode
+- [ ] **Phase 31**: Theming & Dark Mode
   - Introduce dark theme and allow user override.
 
-- [ ] **Phase 31**: Explore Background Fetch Expansion
+- [ ] **Phase 32**: Explore Background Fetch Expansion
   - Investigate using isolates / background fetch plugin for pre-fetching weather before announcement time.

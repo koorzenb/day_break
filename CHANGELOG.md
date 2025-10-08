@@ -1,3 +1,9 @@
+## 1.5.0
+  
+### Feature
+  
+- Implement recurrence pattern management for weather announcements in settings service
+
 ## 1.4.4
   
 ### Docs
