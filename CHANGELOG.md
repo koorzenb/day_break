@@ -1,3 +1,39 @@
+## 1.5.2
+  
+### Enhancement
+  
+"✅ Complete Phase 13.3: Enhanced NotificationService for Recurring Announcements
+
+🚀 Major Features Implemented:
+- Enhanced scheduleDailyWeatherNotification() with recurring parameters (isRecurring, recurrencePattern, customDays)
+- Added _scheduleRecurringWeatherNotifications() for multiple future notifications
+- Implemented _getRecurringDates() with Halifax timezone and 14-day Android limit
+- Created timer-based unattended announcements for truly automatic delivery
+
+🎯 Timer-Based Unattended System:
+- Dual scheduling: Visual notifications + automatic timers
+- Runtime weather fetching at delivery time (not scheduling time)
+- Automatic speech delivery without user interaction required
+- Smart timer management with cleanup on cancellation
+
+🧪 Comprehensive Testing:
+- 8 new recurring notification tests (95 total tests passing)
+- Full backward compatibility maintained for existing single notifications
+- Proper mocking for all new recurring functionality
+- Integration validation with existing controllers and services
+
+📊 Technical Improvements:
+- RecurrencePattern enum support (daily/weekdays/weekends/custom)
+- Halifax timezone handling for all date calculations
+- Android system limits respected (14-day scheduling window)
+- Personalized announcements with time-aware greetings
+
+🔧 Code Quality:
+- All lint checks passing (flutter analyze clean)
+- Following established patterns from copilot-instructions.md
+- Proper error handling and fallback messages
+- Memory leak prevention with timer cleanup
+
 ## 1.5.1
   
 ### Enhancement

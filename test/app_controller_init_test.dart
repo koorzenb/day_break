@@ -1,5 +1,6 @@
 import 'package:day_break/controllers/app_controller.dart';
 import 'package:day_break/http_client_wrapper.dart';
+import 'package:day_break/models/recurrence_pattern.dart';
 import 'package:day_break/services/notification_service.dart';
 import 'package:day_break/services/settings_service.dart';
 import 'package:day_break/services/weather_service.dart';
@@ -26,7 +27,8 @@ class FailingNotificationService extends NotificationService {
     : super(weatherService: weatherService, settingsService: settingsService);
 
   @override
-  Future<void> scheduleDailyWeatherNotification() async => throw Exception('perm denied');
+  Future<void> scheduleDailyWeatherNotification({List<int>? customDays, bool? isRecurring, RecurrencePattern? recurrencePattern}) async =>
+      throw Exception('perm denied');
 }
 
 void main() {

@@ -64,11 +64,12 @@ This document outlines the development plan for the Day Break application, based
     - For custom pattern, show day-of-week checkboxes (Mon, Tue, Wed, etc.)
     - Hide recurrence options when recurring is disabled
     - Test: UI state changes correctly and saves user selections
-  - [ ] **Step 13.3**: Enhance NotificationService for Recurring
+  - [x] **Step 13.3**: Enhance NotificationService for Recurring
     - Update `scheduleNotification()` to accept recurrence parameters
     - Create `scheduleRecurringNotification()` method for multiple future notifications
     - Calculate next occurrence dates based on pattern and current time
     - Schedule up to 7-14 days in advance to handle system limits
+    - Implement timer-based unattended announcements for truly automatic weather delivery
     - Test: Mock scheduling calls verify correct dates are calculated
   - [ ] **Step 13.4**: Update Announcement Scheduling Logic
     - Modify `AppController.scheduleAnnouncement()` to check `isRecurring` setting
