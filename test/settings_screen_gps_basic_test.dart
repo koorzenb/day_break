@@ -41,9 +41,6 @@ void main() {
       when(mockBox.get('recurrencePattern')).thenReturn(null);
       when(mockBox.get('recurrenceDays')).thenReturn(null);
 
-      // Set up AppController mock
-      when(mockAppController.checkSettingsStatus()).thenReturn(null);
-
       // Reset GetX and register services
       Get.reset();
       Get.put<SettingsService>(mockSettingsService);
