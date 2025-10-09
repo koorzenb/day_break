@@ -14,11 +14,7 @@ import 'package:mockito/mockito.dart';
 import 'settings_screen_gps_test.mocks.dart';
 
 // Generate mocks for testing
-@GenerateNiceMocks([
-  MockSpec<Box>(),
-  MockSpec<LocationService>(),
-  MockSpec<AppController>(),
-])
+@GenerateNiceMocks([MockSpec<Box>(), MockSpec<LocationService>(), MockSpec<AppController>()])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -69,7 +65,7 @@ void main() {
 
     testWidgets('does not show GPS detection button when location service is not available', (WidgetTester tester) async {
       // Arrange - remove LocationService from GetX
-      Get.delete<LocationService>();
+      await Get.delete<LocationService>();
 
       await tester.pumpWidget(GetMaterialApp(home: const SettingsScreen()));
       await tester.pumpAndSettle();
@@ -178,7 +174,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Assert
-      expect(find.text('Please enable location services in your device settings'), findsOneWidget, reason: 'Error message should be shown for disabled services');
+      expect(
+        find.text('Please enable location services in your device settings'),
+        findsOneWidget,
+        reason: 'Error message should be shown for disabled services',
+      );
       expect(find.byIcon(Icons.error_outline), findsOneWidget, reason: 'Error icon should be visible');
       expect(find.text('Detect Current Location'), findsOneWidget, reason: 'Detect button should still be visible after error');
     });
@@ -233,11 +233,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Assert
-      expect(
-        find.text('Could not determine location name from GPS coordinates'),
-        findsOneWidget,
-        reason: 'Error message should be shown for unknown location',
-      );
+      expect(find.text('Could not determine location name from GPS coordinates'), findsOneWidget, reason: 'Error message should be shown for unknown location');
     });
 
     testWidgets('shows generic error for unexpected exceptions', (WidgetTester tester) async {
