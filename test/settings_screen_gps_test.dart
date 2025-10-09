@@ -59,7 +59,7 @@ void main() {
 
     testWidgets('shows GPS detection button when location service is available', (WidgetTester tester) async {
       // Arrange
-      await tester.pumpWidget(const GetMaterialApp(home: SettingsScreen()));
+      await tester.pumpWidget(GetMaterialApp(home: const SettingsScreen()));
       await tester.pumpAndSettle();
 
       // Assert
@@ -71,7 +71,7 @@ void main() {
       // Arrange - remove LocationService from GetX
       Get.delete<LocationService>();
 
-      await tester.pumpWidget(const GetMaterialApp(home: SettingsScreen()));
+      await tester.pumpWidget(GetMaterialApp(home: const SettingsScreen()));
       await tester.pumpAndSettle();
 
       // Assert
@@ -85,7 +85,7 @@ void main() {
         return 'Lower Sackville, Nova Scotia, Canada';
       });
 
-      await tester.pumpWidget(const GetMaterialApp(home: SettingsScreen()));
+      await tester.pumpWidget(GetMaterialApp(home: const SettingsScreen()));
       await tester.pumpAndSettle();
 
       // Act - tap the detect button
@@ -104,7 +104,7 @@ void main() {
       // Arrange
       when(mockLocationService.getCurrentLocationSuggestion()).thenAnswer((_) async => 'Lower Sackville, Nova Scotia, Canada');
 
-      await tester.pumpWidget(const GetMaterialApp(home: SettingsScreen()));
+      await tester.pumpWidget(GetMaterialApp(home: const SettingsScreen()));
       await tester.pumpAndSettle();
 
       // Act
@@ -125,7 +125,7 @@ void main() {
       when(mockLocationService.getCurrentLocationSuggestion()).thenAnswer((_) async => detectedLocation);
       when(mockBox.put('location', detectedLocation)).thenAnswer((_) async => Future.value());
 
-      await tester.pumpWidget(const GetMaterialApp(home: SettingsScreen()));
+      await tester.pumpWidget(GetMaterialApp(home: const SettingsScreen()));
       await tester.pumpAndSettle();
 
       // Act - detect location
@@ -148,7 +148,7 @@ void main() {
       // Arrange
       when(mockLocationService.getCurrentLocationSuggestion()).thenAnswer((_) async => 'Lower Sackville, Nova Scotia, Canada');
 
-      await tester.pumpWidget(const GetMaterialApp(home: SettingsScreen()));
+      await tester.pumpWidget(GetMaterialApp(home: const SettingsScreen()));
       await tester.pumpAndSettle();
 
       // Act - detect location
@@ -170,7 +170,7 @@ void main() {
       // Arrange
       when(mockLocationService.getCurrentLocationSuggestion()).thenThrow(const LocationServicesDisabledException());
 
-      await tester.pumpWidget(const GetMaterialApp(home: SettingsScreen()));
+      await tester.pumpWidget(GetMaterialApp(home: const SettingsScreen()));
       await tester.pumpAndSettle();
 
       // Act
@@ -187,7 +187,7 @@ void main() {
       // Arrange
       when(mockLocationService.getCurrentLocationSuggestion()).thenThrow(const LocationPermissionDeniedException());
 
-      await tester.pumpWidget(const GetMaterialApp(home: SettingsScreen()));
+      await tester.pumpWidget(GetMaterialApp(home: const SettingsScreen()));
       await tester.pumpAndSettle();
 
       // Act
@@ -206,7 +206,7 @@ void main() {
       // Arrange
       when(mockLocationService.getCurrentLocationSuggestion()).thenThrow(const LocationPermissionPermanentlyDeniedException());
 
-      await tester.pumpWidget(const GetMaterialApp(home: SettingsScreen()));
+      await tester.pumpWidget(GetMaterialApp(home: const SettingsScreen()));
       await tester.pumpAndSettle();
 
       // Act
@@ -225,7 +225,7 @@ void main() {
       // Arrange
       when(mockLocationService.getCurrentLocationSuggestion()).thenThrow(const LocationUnknownException());
 
-      await tester.pumpWidget(const GetMaterialApp(home: SettingsScreen()));
+      await tester.pumpWidget(GetMaterialApp(home: const SettingsScreen()));
       await tester.pumpAndSettle();
 
       // Act
@@ -244,7 +244,7 @@ void main() {
       // Arrange
       when(mockLocationService.getCurrentLocationSuggestion()).thenThrow(Exception('Network error'));
 
-      await tester.pumpWidget(const GetMaterialApp(home: SettingsScreen()));
+      await tester.pumpWidget(GetMaterialApp(home: const SettingsScreen()));
       await tester.pumpAndSettle();
 
       // Act
@@ -263,7 +263,7 @@ void main() {
       // Arrange
       when(mockLocationService.getCurrentLocationSuggestion()).thenThrow(const LocationServicesDisabledException());
 
-      await tester.pumpWidget(const GetMaterialApp(home: SettingsScreen()));
+      await tester.pumpWidget(GetMaterialApp(home: const SettingsScreen()));
       await tester.pumpAndSettle();
 
       // Act - trigger error
@@ -284,7 +284,7 @@ void main() {
       // Arrange
       when(mockBox.get('location')).thenReturn('Berlin, Germany');
 
-      await tester.pumpWidget(const GetMaterialApp(home: SettingsScreen()));
+      await tester.pumpWidget(GetMaterialApp(home: const SettingsScreen()));
       await tester.pumpAndSettle();
 
       // Assert
@@ -297,7 +297,7 @@ void main() {
       when(mockBox.get('location')).thenReturn('Berlin, Germany');
       when(mockBox.put('location', '')).thenAnswer((_) async => Future.value());
 
-      await tester.pumpWidget(const GetMaterialApp(home: SettingsScreen()));
+      await tester.pumpWidget(GetMaterialApp(home: const SettingsScreen()));
       await tester.pumpAndSettle();
 
       // Act - clear location
