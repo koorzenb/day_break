@@ -81,7 +81,7 @@ void main() {
     test('detectCurrentLocation sets loading state', () async {
       // Arrange - make detection slow
       when(mockLocationService.getCurrentLocationSuggestion()).thenAnswer((_) async {
-        await Future.delayed(Duration(milliseconds: 100));
+        await Future.delayed(const Duration(milliseconds: 100));
         return 'Halifax, Nova Scotia, Canada';
       });
 
