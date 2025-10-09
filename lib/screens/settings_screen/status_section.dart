@@ -9,42 +9,44 @@ class _SettingsStatusSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Settings Status Card
-        Card(
-          color: controller.isSettingsComplete ? Colors.green[50] : Colors.orange[50],
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Icon(controller.isSettingsComplete ? Icons.check_circle : Icons.warning, color: controller.isSettingsComplete ? Colors.green : Colors.orange),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        controller.isSettingsComplete ? 'Setup Complete' : 'Setup Required',
-                        style: TextStyle(fontWeight: FontWeight.w600, color: controller.isSettingsComplete ? Colors.green : Colors.orange),
-                      ),
-                      Text(
-                        controller.isSettingsComplete ? 'All required settings are configured.' : 'Please set both time and location',
-                        style: TextStyle(fontSize: 12, color: controller.isSettingsComplete ? Colors.green : Colors.orange),
-                      ),
-                    ],
+    return Obx(
+      () => Column(
+        children: [
+          // Settings Status Card
+          Card(
+            color: controller.isSettingsComplete ? Colors.green[50] : Colors.orange[50],
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  Icon(controller.isSettingsComplete ? Icons.check_circle : Icons.warning, color: controller.isSettingsComplete ? Colors.green : Colors.orange),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          controller.isSettingsComplete ? 'Setup Complete' : 'Setup Required',
+                          style: TextStyle(fontWeight: FontWeight.w600, color: controller.isSettingsComplete ? Colors.green : Colors.orange),
+                        ),
+                        Text(
+                          controller.isSettingsComplete ? 'All required settings are configured.' : 'Please set both time and location',
+                          style: TextStyle(fontSize: 12, color: controller.isSettingsComplete ? Colors.green : Colors.orange),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
 
-        const SizedBox(height: 32),
+          const SizedBox(height: 32),
 
-        // Reset Button (for development/testing)
-        if (controller.isSettingsComplete) _ResetButton(controller: controller),
-      ],
+          // Reset Button (for development/testing)
+          if (controller.isSettingsComplete) _ResetButton(controller: controller),
+        ],
+      ),
     );
   }
 }

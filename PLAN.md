@@ -71,13 +71,14 @@ This document outlines the development plan for the Day Break application, based
     - Schedule up to 7-14 days in advance to handle system limits
     - Implement timer-based unattended announcements for truly automatic weather delivery
     - Test: Mock scheduling calls verify correct dates are calculated
-  - [ ] **Step 13.4**: Update Announcement Scheduling Logic
-    - Modify `AppController.scheduleAnnouncement()` to check `isRecurring` setting
+  - [x] **Step 13.4**: Update Announcement Scheduling Logic ✅
+    - ~~Modify `AppController.scheduleAnnouncement()` to check `isRecurring` setting~~ (Not needed - handled automatically)
+    - Enhanced `NotificationService.scheduleDailyWeatherNotification()` automatically reads recurring settings
     - For one-time: use existing single notification scheduling
     - For recurring: calculate all valid dates within scheduling window
     - Include logic to skip past dates and start from next valid occurrence
     - Test: Controller schedules correct number of notifications for each pattern
-  - [ ] **Step 13.5**: Add Recurring Status Display
+  - [x] **Step 13.5**: Add Recurring Status Display ✅ **COMPLETED**
     - Update status text to show "Next recurring announcement: [date/time]" vs "Next announcement: [date/time]"
     - Show recurrence pattern in status (e.g., "Daily at 7:30 AM" or "Weekdays at 7:30 AM")
     - Handle display when next occurrence is more than 24 hours away

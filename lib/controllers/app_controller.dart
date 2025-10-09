@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:timezone/timezone.dart' as tz;
 
+import '../models/recurrence_pattern.dart';
 import '../services/notification_service.dart';
 import '../services/settings_service.dart';
 import '../utils/snackbar_helper.dart';
@@ -125,8 +127,47 @@ class AppController extends GetxController {
   Future<void> _scheduleDailyNotification() async {
     _currentStatus.value = 'Scheduling daily notifications...';
     await _notificationService.scheduleDailyWeatherNotification();
-    _currentStatus.value =
-        'Daily notifications scheduled for ${_settingsService.announcementHour}:${_settingsService.announcementMinute?.toString().padLeft(2, '0')}';
+    _currentStatus.value = _generateSchedulingStatusMessage();
+  }
+
+  /// Generate status message based on recurring settings and next announcement time
+  String _generateSchedulingStatusMessage() {
+    final hour = _settingsService.announcementHour;
+    final minute = _settingsService.announcementMinute;
+
+    if (hour == null || minute == null) {
+      return 'Announcement time not configured';
+    }
+
+    final timeString = '${hour.toString()}:${minute.toString().padLeft(2, '0')}';
+    final isRecurring = _settingsService.isRecurring;
+
+    if (isRecurring) {
+      final pattern = _settingsService.recurrencePattern;
+      final nextDate = _calculateNextAnnouncementDate();
+
+      if (nextDate != null) {
+        final isToday = nextDate.day == DateTime.now().day && nextDate.month == DateTime.now().month && nextDate.year == DateTime.now().year;
+
+        final dateString = isToday ? 'today' : 'on ${_formatDate(nextDate)}';
+
+        return 'Next recurring announcement: $dateString at $timeString (${pattern.displayName})';
+      } else {
+        return 'Recurring announcements: ${pattern.displayName} at $timeString (no upcoming dates)';
+      }
+    } else {
+      final nextDate = _calculateNextAnnouncementDate();
+
+      if (nextDate != null) {
+        final isToday = nextDate.day == DateTime.now().day && nextDate.month == DateTime.now().month && nextDate.year == DateTime.now().year;
+
+        final dateString = isToday ? 'today' : 'on ${_formatDate(nextDate)}';
+
+        return 'Next announcement: $dateString at $timeString';
+      } else {
+        return 'Announcement scheduled for $timeString';
+      }
+    }
   }
 
   /// Start the countdown timer for test notification
@@ -149,6 +190,74 @@ class AppController extends GetxController {
       await _notificationService.speakTestWeatherAnnouncement();
     } catch (e) {
       Get.log('Failed to trigger test notification speech: $e', isError: true);
+    }
+  }
+
+  /// Calculates the next announcement date based on current settings
+  DateTime? _calculateNextAnnouncementDate() {
+    final hour = _settingsService.announcementHour;
+    final minute = _settingsService.announcementMinute;
+
+    if (hour == null || minute == null) {
+      return null;
+    }
+
+    final halifaxLocation = tz.getLocation('America/Halifax');
+    final now = tz.TZDateTime.now(halifaxLocation);
+
+    // Create today's scheduled time in Halifax timezone
+    var candidateDate = tz.TZDateTime(halifaxLocation, now.year, now.month, now.day, hour, minute);
+
+    // If today's time has passed, start checking from tomorrow
+    if (candidateDate.isBefore(now)) {
+      candidateDate = candidateDate.add(const Duration(days: 1));
+    }
+
+    final isRecurring = _settingsService.isRecurring;
+
+    if (!isRecurring) {
+      // Single notification - return the candidate date
+      return candidateDate;
+    }
+
+    // Recurring notification - find next valid day
+    final activeDays = _settingsService.recurrenceDays;
+
+    // Find the next valid day (within 14 days to match system limitations)
+    for (int i = 0; i < 14; i++) {
+      final dayOfWeek = candidateDate.weekday % 7; // Convert to 0-6 (Sunday-Saturday)
+
+      if (activeDays.contains(dayOfWeek)) {
+        return candidateDate;
+      }
+
+      candidateDate = candidateDate.add(const Duration(days: 1));
+    }
+
+    // No valid day found within 14 days
+    return null;
+  }
+
+  /// Formats a date for display in status messages
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    final dateOnly = DateTime(date.year, date.month, date.day);
+
+    if (dateOnly == today) {
+      return 'today';
+    } else if (dateOnly == tomorrow) {
+      return 'tomorrow';
+    } else {
+      // Format as "Mon, Dec 16"
+      const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      final weekday = weekdays[date.weekday % 7];
+      final month = months[date.month - 1];
+
+      return '$weekday, $month ${date.day}';
     }
   }
 }
