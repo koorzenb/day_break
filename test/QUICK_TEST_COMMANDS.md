@@ -3,6 +3,7 @@
 ## Run GPS Tests
 
 ### All GPS Tests
+
 ```bash
 # Widget tests
 flutter test test/settings_screen_gps_test.dart
@@ -15,6 +16,7 @@ flutter test test/settings_screen_gps_test.dart test/settings_screen_gps_basic_t
 ```
 
 ### Specific Test
+
 ```bash
 # Run a specific test by name
 flutter test test/settings_screen_gps_test.dart --name "accepts location suggestion"
@@ -24,6 +26,7 @@ flutter test test/settings_screen_gps_test.dart --name "Settings Screen GPS"
 ```
 
 ### With Coverage
+
 ```bash
 # Generate coverage report
 flutter test --coverage test/settings_screen_gps_test.dart
@@ -36,6 +39,7 @@ xdg-open coverage/html/index.html  # Linux
 ```
 
 ### Regenerate Mocks (if needed)
+
 ```bash
 # Delete old mocks and regenerate
 flutter pub run build_runner build --delete-conflicting-outputs
@@ -77,18 +81,22 @@ flutter test --update-goldens test/settings_screen_gps_test.dart
 ## Debugging Tests
 
 ### Print Debug Info
+
 Add to your test:
+
 ```dart
 print('Controller state: ${controller.location}');
 debugPrint('Detailed info: ${controller.toJson()}');
 ```
 
 ### Run Single Test
+
 ```bash
 flutter test test/settings_screen_gps_test.dart --name "shows loading indicator"
 ```
 
 ### Check Test Output
+
 ```bash
 # With verbose logging
 flutter test test/settings_screen_gps_test.dart -v
@@ -100,6 +108,7 @@ flutter test test/settings_screen_gps_test.dart --reporter=expanded
 ## Continuous Integration
 
 ### GitHub Actions Example
+
 ```yaml
 - name: Run GPS Tests
   run: |
@@ -118,6 +127,7 @@ flutter test test/settings_screen_gps_test.dart --reporter=expanded
 ## Troubleshooting
 
 ### "Flutter command not found"
+
 ```bash
 # Check Flutter installation
 which flutter
@@ -128,6 +138,7 @@ export PATH="$PATH:/path/to/flutter/bin"
 ```
 
 ### "Mock generation failed"
+
 ```bash
 # Clean and regenerate
 flutter clean
@@ -136,6 +147,7 @@ flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 ### "Tests hang or timeout"
+
 ```bash
 # Increase timeout
 flutter test --timeout=60s test/settings_screen_gps_test.dart
@@ -145,6 +157,7 @@ flutter test -v test/settings_screen_gps_test.dart
 ```
 
 ### "Widget not found"
+
 - Check if widget is off-screen (use `warnIfMissed: false`)
 - Ensure proper `await tester.pumpAndSettle()`
 - Verify widget is actually rendered in current state
@@ -154,11 +167,12 @@ flutter test -v test/settings_screen_gps_test.dart
 - **Test Overview:** `test/GPS_TESTS_README.md`
 - **Implementation Summary:** `GPS_TESTING_FIX_SUMMARY.md`
 - **Copilot Instructions:** `.github/copilot-instructions.md`
-- **Flutter Testing Docs:** https://docs.flutter.dev/testing
+- **Flutter Testing Docs:** <https://docs.flutter.dev/testing>
 
 ## Quick Verification
 
 Run this to verify test setup:
+
 ```bash
 # Check test files exist
 ls -lh test/settings_screen_gps*.dart
@@ -172,6 +186,7 @@ ls -lh test/settings_screen_gps*.mocks.dart
 ```
 
 Expected output:
+
 - Widget test: ~14 tests
 - Unit test: ~10 tests
 - Total: 24 tests

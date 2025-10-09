@@ -7,9 +7,11 @@ This directory contains comprehensive widget and unit tests for the GPS location
 ## Test Files
 
 ### 1. `settings_screen_gps_test.dart` - Widget Tests
+
 Comprehensive widget tests that verify the complete UI behavior of GPS location detection in the Settings Screen.
 
 **Test Coverage:**
+
 - GPS detection button visibility (shown when LocationService available, hidden when not)
 - Loading indicators during location detection
 - Location suggestion display and interaction
@@ -19,15 +21,18 @@ Comprehensive widget tests that verify the complete UI behavior of GPS location 
 - GPS section visibility based on location state
 
 **Key Features:**
+
 - Uses `testWidgets` for UI testing
 - Tests actual Settings Screen widget rendering
 - Verifies user interactions (button taps, state changes)
 - Tests error states and edge cases
 
 ### 2. `settings_screen_gps_basic_test.dart` - Controller Unit Tests
+
 Focused unit tests that verify the SettingsController GPS functionality in isolation.
 
 **Test Coverage:**
+
 - GPS availability detection
 - Initial state correctness
 - Location detection state management
@@ -36,6 +41,7 @@ Focused unit tests that verify the SettingsController GPS functionality in isola
 - State clearing functionality
 
 **Key Features:**
+
 - Direct controller testing without UI
 - Faster execution than widget tests
 - Focused on controller logic and state management
@@ -44,9 +50,11 @@ Focused unit tests that verify the SettingsController GPS functionality in isola
 ## The AppController Issue
 
 ### Problem
+
 The original implementation had a critical issue: `SettingsController.updateLocation()` calls `Get.find<AppController>().checkSettingsStatus()`, but tests didn't register an AppController, causing `Get.find()` to throw exceptions.
 
 ### Solution
+
 Both test files now properly register a `MockAppController` in the setup:
 
 ```dart
@@ -60,6 +68,7 @@ setUp(() {
 ```
 
 This ensures:
+
 1. `Get.find<AppController>()` succeeds in tests
 2. `checkSettingsStatus()` can be called without side effects
 3. Tests can verify AppController interactions
@@ -77,6 +86,7 @@ Mocks are generated using Mockito with `@GenerateNiceMocks` annotations:
 ```
 
 ### Generating Mocks
+
 To regenerate mocks after changes:
 
 ```bash
@@ -86,6 +96,7 @@ flutter pub run build_runner build --delete-conflicting-outputs
 ## Test Patterns
 
 ### 1. Service Registration Pattern
+
 All tests follow this pattern for registering dependencies:
 
 ```dart
@@ -103,6 +114,7 @@ setUp(() {
 ```
 
 ### 2. Async Testing Pattern
+
 For async operations, tests properly await completion:
 
 ```dart
@@ -122,6 +134,7 @@ test('shows loading indicator when detecting location', () async {
 ```
 
 ### 3. Off-screen Widget Pattern
+
 Some widgets may be off-screen in scrollable views. Use `warnIfMissed: false` for such cases:
 
 ```dart
@@ -129,6 +142,7 @@ await tester.tap(find.text('Accept'), warnIfMissed: false);
 ```
 
 ### 4. State Verification Pattern
+
 Tests verify both controller state and UI updates:
 
 ```dart
@@ -149,17 +163,20 @@ verify(mockAppController.checkSettingsStatus()).called(1);
 ## Running Tests
 
 ### Run All GPS Tests
+
 ```bash
 flutter test test/settings_screen_gps_test.dart
 flutter test test/settings_screen_gps_basic_test.dart
 ```
 
 ### Run Specific Test
+
 ```bash
 flutter test test/settings_screen_gps_test.dart --name "accepts location suggestion"
 ```
 
 ### Run with Coverage
+
 ```bash
 flutter test --coverage
 genhtml coverage/lcov.info -o coverage/html
@@ -168,6 +185,7 @@ genhtml coverage/lcov.info -o coverage/html
 ## Test Scenarios Covered
 
 ### Happy Path
+
 1. ✅ User taps "Detect Current Location"
 2. ✅ Loading indicator appears
 3. ✅ Location suggestion is displayed
@@ -177,6 +195,7 @@ genhtml coverage/lcov.info -o coverage/html
 7. ✅ UI updates to show saved location
 
 ### Error Scenarios
+
 1. ✅ Location services disabled
 2. ✅ Permission denied (initial)
 3. ✅ Permission permanently denied
@@ -185,6 +204,7 @@ genhtml coverage/lcov.info -o coverage/html
 6. ✅ LocationService not available
 
 ### State Management
+
 1. ✅ Initial state (no suggestion, no error, not loading)
 2. ✅ Loading state (during detection)
 3. ✅ Suggestion state (after successful detection)
@@ -192,6 +212,7 @@ genhtml coverage/lcov.info -o coverage/html
 5. ✅ Cleared state (after dismiss or decline)
 
 ### Edge Cases
+
 1. ✅ Accept with no suggestion (no-op)
 2. ✅ Decline clears suggestion
 3. ✅ Error dismiss clears error
@@ -201,11 +222,13 @@ genhtml coverage/lcov.info -o coverage/html
 ## Dependencies
 
 ### Required Mocks
+
 - `MockBox<E>` - For Hive storage operations
 - `MockLocationService` - For GPS operations
 - `MockAppController` - For settings status updates
 
 ### Key Testing Packages
+
 - `flutter_test` - Flutter testing framework
 - `mockito` - Mock generation and verification
 - `get` - GetX state management (used in tests)
@@ -215,15 +238,19 @@ genhtml coverage/lcov.info -o coverage/html
 ### Common Issues
 
 **Issue: `Get.find<AppController>()` throws exception**
+
 - **Solution:** Ensure `MockAppController` is registered in `setUp()`
 
 **Issue: Widget not found in widget tests**
+
 - **Solution:** Use `warnIfMissed: false` for off-screen widgets or ensure proper scrolling
 
 **Issue: Async tests fail**
+
 - **Solution:** Use `await tester.pumpAndSettle()` to wait for animations/futures
 
 **Issue: Mock methods not called**
+
 - **Solution:** Verify the test flow and ensure `await` on async operations
 
 ## Future Improvements
