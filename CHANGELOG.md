@@ -1,3 +1,9 @@
+## 1.6.4
+  
+### Fix
+  
+- Fixed CI build errors
+
 ## 1.6.3
   
 ### Docs
