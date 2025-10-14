@@ -133,6 +133,7 @@ This document outlines the development plan for the Day Break application, based
     - Create `day_break_core` package with proper directory structure (`lib/`, `example/`, `test/`)
     - Move weather service, notification service, and settings models to package
     - Update pubspec.yaml for package configuration with proper metadata
+    - Add one-time user prompt to input their Tomorrow.io API key (since package consumers need their own key)
     - Test: Package structure follows pub.dev conventions
   - [ ] **Step 16.2**: Define Public API Interface
     - Create clean public API that hides internal implementation details

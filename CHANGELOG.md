@@ -1,3 +1,9 @@
+## 1.6.3
+  
+### Docs
+  
+- Add user prompt for Tomorrow.io API key in package setup
+
 ## 1.6.2
   
 ### Chore
