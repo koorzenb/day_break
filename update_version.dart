@@ -13,6 +13,19 @@ void main(List<String> args) {
     return;
   }
 
+  print('Running dart format...');
+  final formatResult = Process.runSync('dart', [
+    'format',
+    '.',
+  ], runInShell: true);
+
+  if (formatResult.exitCode != 0) {
+    print('Error: Code formatting failed. Aborting version update.');
+    print(formatResult.stdout);
+    print(formatResult.stderr);
+    return;
+  }
+
   final changelogFile = File('CHANGELOG.md');
 
   if (!changelogFile.existsSync()) {
@@ -198,12 +211,7 @@ String? _promptForCommitMessage() {
 
 void _commitChanges(String commitMessage) {
   // Stage the updated files
-  final gitAddResult = Process.runSync('git', [
-    'add',
-    'pubspec.yaml',
-    'CHANGELOG.md',
-    'set-build-env.bat',
-  ]);
+  final gitAddResult = Process.runSync('git', ['add', '.']);
   if (gitAddResult.exitCode != 0) {
     print('Error: Failed to stage files. ${gitAddResult.stderr}');
     return;

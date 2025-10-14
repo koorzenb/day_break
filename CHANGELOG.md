@@ -1,3 +1,9 @@
+## 1.6.5
+  
+### Fix
+  
+- Fixed CI build errors - Dart formatting
+
 ## 1.6.4
   
 ### Fix
