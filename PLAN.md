@@ -100,17 +100,43 @@ This document outlines the development plan for the Day Break application, based
     - Confirm background renewal works after device restart
     - Test: Manual verification with short-interval recurring notifications
 
-- [ ] **Phase 14**: Automated Lint & CI Improvements
+- [ ] **Phase 14**: Audio Announcement Bugfixes
+  - [ ] **Step 14.1**: Fix TTS Initialization Issues
+    - Investigate and resolve TTS service initialization failures
+    - Add proper error handling for TTS availability checks
+    - Implement fallback mechanism when TTS is unavailable
+    - Add timeout guards for TTS initialization to prevent app hangs
+    - Test: Verify TTS works consistently across different Android versions and devices
+  - [ ] **Step 14.2**: Improve TTS Voice and Speech Quality
+    - Add voice selection options for better speech clarity
+    - Implement speech rate and pitch configuration
+    - Add pause handling between weather elements for better comprehension
+    - Test different TTS engines if available on device
+    - Test: Verify announcements are clear and properly paced
+  - [ ] **Step 14.3**: Fix Silent Notification Issues
+    - Investigate cases where notifications appear but audio doesn't play
+    - Add logging to track TTS execution flow during notifications
+    - Ensure TTS service is properly initialized before announcement attempts
+    - Add retry logic for failed TTS attempts within notification handler
+    - Test: Verify audio plays consistently when notifications trigger
+  - [ ] **Step 14.4**: Audio Permission and Hardware Validation
+    - Add checks for audio output availability (headphones, speakers)
+    - Implement graceful degradation when audio hardware is unavailable
+    - Add user feedback when audio announcements fail due to hardware issues
+    - Test audio announcements with different output devices (speaker, headphones, Bluetooth)
+    - Test: Verify proper error messages for audio unavailability
+
+- [ ] **Phase 15**: Automated Lint & CI Improvements
   - Add CI workflow for `flutter analyze`, `flutter test`, and (optionally) build steps.
 
-- [ ] **Phase 15**: Convert Project to Package
-  - [ ] **Step 15.1**: Create Package Structure
+- [ ] **Phase 16**: Convert Project to Package
+  - [ ] **Step 16.1**: Create Package Structure
     - Extract core weather announcement functionality into a reusable Flutter package
     - Create `day_break_core` package with proper directory structure (`lib/`, `example/`, `test/`)
     - Move weather service, notification service, and settings models to package
     - Update pubspec.yaml for package configuration with proper metadata
     - Test: Package structure follows pub.dev conventions
-  - [ ] **Step 15.2**: Define Public API Interface
+  - [ ] **Step 16.2**: Define Public API Interface
     - Create clean public API that hides internal implementation details
     - Design `DayBreakCore` class as main entry point for package consumers
     - Provide builder pattern for configuration and customization options
@@ -170,103 +196,103 @@ This document outlines the development plan for the Day Break application, based
     ```
 
     - Test: API design is intuitive and follows Flutter package conventions
-  - [ ] **Step 15.3**: Extract Core Services to Package
+  - [ ] **Step 16.3**: Extract Core Services to Package
     - Move `WeatherService`, `NotificationService`, and `SettingsService` to package
     - Refactor services to remove app-specific dependencies (GetX, specific UI components)
     - Create abstract interfaces for dependency injection (HTTP client, storage, etc.)
     - Maintain backward compatibility with existing app implementation
     - Test: Core services work independently of app-specific frameworks
-  - [ ] **Step 15.4**: Create Example App
+  - [ ] **Step 16.4**: Create Example App
     - Build comprehensive example app demonstrating package usage
     - Show different configuration options and use cases
     - Include examples for one-time and recurring announcements
     - Demonstrate error handling and status monitoring
     - Test: Example app compiles and runs successfully with package
-  - [ ] **Step 15.5**: Package Documentation and Publishing Preparation
+  - [ ] **Step 16.5**: Package Documentation and Publishing Preparation
     - Write comprehensive README.md for the package with usage examples
     - Add API documentation with dartdoc comments
     - Create CHANGELOG.md following semantic versioning
     - Add LICENSE file (MIT or Apache 2.0)
     - Prepare for pub.dev publishing with proper package metadata
     - Test: Documentation is clear and examples work as described
-  - [ ] **Step 15.6**: Refactor Main App to Use Package
+  - [ ] **Step 16.6**: Refactor Main App to Use Package
     - Update main Day Break app to consume the new package as a dependency
     - Replace direct service calls with package API calls
     - Maintain existing app functionality while using cleaner architecture
     - Update existing tests to work with new package-based architecture
     - Test: App functionality remains identical after package integration
-  - [ ] **Step 15.7**: Package Testing and Validation
+  - [ ] **Step 16.7**: Package Testing and Validation
     - Create comprehensive test suite for package public API
     - Add integration tests for core workflows (scheduling, weather fetching, notifications)
     - Test package isolation and independence from app-specific code
     - Validate package works in different Flutter environments
     - Test: Package test coverage matches or exceeds current app coverage
 
-- [ ] **Phase 16**: UI Status Component
+- [ ] **Phase 17**: UI Status Component
   - Replace raw status string with a reusable widget (badge + icon + semantic label).
   - Standardize colors and accessibility labels.
 
-- [ ] **Phase 17**: Retry / Backoff for Weather Fetch
+- [ ] **Phase 18**: Retry / Backoff for Weather Fetch
   - Add limited retry (e.g., 2 attempts with exponential backoff) for transient network failures before showing error notification.
 
-- [ ] **Phase 18**: Improve Status Details
+- [ ] **Phase 19**: Improve Status Details
   - Enhance the status display to show when the next scheduled announcement will run (e.g., "Next announcement: Tomorrow at 7:30 AM" or "Next announcement: In 14 hours 23 minutes").
   - Include countdown timer or relative time display for better user awareness.
   - Show additional context like last successful announcement time and weather data freshness.
   - Provide clear indication if scheduling failed or notifications are disabled.
 
-- [ ] **Phase 19**: Snackbar Prompt on Permission Denial
+- [ ] **Phase 20**: Snackbar Prompt on Permission Denial
   - Show a snackbar when notification permission is denied with an action button (e.g., "Enable") that deep-links to OS/app notification settings.
   - Add retry logic for scheduling once permission is granted.
   - Currently the app only logs the denial and continues silently.
 
-- [ ] **Phase 20**: Debug: Scheduled Background Service Not Performing
+- [ ] **Phase 21**: Debug: Scheduled Background Service Not Performing
   - Review background service implementation.
   - Add logging to scheduled tasks.
   - Test notification triggers in various app states (foreground, background, closed).
   - Validate Android background execution policies.
   - Update documentation with troubleshooting steps.
 
-- [ ] **Phase 21**: Timeout Guards for Slow Ops
+- [ ] **Phase 22**: Timeout Guards for Slow Ops
   - Add `Future.timeout` wrappers to TTS init, permission requests, and scheduling to prevent rare hangs.
   - Surface fallback status when timeouts occur.
 
-- [ ] **Phase 22**: Logging Abstraction
+- [ ] **Phase 23**: Logging Abstraction
   - Create a lightweight logger interface with levels (debug/info/warn/error) and a test implementation to capture logs.
   - Optional: integrate with remote logging later.
 
-- [ ] **Phase 23**: Additional AppController Tests
+- [ ] **Phase 24**: Additional AppController Tests
   - Test navigation to settings when setup incomplete.
   - Test recovery path after a failed scheduling attempt.
   - Test limited mode messaging when one dependency fails.
 
-- [ ] **Phase 24**: Dependency Injection Refinement
+- [ ] **Phase 25**: Dependency Injection Refinement
   - Introduce a `ServiceRegistry.init()` that returns a structured result (success/failures) to display diagnostic UI.
   - Makes future platform feature toggles easier.
 
-- [ ] **Phase 25**: User Feedback for Muted Notifications
+- [ ] **Phase 26**: User Feedback for Muted Notifications
   - Detect if notifications disabled after initial grant and prompt user proactively.
 
-- [ ] **Phase 26**: Graceful Offline Mode
+- [ ] **Phase 27**: Graceful Offline Mode
   - Cache last successful weather summary and announce it with a stale indicator if current fetch fails.
 
-- [ ] **Phase 27**: iOS Support Readiness Checklist
+- [ ] **Phase 28**: iOS Support Readiness Checklist
   - Add placeholders for iOS-specific permission flows, notification categories, and TTS voice selection.
 
-- [ ] **Phase 28**: Dynamic Timezone Configuration Based on User Location
+- [ ] **Phase 29**: Dynamic Timezone Configuration Based on User Location
   - Update the local timezone (tz.setLocalLocation) to match the user's selected location instead of hardcoded Halifax timezone.
   - Implement timezone detection from coordinates using location-to-timezone mapping.
   - Ensure notification scheduling adapts to the correct local time for the user's chosen location.
   - Maintain Halifax as default fallback if timezone detection fails.
 
-- [ ] **Phase 29**: Metrics & Telemetry Hooks (Optional)
+- [ ] **Phase 30**: Metrics & Telemetry Hooks (Optional)
   - Add abstraction layer so future analytics (e.g., daily active, notification success) can be plugged in without refactors.
 
-- [ ] **Phase 30**: Documentation & Architecture Diagram
+- [ ] **Phase 31**: Documentation & Architecture Diagram
   - Provide a simple component diagram (services, controller, UI layers) in README or /docs for onboarding.
 
-- [ ] **Phase 31**: Theming & Dark Mode
+- [ ] **Phase 32**: Theming & Dark Mode
   - Introduce dark theme and allow user override.
 
-- [ ] **Phase 32**: Explore Background Fetch Expansion
+- [ ] **Phase 33**: Explore Background Fetch Expansion
   - Investigate using isolates / background fetch plugin for pre-fetching weather before announcement time.

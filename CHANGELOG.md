@@ -1,3 +1,9 @@
+## 1.5.3
+  
+### Docs
+  
+- Updated PLAN.md
+
 ## 1.5.2
   
 ### Enhancement
