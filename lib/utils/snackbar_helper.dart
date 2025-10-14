@@ -9,7 +9,11 @@ class SnackBarHelper {
   SnackBarHelper._();
 
   /// Show a generic snackbar with custom styling
-  static void _showSnackBar(String title, String message, Color backgroundColor) {
+  static void _showSnackBar(
+    String title,
+    String message,
+    Color backgroundColor,
+  ) {
     if (Get.context != null) {
       Get.snackbar(
         title,

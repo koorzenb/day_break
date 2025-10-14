@@ -19,7 +19,11 @@ class MainScreen extends StatelessWidget {
           return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [CircularProgressIndicator(), SizedBox(height: 16), Text('Initializing Day Break...')],
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Initializing Day Break...'),
+              ],
             ),
           );
         }
@@ -44,12 +48,25 @@ class MainScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Day Break ☀️', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-                      Text('Daily Weather Announcements', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+                      const Text(
+                        'Day Break ☀️',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Daily Weather Announcements',
+                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                      ),
                     ],
                   ),
                 ),
-                IconButton(onPressed: controller.openSettings, icon: const Icon(Icons.settings), tooltip: 'Settings'),
+                IconButton(
+                  onPressed: controller.openSettings,
+                  icon: const Icon(Icons.settings),
+                  tooltip: 'Settings',
+                ),
               ],
             ),
           ),
@@ -65,13 +82,27 @@ class MainScreen extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.info_outline, color: Theme.of(context).primaryColor),
+                      Icon(
+                        Icons.info_outline,
+                        color: Theme.of(context).primaryColor,
+                      ),
                       const SizedBox(width: 8),
-                      const Text('Status', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                      const Text(
+                        'Status',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Obx(() => Text(controller.currentStatus, style: const TextStyle(fontSize: 16))),
+                  Obx(
+                    () => Text(
+                      controller.currentStatus,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -80,7 +111,10 @@ class MainScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Quick Actions
-          const Text('Quick Actions', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+          const Text(
+            'Quick Actions',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 16),
 
           // Settings Button
@@ -90,7 +124,9 @@ class MainScreen extends StatelessWidget {
               onPressed: controller.openSettings,
               icon: const Icon(Icons.settings),
               label: const Text('Open Settings'),
-              style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
             ),
           ),
 
@@ -102,7 +138,10 @@ class MainScreen extends StatelessWidget {
                 width: double.infinity,
                 child: controller.isTestNotificationCountdown
                     ? Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.blue[50],
                           borderRadius: BorderRadius.circular(8),
@@ -111,20 +150,35 @@ class MainScreen extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blue[600])),
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.blue[600],
+                              ),
+                            ),
                             const SizedBox(width: 12),
                             Text(
                               'Test notification in ${controller.testNotificationCountdown}s...',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.blue[700]),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.blue[700],
+                              ),
                             ),
                           ],
                         ),
                       )
                     : OutlinedButton.icon(
-                        onPressed: controller.hasSettings ? () => controller.scheduleTestNotification(15) : null,
+                        onPressed: controller.hasSettings
+                            ? () => controller.scheduleTestNotification(15)
+                            : null,
                         icon: const Icon(Icons.notifications_active),
                         label: const Text('Schedule Test Notification (15s)'),
-                        style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
                       ),
               ),
             ),

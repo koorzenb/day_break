@@ -39,57 +39,82 @@ void main() {
       );
     });
 
-    test('min/max from forecast with intervals format overrides realtime', () async {
-      // Arrange: realtime returns 10.0, forecast returns [7.0, 10.0, 13.0]
-      final realtimePayload = {
-        'data': {
-          'time': '2025-10-02T12:00:00Z',
-          'values': {'temperature': 10.0, 'temperatureApparent': 10.0, 'humidity': 60, 'weatherCode': 1000},
-        },
-      };
-      final forecastPayload = {
-        'data': {
-          'timelines': [
-            {
-              'intervals': [
-                {
-                  'values': {'temperature': 7.0},
-                },
-                {
-                  'values': {'temperature': 10.0},
-                },
-                {
-                  'values': {'temperature': 13.0},
-                },
-              ],
+    test(
+      'min/max from forecast with intervals format overrides realtime',
+      () async {
+        // Arrange: realtime returns 10.0, forecast returns [7.0, 10.0, 13.0]
+        final realtimePayload = {
+          'data': {
+            'time': '2025-10-02T12:00:00Z',
+            'values': {
+              'temperature': 10.0,
+              'temperatureApparent': 10.0,
+              'humidity': 60,
+              'weatherCode': 1000,
             },
-          ],
-        },
-      };
-      when(mockHttp.get(any)).thenAnswer((invocation) async {
-        final uri = invocation.positionalArguments[0].toString();
-        if (uri.contains('realtime')) {
-          return http.Response(json.encode(realtimePayload), 200);
-        } else if (uri.contains('forecast')) {
-          return http.Response(json.encode(forecastPayload), 200);
-        }
-        return http.Response('not found', 404);
-      });
+          },
+        };
+        final forecastPayload = {
+          'data': {
+            'timelines': [
+              {
+                'intervals': [
+                  {
+                    'values': {'temperature': 7.0},
+                  },
+                  {
+                    'values': {'temperature': 10.0},
+                  },
+                  {
+                    'values': {'temperature': 13.0},
+                  },
+                ],
+              },
+            ],
+          },
+        };
+        when(mockHttp.get(any)).thenAnswer((invocation) async {
+          final uri = invocation.positionalArguments[0].toString();
+          if (uri.contains('realtime')) {
+            return http.Response(json.encode(realtimePayload), 200);
+          } else if (uri.contains('forecast')) {
+            return http.Response(json.encode(forecastPayload), 200);
+          }
+          return http.Response('not found', 404);
+        });
 
-      // Act
-      final summary = await service.getWeather(testPosition);
+        // Act
+        final summary = await service.getWeather(testPosition);
 
-      // Assert
-      expect(summary.temperature, equals(10.0), reason: 'Realtime temp should be used');
-      expect(summary.tempMin, equals(7.0), reason: 'Min from forecast should override');
-      expect(summary.tempMax, equals(13.0), reason: 'Max from forecast should override');
-    });
+        // Assert
+        expect(
+          summary.temperature,
+          equals(10.0),
+          reason: 'Realtime temp should be used',
+        );
+        expect(
+          summary.tempMin,
+          equals(7.0),
+          reason: 'Min from forecast should override',
+        );
+        expect(
+          summary.tempMax,
+          equals(13.0),
+          reason: 'Max from forecast should override',
+        );
+      },
+    );
 
     test('fallback to realtime temp if forecast fails', () async {
       final realtimePayload = {
         'data': {
           'time': '2025-10-02T12:00:00Z',
-          'values': {'temperature': 8.0, 'temperatureApparent': 8.0, 'humidity': 60, 'weatherCode': 1000},
+          'values': {
+            'temperature': 8.0,
+            'temperatureApparent': 8.0,
+            'humidity': 60,
+            'weatherCode': 1000,
+          },
         },
       };
       when(mockHttp.get(any)).thenAnswer((invocation) async {
@@ -103,8 +128,16 @@ void main() {
       });
 
       final summary = await service.getWeather(testPosition);
-      expect(summary.tempMin, equals(8.0), reason: 'Should fallback to realtime temp for min');
-      expect(summary.tempMax, equals(8.0), reason: 'Should fallback to realtime temp for max');
+      expect(
+        summary.tempMin,
+        equals(8.0),
+        reason: 'Should fallback to realtime temp for min',
+      );
+      expect(
+        summary.tempMax,
+        equals(8.0),
+        reason: 'Should fallback to realtime temp for max',
+      );
     });
 
     test('min/max from new hourly forecast format overrides realtime', () async {
@@ -112,7 +145,12 @@ void main() {
       final realtimePayload = {
         'data': {
           'time': '2025-10-11T13:00:00Z',
-          'values': {'temperature': 12.0, 'temperatureApparent': 12.0, 'humidity': 70, 'weatherCode': 1101},
+          'values': {
+            'temperature': 12.0,
+            'temperatureApparent': 12.0,
+            'humidity': 70,
+            'weatherCode': 1101,
+          },
         },
       };
       final forecastPayload = {
@@ -154,9 +192,21 @@ void main() {
       final summary = await service.getWeather(testPosition);
 
       // Assert
-      expect(summary.temperature, equals(12.0), reason: 'Realtime temp should be used');
-      expect(summary.tempMin, equals(9.0), reason: 'Min from hourly forecast should override');
-      expect(summary.tempMax, equals(15.0), reason: 'Max from hourly forecast should override');
+      expect(
+        summary.temperature,
+        equals(12.0),
+        reason: 'Realtime temp should be used',
+      );
+      expect(
+        summary.tempMin,
+        equals(9.0),
+        reason: 'Min from hourly forecast should override',
+      );
+      expect(
+        summary.tempMax,
+        equals(15.0),
+        reason: 'Max from hourly forecast should override',
+      );
     });
   });
 }

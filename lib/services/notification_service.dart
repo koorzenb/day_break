@@ -14,12 +14,15 @@ import 'weather_service.dart';
 class NotificationService extends GetxService {
   static const String _channelId = 'weather_announcements';
   static const String _channelName = 'Weather Announcements';
-  static const String _channelDescription = 'Daily weather forecast notifications';
+  static const String _channelDescription =
+      'Daily weather forecast notifications';
   static Duration testNotificationDelay = Duration(seconds: 60);
 
   // Validation constants to prevent excessive notification load
-  static const int _maxNotificationsPerDay = 10; // Prevent more than 10 notifications per day
-  static const int _maxScheduledNotifications = 50; // Maximum total scheduled notifications
+  static const int _maxNotificationsPerDay =
+      10; // Prevent more than 10 notifications per day
+  static const int _maxScheduledNotifications =
+      50; // Maximum total scheduled notifications
   final FlutterLocalNotificationsPlugin _notifications;
   FlutterTts? _tts;
   final WeatherService _weatherService;
@@ -46,14 +49,19 @@ class NotificationService extends GetxService {
     'drizzle': '🌦️',
   };
 
-  NotificationService({FlutterLocalNotificationsPlugin? notifications, FlutterTts? tts, WeatherService? weatherService, SettingsService? settingsService})
-    : _notifications = notifications ?? FlutterLocalNotificationsPlugin(),
-      _tts = tts, // Don't initialize here, do it lazily
-      _weatherService = weatherService ?? Get.find<WeatherService>(),
-      _settingsService = settingsService ?? Get.find<SettingsService>();
+  NotificationService({
+    FlutterLocalNotificationsPlugin? notifications,
+    FlutterTts? tts,
+    WeatherService? weatherService,
+    SettingsService? settingsService,
+  }) : _notifications = notifications ?? FlutterLocalNotificationsPlugin(),
+       _tts = tts, // Don't initialize here, do it lazily
+       _weatherService = weatherService ?? Get.find<WeatherService>(),
+       _settingsService = settingsService ?? Get.find<SettingsService>();
 
   /// Get whether both notification permissions and exact alarms are allowed
-  bool get isNotificationsAllowed => _exactAlarmsAllowed && _notificationAllowed;
+  bool get isNotificationsAllowed =>
+      _exactAlarmsAllowed && _notificationAllowed;
 
   /// Initialize the notification service
   Future<void> initialize() async {
@@ -63,21 +71,33 @@ class NotificationService extends GetxService {
     await _initializeTts();
 
     // Android initialization settings
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
 
     // iOS initialization settings
-    const iosSettings = DarwinInitializationSettings(requestAlertPermission: true, requestBadgePermission: true, requestSoundPermission: true);
+    const iosSettings = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
 
-    const initSettings = InitializationSettings(android: androidSettings, iOS: iosSettings);
+    const initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: iosSettings,
+    );
 
     final initialized = await _notifications.initialize(
       initSettings,
       onDidReceiveNotificationResponse: _onNotificationResponse,
-      onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationResponse,
+      onDidReceiveBackgroundNotificationResponse:
+          _onBackgroundNotificationResponse,
     );
 
     if (initialized != true) {
-      throw const NotificationInitializationException('Failed to initialize notifications');
+      throw const NotificationInitializationException(
+        'Failed to initialize notifications',
+      );
     }
 
     // Request permissions for Android 13+
@@ -177,7 +197,8 @@ class NotificationService extends GetxService {
 
   /// Test TTS with a sample announcement
   Future<void> testTtsAnnouncement() async {
-    const testMessage = 'This is a test of the text-to-speech functionality. The current weather is partly cloudy with a temperature of 72 degrees Fahrenheit.';
+    const testMessage =
+        'This is a test of the text-to-speech functionality. The current weather is partly cloudy with a temperature of 72 degrees Fahrenheit.';
     await _speakWeatherAnnouncement('This is intro message', testMessage);
   }
 
@@ -186,16 +207,25 @@ class NotificationService extends GetxService {
     try {
       final location = _settingsService.location;
       if (location == null || location.isEmpty) {
-        await _speakWeatherAnnouncement('This is intro message', 'Test notification delivered. No location configured for weather announcement.');
+        await _speakWeatherAnnouncement(
+          'This is intro message',
+          'Test notification delivered. No location configured for weather announcement.',
+        );
         return;
       }
 
       // Fetch and speak actual weather data
       final weather = await _weatherService.getWeatherByLocation(location);
-      await _speakWeatherAnnouncement('This is intro message', weather.formattedAnnouncement);
+      await _speakWeatherAnnouncement(
+        'This is intro message',
+        weather.formattedAnnouncement,
+      );
     } catch (e) {
       // Fallback TTS message if weather fetch fails
-      await _speakWeatherAnnouncement('This is intro message', 'Test notification delivered. Weather data is currently unavailable.');
+      await _speakWeatherAnnouncement(
+        'This is intro message',
+        'Test notification delivered. Weather data is currently unavailable.',
+      );
     }
   }
 
@@ -229,7 +259,8 @@ class NotificationService extends GetxService {
         final weather = await _weatherService.getWeatherByLocation(location);
         speechText = weather.formattedAnnouncement;
       } catch (e) {
-        speechText = 'This is a test notification. Weather data is currently unavailable.';
+        speechText =
+            'This is a test notification. Weather data is currently unavailable.';
       }
 
       // Schedule the test notification with weather data
@@ -260,21 +291,35 @@ class NotificationService extends GetxService {
       );
 
       // Provide immediate TTS demonstration
-      await _speakWeatherAnnouncement('This is intro message', 'Test notification scheduled successfully');
+      await _speakWeatherAnnouncement(
+        'This is intro message',
+        'Test notification scheduled successfully',
+      );
 
       // Schedule automatic speech to play when the notification appears
       Timer(testNotificationDelay, () {
         _speakWeatherAnnouncement('This is intro message', speechText);
-        Get.log('[NotificationService] Automatic TTS triggered for test notification', isError: false);
+        Get.log(
+          '[NotificationService] Automatic TTS triggered for test notification',
+          isError: false,
+        );
       });
 
-      Get.log('[NotificationService] Test notification scheduled successfully with weather data and automatic TTS.', isError: false);
+      Get.log(
+        '[NotificationService] Test notification scheduled successfully with weather data and automatic TTS.',
+        isError: false,
+      );
     } catch (e) {
-      Get.log('[NotificationService] Error scheduling test notification: $e', isError: true);
+      Get.log(
+        '[NotificationService] Error scheduling test notification: $e',
+        isError: true,
+      );
       if (e is NotificationException) {
         rethrow;
       }
-      throw NotificationSchedulingException('Failed to schedule test notification: $e');
+      throw NotificationSchedulingException(
+        'Failed to schedule test notification: $e',
+      );
     }
   }
 
@@ -282,26 +327,39 @@ class NotificationService extends GetxService {
   ///
   /// If [isRecurring] is true, will schedule multiple notifications based on [recurrencePattern] and [customDays]
   /// For recurring notifications, schedules up to 14 days in advance due to Android system limitations
-  Future<void> scheduleDailyWeatherNotification({bool? isRecurring, RecurrencePattern? recurrencePattern, List<int>? customDays}) async {
+  Future<void> scheduleDailyWeatherNotification({
+    bool? isRecurring,
+    RecurrencePattern? recurrencePattern,
+    List<int>? customDays,
+  }) async {
     try {
       await cancelAllNotifications();
 
       // Get recurring settings from SettingsService if not provided
       final effectiveIsRecurring = isRecurring ?? _settingsService.isRecurring;
-      final effectiveRecurrencePattern = recurrencePattern ?? _settingsService.recurrencePattern;
+      final effectiveRecurrencePattern =
+          recurrencePattern ?? _settingsService.recurrencePattern;
       final effectiveCustomDays = customDays ?? _settingsService.recurrenceDays;
 
       if (effectiveIsRecurring) {
-        await _scheduleRecurringWeatherNotifications(recurrencePattern: effectiveRecurrencePattern, customDays: effectiveCustomDays);
+        await _scheduleRecurringWeatherNotifications(
+          recurrencePattern: effectiveRecurrencePattern,
+          customDays: effectiveCustomDays,
+        );
       } else {
         await _scheduleSingleWeatherNotification();
       }
     } catch (e) {
-      Get.log('[NotificationService] Error scheduling notification: $e', isError: true);
+      Get.log(
+        '[NotificationService] Error scheduling notification: $e',
+        isError: true,
+      );
       if (e is NotificationException) {
         rethrow;
       }
-      throw NotificationSchedulingException('Failed to schedule notification: $e');
+      throw NotificationSchedulingException(
+        'Failed to schedule notification: $e',
+      );
     }
   }
 
@@ -309,7 +367,10 @@ class NotificationService extends GetxService {
   /// This ensures clean transitions when users modify their recurrence preferences
   Future<void> handleSettingsChange() async {
     try {
-      Get.log('[NotificationService] Handling settings change - rescheduling notifications', isError: false);
+      Get.log(
+        '[NotificationService] Handling settings change - rescheduling notifications',
+        isError: false,
+      );
 
       // Cancel all existing notifications and timers
       await cancelAllNotifications();
@@ -317,10 +378,18 @@ class NotificationService extends GetxService {
       // Reschedule based on new settings
       await scheduleDailyWeatherNotification();
 
-      Get.log('[NotificationService] Settings change handled successfully', isError: false);
+      Get.log(
+        '[NotificationService] Settings change handled successfully',
+        isError: false,
+      );
     } catch (e) {
-      Get.log('[NotificationService] Error handling settings change: $e', isError: true);
-      throw NotificationSchedulingException('Failed to handle settings change: $e');
+      Get.log(
+        '[NotificationService] Error handling settings change: $e',
+        isError: true,
+      );
+      throw NotificationSchedulingException(
+        'Failed to handle settings change: $e',
+      );
     }
   }
 
@@ -333,8 +402,13 @@ class NotificationService extends GetxService {
       final minute = _settingsService.announcementMinute;
 
       if (hour == null || minute == null) {
-        Get.log('[NotificationService] Announcement time not set in settings.', isError: true);
-        throw const NotificationSchedulingException('Announcement time not set in settings');
+        Get.log(
+          '[NotificationService] Announcement time not set in settings.',
+          isError: true,
+        );
+        throw const NotificationSchedulingException(
+          'Announcement time not set in settings',
+        );
       }
 
       tz.initializeTimeZones();
@@ -342,12 +416,22 @@ class NotificationService extends GetxService {
 
       // Schedule for next occurrence of the time
       final now = tz.TZDateTime.now(tz.local);
-      var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+      var scheduledDate = tz.TZDateTime(
+        tz.local,
+        now.year,
+        now.month,
+        now.day,
+        hour,
+        minute,
+      );
 
       // If the scheduled time has already passed today, schedule for tomorrow
       if (scheduledDate.isBefore(now)) {
         scheduledDate = scheduledDate.add(const Duration(days: 1));
-        Get.log('[NotificationService] Scheduled time already passed, rescheduling for tomorrow: $scheduledDate', isError: false);
+        Get.log(
+          '[NotificationService] Scheduled time already passed, rescheduling for tomorrow: $scheduledDate',
+          isError: false,
+        );
       }
 
       await _scheduleWeatherNotification(
@@ -355,8 +439,10 @@ class NotificationService extends GetxService {
         scheduledDate: scheduledDate,
         location: location,
         defaultTitle: 'Good Morning! ☀️',
-        defaultBody: '🌤️ Your daily weather update is ready! (Audio announcement will start automatically)',
-        fallbackBodyTemplate: 'Daily weather update for \$location - Weather data will be available when you open the notification.',
+        defaultBody:
+            '🌤️ Your daily weather update is ready! (Audio announcement will start automatically)',
+        fallbackBodyTemplate:
+            'Daily weather update for \$location - Weather data will be available when you open the notification.',
         logContext: 'daily notification',
         payloadPrefix: 'daily_weather_with_location',
         androidDetails: AndroidNotificationDetails(
@@ -372,23 +458,37 @@ class NotificationService extends GetxService {
           showWhen: true,
           when: null, // Will be set to current time
         ),
-        scheduleMode: _exactAlarmsAllowed ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
+        scheduleMode: _exactAlarmsAllowed
+            ? AndroidScheduleMode.exactAllowWhileIdle
+            : AndroidScheduleMode.inexactAllowWhileIdle,
         matchDateTimeComponents: DateTimeComponents.time,
       );
 
       final announcementDelay = scheduledDate.difference(now);
-      _scheduleUnattendedAnnouncement(location, announcementDelay, 'daily notification');
+      _scheduleUnattendedAnnouncement(
+        location,
+        announcementDelay,
+        'daily notification',
+      );
 
-      Get.log('[NotificationService] zonedSchedule called successfully.', isError: false);
+      Get.log(
+        '[NotificationService] zonedSchedule called successfully.',
+        isError: false,
+      );
       Get.log(
         '[NotificationService] Scheduled for ${scheduledDate.difference(now).inMinutes} minutes and ${scheduledDate.difference(now).inSeconds.remainder(60)} seconds in the future.',
       );
     } catch (e) {
-      Get.log('[NotificationService] Error scheduling notification: $e', isError: true);
+      Get.log(
+        '[NotificationService] Error scheduling notification: $e',
+        isError: true,
+      );
       if (e is NotificationException) {
         rethrow;
       }
-      throw NotificationSchedulingException('Failed to schedule notification: $e');
+      throw NotificationSchedulingException(
+        'Failed to schedule notification: $e',
+      );
     }
   }
 
@@ -396,15 +496,23 @@ class NotificationService extends GetxService {
   ///
   /// Schedules up to 14 days in advance to work within Android system limitations
   /// Uses Halifax timezone for all date calculations
-  Future<void> _scheduleRecurringWeatherNotifications({required RecurrencePattern recurrencePattern, required List<int> customDays}) async {
+  Future<void> _scheduleRecurringWeatherNotifications({
+    required RecurrencePattern recurrencePattern,
+    required List<int> customDays,
+  }) async {
     String? location = await _validateNotificationAndLocation();
 
     final hour = _settingsService.announcementHour;
     final minute = _settingsService.announcementMinute;
 
     if (hour == null || minute == null) {
-      Get.log('[NotificationService] Announcement time not set in settings.', isError: true);
-      throw const NotificationSchedulingException('Announcement time not set in settings');
+      Get.log(
+        '[NotificationService] Announcement time not set in settings.',
+        isError: true,
+      );
+      throw const NotificationSchedulingException(
+        'Announcement time not set in settings',
+      );
     }
 
     // Validate recurring settings to prevent excessive notification load
@@ -421,7 +529,10 @@ class NotificationService extends GetxService {
       maxDays: 14, // Android system limitation
     );
 
-    Get.log('[NotificationService] Scheduling ${daysToSchedule.length} recurring notifications for pattern: ${recurrencePattern.displayName}', isError: false);
+    Get.log(
+      '[NotificationService] Scheduling ${daysToSchedule.length} recurring notifications for pattern: ${recurrencePattern.displayName}',
+      isError: false,
+    );
 
     for (int i = 0; i < daysToSchedule.length; i++) {
       final scheduledDate = daysToSchedule[i];
@@ -434,8 +545,10 @@ class NotificationService extends GetxService {
         scheduledDate: scheduledDate,
         location: location,
         defaultTitle: 'Good Morning! ☀️',
-        defaultBody: '🌤️ Your daily weather update is ready! (Audio announcement will start automatically)',
-        fallbackBodyTemplate: 'Daily weather update for \$location - Weather data will be available when you open the notification.',
+        defaultBody:
+            '🌤️ Your daily weather update is ready! (Audio announcement will start automatically)',
+        fallbackBodyTemplate:
+            'Daily weather update for \$location - Weather data will be available when you open the notification.',
         logContext: 'recurring notification ${i + 1}/${daysToSchedule.length}',
         payloadPrefix: 'recurring_weather_with_location',
         androidDetails: AndroidNotificationDetails(
@@ -451,13 +564,19 @@ class NotificationService extends GetxService {
           showWhen: true,
           when: null,
         ),
-        scheduleMode: _exactAlarmsAllowed ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
+        scheduleMode: _exactAlarmsAllowed
+            ? AndroidScheduleMode.exactAllowWhileIdle
+            : AndroidScheduleMode.inexactAllowWhileIdle,
         matchDateTimeComponents: DateTimeComponents.dateAndTime,
       );
 
       // Schedule UNATTENDED timer-based announcement for each recurring notification
       final announcementDelay = scheduledDate.difference(now);
-      _scheduleUnattendedAnnouncement(location, announcementDelay, 'recurring notification ${i + 1}/${daysToSchedule.length}');
+      _scheduleUnattendedAnnouncement(
+        location,
+        announcementDelay,
+        'recurring notification ${i + 1}/${daysToSchedule.length}',
+      );
 
       Get.log(
         '[NotificationService] Scheduled recurring notification ${i + 1} for ${scheduledDate.day}/${scheduledDate.month}/${scheduledDate.year} at ${scheduledDate.hour.toString().padLeft(2, '0')}:${scheduledDate.minute.toString().padLeft(2, '0')}',
@@ -492,8 +611,16 @@ class NotificationService extends GetxService {
     }
 
     // Start from tomorrow (or today if the time hasn't passed yet)
-    var currentDate = tz.TZDateTime(tz.local, startDate.year, startDate.month, startDate.day, hour, minute);
-    if (currentDate.isBefore(startDate) || currentDate.isAtSameMomentAs(startDate)) {
+    var currentDate = tz.TZDateTime(
+      tz.local,
+      startDate.year,
+      startDate.month,
+      startDate.day,
+      hour,
+      minute,
+    );
+    if (currentDate.isBefore(startDate) ||
+        currentDate.isAtSameMomentAs(startDate)) {
       currentDate = currentDate.add(const Duration(days: 1));
     }
 
@@ -522,30 +649,52 @@ class NotificationService extends GetxService {
 
       // Only process if recurring is enabled
       if (!isRecurring) {
-        Get.log('[NotificationService] Not maintaining schedule - recurring is disabled', isError: false);
+        Get.log(
+          '[NotificationService] Not maintaining schedule - recurring is disabled',
+          isError: false,
+        );
         return;
       }
 
       // Get pending notifications to check current scheduling window
-      final pendingNotifications = await _notifications.pendingNotificationRequests();
-      final recurringNotifications = pendingNotifications.where((req) => req.id != 9999).toList(); // Exclude test notifications
+      final pendingNotifications = await _notifications
+          .pendingNotificationRequests();
+      final recurringNotifications = pendingNotifications
+          .where((req) => req.id != 9999)
+          .toList(); // Exclude test notifications
 
-      Get.log('[NotificationService] Current pending recurring notifications: ${recurringNotifications.length}', isError: false);
+      Get.log(
+        '[NotificationService] Current pending recurring notifications: ${recurringNotifications.length}',
+        isError: false,
+      );
 
       // If we have fewer than 7 scheduled recurring notifications, add more
       final minNotificationsThreshold = 7;
       if (recurringNotifications.length < minNotificationsThreshold) {
-        Get.log('[NotificationService] Maintaining recurring schedule: extending notification window', isError: false);
+        Get.log(
+          '[NotificationService] Maintaining recurring schedule: extending notification window',
+          isError: false,
+        );
 
         // Find the highest notification ID to continue from
-        int maxId = recurringNotifications.isNotEmpty ? recurringNotifications.map((n) => n.id).reduce((a, b) => a > b ? a : b) : -1;
+        int maxId = recurringNotifications.isNotEmpty
+            ? recurringNotifications
+                  .map((n) => n.id)
+                  .reduce((a, b) => a > b ? a : b)
+            : -1;
 
         await _extendRecurringSchedule(maxId + 1);
       } else {
-        Get.log('[NotificationService] Recurring schedule is healthy with ${recurringNotifications.length} pending notifications', isError: false);
+        Get.log(
+          '[NotificationService] Recurring schedule is healthy with ${recurringNotifications.length} pending notifications',
+          isError: false,
+        );
       }
     } catch (e) {
-      Get.log('[NotificationService] Error maintaining recurring schedule: $e', isError: true);
+      Get.log(
+        '[NotificationService] Error maintaining recurring schedule: $e',
+        isError: true,
+      );
       // Don't rethrow - this is a background maintenance task
     }
   }
@@ -561,7 +710,10 @@ class NotificationService extends GetxService {
       final customDays = _settingsService.recurrenceDays;
 
       if (hour == null || minute == null) {
-        Get.log('[NotificationService] Cannot extend schedule - announcement time not set', isError: true);
+        Get.log(
+          '[NotificationService] Cannot extend schedule - announcement time not set',
+          isError: true,
+        );
         return;
       }
 
@@ -579,7 +731,10 @@ class NotificationService extends GetxService {
         maxDays: 14, // Add another 14 days worth
       );
 
-      Get.log('[NotificationService] Extending schedule with ${futureDates.length} additional notifications', isError: false);
+      Get.log(
+        '[NotificationService] Extending schedule with ${futureDates.length} additional notifications',
+        isError: false,
+      );
 
       for (int i = 0; i < futureDates.length; i++) {
         final scheduledDate = futureDates[i];
@@ -590,9 +745,12 @@ class NotificationService extends GetxService {
           scheduledDate: scheduledDate,
           location: location,
           defaultTitle: 'Good Morning! ☀️',
-          defaultBody: '🌤️ Your daily weather update is ready! (Audio announcement will start automatically)',
-          fallbackBodyTemplate: 'Daily weather update for \$location - Weather data will be available when you open the notification.',
-          logContext: 'maintenance recurring notification ${i + 1}/${futureDates.length}',
+          defaultBody:
+              '🌤️ Your daily weather update is ready! (Audio announcement will start automatically)',
+          fallbackBodyTemplate:
+              'Daily weather update for \$location - Weather data will be available when you open the notification.',
+          logContext:
+              'maintenance recurring notification ${i + 1}/${futureDates.length}',
           payloadPrefix: 'recurring_weather_with_location',
           androidDetails: AndroidNotificationDetails(
             _channelId,
@@ -607,13 +765,19 @@ class NotificationService extends GetxService {
             showWhen: true,
             when: null,
           ),
-          scheduleMode: _exactAlarmsAllowed ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
+          scheduleMode: _exactAlarmsAllowed
+              ? AndroidScheduleMode.exactAllowWhileIdle
+              : AndroidScheduleMode.inexactAllowWhileIdle,
           matchDateTimeComponents: DateTimeComponents.dateAndTime,
         );
 
         // Schedule UNATTENDED timer-based announcement for each extended notification
         final announcementDelay = scheduledDate.difference(now);
-        _scheduleUnattendedAnnouncement(location, announcementDelay, 'maintenance recurring notification ${i + 1}/${futureDates.length}');
+        _scheduleUnattendedAnnouncement(
+          location,
+          announcementDelay,
+          'maintenance recurring notification ${i + 1}/${futureDates.length}',
+        );
 
         Get.log(
           '[NotificationService] Extended recurring notification ${i + 1} for ${scheduledDate.day}/${scheduledDate.month}/${scheduledDate.year} at ${scheduledDate.hour.toString().padLeft(2, '0')}:${scheduledDate.minute.toString().padLeft(2, '0')}',
@@ -621,7 +785,10 @@ class NotificationService extends GetxService {
         );
       }
     } catch (e) {
-      Get.log('[NotificationService] Error extending recurring schedule: $e', isError: true);
+      Get.log(
+        '[NotificationService] Error extending recurring schedule: $e',
+        isError: true,
+      );
       // Don't rethrow - this is a background maintenance task
     }
   }
@@ -630,31 +797,47 @@ class NotificationService extends GetxService {
     // Verify notifications are enabled
     final notificationsEnabled = await areNotificationsEnabled();
     if (!notificationsEnabled) {
-      throw const NotificationSchedulingException('Notifications are disabled. Please enable them in device settings.');
+      throw const NotificationSchedulingException(
+        'Notifications are disabled. Please enable them in device settings.',
+      );
     }
 
     // Get location from settings for weather data
     final location = _settingsService.location;
     if (location == null || location.isEmpty) {
-      throw const NotificationSchedulingException('No location set in settings. Please configure your location first.');
+      throw const NotificationSchedulingException(
+        'No location set in settings. Please configure your location first.',
+      );
     }
     return location;
   }
 
   /// Validate recurring settings to prevent excessive notification load
-  Future<void> _validateRecurringSettings(RecurrencePattern recurrencePattern, List<int> customDays) async {
+  Future<void> _validateRecurringSettings(
+    RecurrencePattern recurrencePattern,
+    List<int> customDays,
+  ) async {
     // Check current pending notifications to prevent excessive load
     try {
-      final pendingNotifications = await _notifications.pendingNotificationRequests();
+      final pendingNotifications = await _notifications
+          .pendingNotificationRequests();
       final currentCount = pendingNotifications.length;
 
       if (currentCount >= _maxScheduledNotifications) {
-        Get.log('[NotificationService] Too many pending notifications: $currentCount (limit: $_maxScheduledNotifications)', isError: true);
-        throw const NotificationSchedulingException('Too many notifications scheduled. Please clear existing notifications first.');
+        Get.log(
+          '[NotificationService] Too many pending notifications: $currentCount (limit: $_maxScheduledNotifications)',
+          isError: true,
+        );
+        throw const NotificationSchedulingException(
+          'Too many notifications scheduled. Please clear existing notifications first.',
+        );
       }
     } catch (e) {
       // If we can't check pending notifications, log warning but continue
-      Get.log('[NotificationService] Warning: Could not check pending notifications count: $e', isError: false);
+      Get.log(
+        '[NotificationService] Warning: Could not check pending notifications count: $e',
+        isError: false,
+      );
     }
 
     // Validate daily frequency doesn't exceed reasonable limits
@@ -676,18 +859,24 @@ class NotificationService extends GetxService {
         '[NotificationService] Recurring pattern exceeds daily limit: ${notificationsPerDay.toStringAsFixed(1)} per day (max: ${(_maxNotificationsPerDay / 7).toStringAsFixed(1)})',
         isError: true,
       );
-      throw const NotificationSchedulingException('Recurring pattern would create too many notifications per day. Please select fewer days.');
+      throw const NotificationSchedulingException(
+        'Recurring pattern would create too many notifications per day. Please select fewer days.',
+      );
     }
 
     // Validate custom days are within valid range (1-7)
     if (recurrencePattern == RecurrencePattern.custom) {
       if (customDays.isEmpty) {
-        throw const NotificationSchedulingException('Custom recurrence pattern requires at least one day to be selected.');
+        throw const NotificationSchedulingException(
+          'Custom recurrence pattern requires at least one day to be selected.',
+        );
       }
 
       for (final day in customDays) {
         if (day < 1 || day > 7) {
-          throw NotificationSchedulingException('Invalid day selected: $day. Days must be between 1 (Monday) and 7 (Sunday).');
+          throw NotificationSchedulingException(
+            'Invalid day selected: $day. Days must be between 1 (Monday) and 7 (Sunday).',
+          );
         }
       }
     }
@@ -695,17 +884,26 @@ class NotificationService extends GetxService {
     // Validate timezone is properly configured for Halifax
     final currentTimezone = tz.local.name;
     if (currentTimezone != 'America/Halifax') {
-      Get.log('[NotificationService] Warning: Timezone not set to Halifax ($currentTimezone). Notifications will use Halifax time.', isError: false);
+      Get.log(
+        '[NotificationService] Warning: Timezone not set to Halifax ($currentTimezone). Notifications will use Halifax time.',
+        isError: false,
+      );
     }
 
     // Check for potential DST transition issues in next 30 days
     final now = tz.TZDateTime.now(tz.getLocation('America/Halifax'));
     final futureDate = now.add(const Duration(days: 30));
     if (now.timeZoneOffset != futureDate.timeZoneOffset) {
-      Get.log('[NotificationService] DST transition detected in next 30 days. Schedules will adjust automatically.', isError: false);
+      Get.log(
+        '[NotificationService] DST transition detected in next 30 days. Schedules will adjust automatically.',
+        isError: false,
+      );
     }
 
-    Get.log('[NotificationService] Recurring settings validation passed: ${recurrencePattern.displayName} (${targetDays.length} days/week)', isError: false);
+    Get.log(
+      '[NotificationService] Recurring settings validation passed: ${recurrencePattern.displayName} (${targetDays.length} days/week)',
+      isError: false,
+    );
   }
 
   /// Validate edge cases for recurring schedules (leap years, DST transitions)
@@ -713,9 +911,13 @@ class NotificationService extends GetxService {
     // Check for leap year edge case (Feb 29)
     if (scheduledDate.month == 2 && scheduledDate.day == 29) {
       final nextYear = scheduledDate.year + 1;
-      final isNextYearLeap = (nextYear % 4 == 0 && nextYear % 100 != 0) || (nextYear % 400 == 0);
+      final isNextYearLeap =
+          (nextYear % 4 == 0 && nextYear % 100 != 0) || (nextYear % 400 == 0);
       if (!isNextYearLeap) {
-        Get.log('[NotificationService] Warning: Leap day schedule (Feb 29) will not occur in $nextYear', isError: false);
+        Get.log(
+          '[NotificationService] Warning: Leap day schedule (Feb 29) will not occur in $nextYear',
+          isError: false,
+        );
       }
     }
 
@@ -724,8 +926,12 @@ class NotificationService extends GetxService {
     final dayBefore = scheduledDate.subtract(const Duration(days: 1));
     final dayAfter = scheduledDate.add(const Duration(days: 1));
 
-    if (dayBefore.timeZoneOffset != scheduledDate.timeZoneOffset || scheduledDate.timeZoneOffset != dayAfter.timeZoneOffset) {
-      Get.log('[NotificationService] DST transition detected around ${scheduledDate.toIso8601String()}. Time will adjust automatically.', isError: false);
+    if (dayBefore.timeZoneOffset != scheduledDate.timeZoneOffset ||
+        scheduledDate.timeZoneOffset != dayAfter.timeZoneOffset) {
+      Get.log(
+        '[NotificationService] DST transition detected around ${scheduledDate.toIso8601String()}. Time will adjust automatically.',
+        isError: false,
+      );
     }
 
     // Validate time doesn't fall in non-existent hour during DST transition
@@ -733,8 +939,13 @@ class NotificationService extends GetxService {
       // Attempt to create the exact datetime to validate it exists
       tz.TZDateTime.from(scheduledDate, halifaxLocation);
     } catch (e) {
-      Get.log('[NotificationService] Invalid time during DST transition: ${scheduledDate.toIso8601String()}. Will adjust to valid time.', isError: true);
-      throw NotificationSchedulingException('Selected time falls during DST transition. Please choose a different time.');
+      Get.log(
+        '[NotificationService] Invalid time during DST transition: ${scheduledDate.toIso8601String()}. Will adjust to valid time.',
+        isError: true,
+      );
+      throw NotificationSchedulingException(
+        'Selected time falls during DST transition. Please choose a different time.',
+      );
     }
   }
 
@@ -751,7 +962,8 @@ class NotificationService extends GetxService {
     required AndroidNotificationDetails androidDetails,
     AndroidScheduleMode? scheduleMode,
     DateTimeComponents? matchDateTimeComponents,
-    String? speechText, // Optional for test notifications that pre-fetch weather
+    String?
+    speechText, // Optional for test notifications that pre-fetch weather
   }) async {
     // For test notifications that have pre-fetched weather, use weather data
     String title = defaultTitle;
@@ -762,20 +974,30 @@ class NotificationService extends GetxService {
       // Test notification with pre-fetched weather
       try {
         final weather = await _weatherService.getWeatherByLocation(location);
-        final emoji = _weatherEmojis[weather.description.toLowerCase()] ?? '🌤️';
-        title = '${defaultTitle.replaceFirst('☀️', emoji).replaceFirst('⏰', emoji)} ${weather.tempMin.round()}/${weather.tempMax.round()}°C';
+        final emoji =
+            _weatherEmojis[weather.description.toLowerCase()] ?? '🌤️';
+        title =
+            '${defaultTitle.replaceFirst('☀️', emoji).replaceFirst('⏰', emoji)} ${weather.tempMin.round()}/${weather.tempMax.round()}°C';
         body = weather.formattedAnnouncement;
         payload = '$payloadPrefix:$speechText';
 
-        Get.log('[NotificationService] Weather data fetched successfully for $logContext', isError: false);
+        Get.log(
+          '[NotificationService] Weather data fetched successfully for $logContext',
+          isError: false,
+        );
       } catch (e) {
-        Get.log('[NotificationService] Failed to fetch weather for $logContext, using fallback: $e', isError: false);
+        Get.log(
+          '[NotificationService] Failed to fetch weather for $logContext, using fallback: $e',
+          isError: false,
+        );
         body = fallbackBodyTemplate.replaceAll('\$location', location);
-        payload = '$payloadPrefix:Good morning! I could not get the weather data right now.';
+        payload =
+            '$payloadPrefix:Good morning! I could not get the weather data right now.';
       }
     } else {
       // Regular/recurring notification - weather will be fetched and announced automatically when delivered
-      body = '🌤️ Your daily weather update is ready! (Audio announcement will start automatically)';
+      body =
+          '🌤️ Your daily weather update is ready! (Audio announcement will start automatically)';
     }
 
     // Schedule the notification
@@ -784,8 +1006,16 @@ class NotificationService extends GetxService {
       title,
       body,
       scheduledDate,
-      NotificationDetails(android: androidDetails, iOS: const DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true)),
-      androidScheduleMode: scheduleMode ?? AndroidScheduleMode.exactAllowWhileIdle,
+      NotificationDetails(
+        android: androidDetails,
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      ),
+      androidScheduleMode:
+          scheduleMode ?? AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: matchDateTimeComponents,
       payload: payload,
     );
@@ -807,14 +1037,24 @@ class NotificationService extends GetxService {
   }
 
   /// Schedule an unattended announcement using Timer
-  void _scheduleUnattendedAnnouncement(String location, Duration delay, String context) {
+  void _scheduleUnattendedAnnouncement(
+    String location,
+    Duration delay,
+    String context,
+  ) {
     if (delay.isNegative) {
-      Get.log('[NotificationService] Cannot schedule unattended announcement in the past for $context', isError: true);
+      Get.log(
+        '[NotificationService] Cannot schedule unattended announcement in the past for $context',
+        isError: true,
+      );
       return;
     }
 
     final timer = Timer(delay, () async {
-      Get.log('[NotificationService] UNATTENDED TIMER: Triggering automatic announcement for $location ($context)', isError: false);
+      Get.log(
+        '[NotificationService] UNATTENDED TIMER: Triggering automatic announcement for $location ($context)',
+        isError: false,
+      );
 
       try {
         // This is the "runtime function" - executed at the exact scheduled time
@@ -823,9 +1063,15 @@ class NotificationService extends GetxService {
 
         await _speakWeatherAnnouncement(intro, weather.formattedAnnouncement);
 
-        Get.log('[NotificationService] UNATTENDED: Automatic announcement completed for $location ($context)', isError: false);
+        Get.log(
+          '[NotificationService] UNATTENDED: Automatic announcement completed for $location ($context)',
+          isError: false,
+        );
       } catch (e) {
-        Get.log('[NotificationService] UNATTENDED: Failed to fetch weather for automatic announcement $location ($context): $e', isError: true);
+        Get.log(
+          '[NotificationService] UNATTENDED: Failed to fetch weather for automatic announcement $location ($context): $e',
+          isError: true,
+        );
 
         // Fallback announcement
         final intro = _generateAnnouncementIntro();
@@ -861,7 +1107,10 @@ class NotificationService extends GetxService {
       }
     }
     _activeAnnouncementTimers.clear();
-    Get.log('[NotificationService] Cancelled all active announcement timers', isError: false);
+    Get.log(
+      '[NotificationService] Cancelled all active announcement timers',
+      isError: false,
+    );
   }
 
   /// Initialize and configure TTS settings
@@ -890,25 +1139,37 @@ class NotificationService extends GetxService {
 
   /// Request notification permissions
   Future<void> _requestPermissions() async {
-    final androidPlugin = _notifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin = _notifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
     if (androidPlugin != null) {
       final granted = await androidPlugin.requestNotificationsPermission();
       _notificationAllowed = granted ?? false;
       // Don't make permission denial fatal – allow app to continue without notifications
       if (!_notificationAllowed) {
-        Get.log('Notification permission denied by user. Continuing without scheduled notifications.', isError: true);
+        Get.log(
+          'Notification permission denied by user. Continuing without scheduled notifications.',
+          isError: true,
+        );
         return; // Early return; caller can decide whether to schedule later
       }
 
       // Request exact alarm permission for Android 12+ (API level 31+) on real devices only
-      final exactAlarmGranted = await androidPlugin.requestExactAlarmsPermission();
+      final exactAlarmGranted = await androidPlugin
+          .requestExactAlarmsPermission();
       if (exactAlarmGranted == true) {
         _exactAlarmsAllowed = true;
-        Get.log('[NotificationService] Exact alarm permission granted - notifications will use precise timing');
+        Get.log(
+          '[NotificationService] Exact alarm permission granted - notifications will use precise timing',
+        );
       } else {
         _exactAlarmsAllowed = false;
-        Get.log('Exact alarm permission denied. Will use inexact scheduling.', isError: false);
+        Get.log(
+          'Exact alarm permission denied. Will use inexact scheduling.',
+          isError: false,
+        );
       }
     }
   }
@@ -923,7 +1184,10 @@ class NotificationService extends GetxService {
       showBadge: true,
     );
 
-    final androidPlugin = _notifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin = _notifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
     if (androidPlugin != null) {
       await androidPlugin.createNotificationChannel(androidChannel);
@@ -931,11 +1195,16 @@ class NotificationService extends GetxService {
   }
 
   /// Speak weather announcement using TTS
-  Future<void> _speakWeatherAnnouncement(String intro, String formattedAnnouncement) async {
+  Future<void> _speakWeatherAnnouncement(
+    String intro,
+    String formattedAnnouncement,
+  ) async {
     try {
       if (_tts != null) {
         await _tts!.speak(intro);
-        await Future.delayed(const Duration(seconds: 10)); // Short pause between intro and weather
+        await Future.delayed(
+          const Duration(seconds: 10),
+        ); // Short pause between intro and weather
         await _tts!.speak(formattedAnnouncement);
       }
     } catch (e) {
@@ -954,20 +1223,28 @@ class NotificationService extends GetxService {
       // Extract speech text and play it for test notifications (pre-fetched weather)
       final speechText = payload.substring('test_weather_with_speech:'.length);
       _speakWeatherAnnouncement('This is intro message', speechText);
-      Get.log('[NotificationService] Test notification delivered with speech: $speechText', isError: false);
+      Get.log(
+        '[NotificationService] Test notification delivered with speech: $speechText',
+        isError: false,
+      );
     } else if (payload.startsWith('daily_weather_with_location:')) {
       // Extract location and fetch current weather - this creates unattended announcement
       final location = payload.substring('daily_weather_with_location:'.length);
       _fetchAndAnnounceWeatherUnattended(location, 'daily notification');
     } else if (payload.startsWith('recurring_weather_with_location:')) {
       // Extract location and fetch current weather - this creates unattended announcement
-      final location = payload.substring('recurring_weather_with_location:'.length);
+      final location = payload.substring(
+        'recurring_weather_with_location:'.length,
+      );
       _fetchAndAnnounceWeatherUnattended(location, 'recurring notification');
     } else {
       switch (payload) {
         case 'daily_weather':
           // Legacy daily weather notification (without speech)
-          Get.log('[NotificationService] Legacy daily weather notification tapped', isError: false);
+          Get.log(
+            '[NotificationService] Legacy daily weather notification tapped',
+            isError: false,
+          );
           break;
         case 'weather_update':
           // Handle weather update notification tap
@@ -981,9 +1258,15 @@ class NotificationService extends GetxService {
 
   /// Fetch weather for the given location and announce it unattended
   /// This creates the runtime weather announcement that acts like a function call at delivery time
-  Future<void> _fetchAndAnnounceWeatherUnattended(String location, String context) async {
+  Future<void> _fetchAndAnnounceWeatherUnattended(
+    String location,
+    String context,
+  ) async {
     try {
-      Get.log('[NotificationService] UNATTENDED: Fetching current weather for $location ($context)', isError: false);
+      Get.log(
+        '[NotificationService] UNATTENDED: Fetching current weather for $location ($context)',
+        isError: false,
+      );
 
       // This is the "runtime function" that generates the weather message
       final weather = await _weatherService.getWeatherByLocation(location);
@@ -992,16 +1275,25 @@ class NotificationService extends GetxService {
       // Automatically speak the weather - this is the unattended announcement
       await _speakWeatherAnnouncement(intro, weather.formattedAnnouncement);
 
-      Get.log('[NotificationService] UNATTENDED: Weather announcement delivered automatically for $location ($context)', isError: false);
+      Get.log(
+        '[NotificationService] UNATTENDED: Weather announcement delivered automatically for $location ($context)',
+        isError: false,
+      );
 
       // After successful announcement, reschedule future recurring notifications if needed
       await _maintainRecurringSchedule();
     } catch (e) {
-      Get.log('[NotificationService] Failed to fetch weather for unattended announcement $location ($context): $e', isError: true);
+      Get.log(
+        '[NotificationService] Failed to fetch weather for unattended announcement $location ($context): $e',
+        isError: true,
+      );
 
       // Fallback message for unattended announcement
       final fallbackMessage = _generateFallbackAnnouncement(location);
-      await _speakWeatherAnnouncement('Failed to fetch weather', fallbackMessage);
+      await _speakWeatherAnnouncement(
+        'Failed to fetch weather',
+        fallbackMessage,
+      );
 
       // Even if weather fetch failed, maintain recurring schedule
       await _maintainRecurringSchedule();
@@ -1049,33 +1341,51 @@ class NotificationService extends GetxService {
   static void _onBackgroundNotificationResponse(NotificationResponse response) {
     // Note: Get.log won't work in background context, so we use print for debugging
     final payload = response.payload ?? '';
-    print('[NotificationService] Background notification received: payload=$payload');
+    print(
+      '[NotificationService] Background notification received: payload=$payload',
+    );
 
     if (payload.startsWith('test_weather_with_speech:')) {
-      print('[NotificationService] Background test notification - speech would be triggered when app opens');
+      print(
+        '[NotificationService] Background test notification - speech would be triggered when app opens',
+      );
       // Note: TTS cannot be triggered from background context, but this logs the intent
     } else if (payload.startsWith('daily_weather_with_location:')) {
       final location = payload.substring('daily_weather_with_location:'.length);
-      print('[NotificationService] Background daily weather notification - weather will be fetched for $location when app opens');
+      print(
+        '[NotificationService] Background daily weather notification - weather will be fetched for $location when app opens',
+      );
     } else if (payload.startsWith('recurring_weather_with_location:')) {
-      final location = payload.substring('recurring_weather_with_location:'.length);
-      print('[NotificationService] Background recurring weather notification - weather will be fetched for $location when app opens');
+      final location = payload.substring(
+        'recurring_weather_with_location:'.length,
+      );
+      print(
+        '[NotificationService] Background recurring weather notification - weather will be fetched for $location when app opens',
+      );
     } else if (payload.startsWith('daily_weather_with_speech:')) {
-      print('[NotificationService] Background daily weather notification (legacy) - speech would be triggered when app opens');
+      print(
+        '[NotificationService] Background daily weather notification (legacy) - speech would be triggered when app opens',
+      );
       // Note: TTS cannot be triggered from background context, but this logs the intent
     } else {
       // Handle background notification processing here
       // This is called when the app is not running and user taps notification
       switch (payload) {
         case 'daily_weather':
-          print('[NotificationService] Background daily weather notification (legacy) tapped');
+          print(
+            '[NotificationService] Background daily weather notification (legacy) tapped',
+          );
           // Could trigger weather fetch and display when app launches
           break;
         case 'weather_update':
-          print('[NotificationService] Background weather update notification tapped');
+          print(
+            '[NotificationService] Background weather update notification tapped',
+          );
           break;
         default:
-          print('[NotificationService] Unknown background notification payload: $payload');
+          print(
+            '[NotificationService] Unknown background notification payload: $payload',
+          );
           break;
       }
     }
@@ -1083,7 +1393,10 @@ class NotificationService extends GetxService {
 
   /// Check if notifications are enabled
   Future<bool> areNotificationsEnabled() async {
-    final androidPlugin = _notifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin = _notifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
 
     if (androidPlugin != null) {
       return await androidPlugin.areNotificationsEnabled() ?? false;

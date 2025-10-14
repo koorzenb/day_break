@@ -13,14 +13,20 @@ class _LocationSection extends StatelessWidget {
       () => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Location 📍', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+          const Text(
+            'Location 📍',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 8),
           if (controller.location.isEmpty) ...[
             Row(
               children: [
                 Icon(Icons.info_outline, color: Colors.grey[600], size: 20),
                 const SizedBox(width: 8),
-                const Text('Choose how to set your location:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                const Text(
+                  'Choose how to set your location:',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -32,7 +38,10 @@ class _LocationSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Show current location when set
-                  if (controller.location.isNotEmpty) _CurrentLocationDisplay(controller: controller) else _LocationInputOptions(controller: controller),
+                  if (controller.location.isNotEmpty)
+                    _CurrentLocationDisplay(controller: controller)
+                  else
+                    _LocationInputOptions(controller: controller),
                 ],
               ),
             ),
@@ -59,7 +68,10 @@ class _CurrentLocationDisplay extends StatelessWidget {
             children: [
               Icon(Icons.location_on, color: Colors.green[600], size: 20),
               const SizedBox(width: 8),
-              const Text('Current Location', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text(
+                'Current Location',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -76,7 +88,13 @@ class _CurrentLocationDisplay extends StatelessWidget {
                 Icon(Icons.check_circle, color: Colors.green[600], size: 18),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(controller.location, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                  child: Text(
+                    controller.location,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -111,12 +129,18 @@ class _LocationInputOptions extends StatelessWidget {
         if (!controller.hasWeatherValidation)
           const Padding(
             padding: EdgeInsets.only(top: 4.0),
-            child: Text('Weather validation unavailable', style: TextStyle(fontSize: 12, color: Colors.orange)),
+            child: Text(
+              'Weather validation unavailable',
+              style: TextStyle(fontSize: 12, color: Colors.orange),
+            ),
           ),
         const SizedBox(height: 12),
 
         // GPS Detection Section
-        if (controller.hasLocationDetection) _GPSDetectionSection(controller: controller) else _GPSUnavailableMessage(),
+        if (controller.hasLocationDetection)
+          _GPSDetectionSection(controller: controller)
+        else
+          _GPSUnavailableMessage(),
 
         // Manual location input
         _ManualLocationInput(controller: controller),
@@ -167,11 +191,17 @@ class _ManualLocationInputState extends State<_ManualLocationInput> {
             children: [
               Icon(Icons.edit_location, color: Colors.grey[600], size: 20),
               const SizedBox(width: 8),
-              const Text('Manual Entry', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text(
+                'Manual Entry',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
             ],
           ),
           const SizedBox(height: 8),
-          const Text('Enter your location manually', style: TextStyle(fontSize: 12, color: Colors.grey)),
+          const Text(
+            'Enter your location manually',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
           const SizedBox(height: 12),
           TextField(
             onChanged: (value) {
@@ -181,7 +211,9 @@ class _ManualLocationInputState extends State<_ManualLocationInput> {
             decoration: InputDecoration(
               hintText: 'e.g., Halifax, Nova Scotia',
               prefixIcon: const Icon(Icons.location_on),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
               filled: true,
               fillColor: Colors.grey[50],
             ),

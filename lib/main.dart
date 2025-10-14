@@ -28,9 +28,11 @@ Future<void> main() async {
   );
 
   final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(
-    androidChannel,
-  );
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >()
+      ?.createNotificationChannel(androidChannel);
 
   await initServices();
   runApp(const MyApp());
@@ -45,7 +47,6 @@ Future<void> initServices() async {
 
   final httpClientWrapper = HttpClientWrapper(httpClient);
   Get.put(httpClientWrapper);
-
 
   // Initialize LocationService
   final locationService = LocationService();
@@ -77,9 +78,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Day Break',
-      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue), useMaterial3: true),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
+      ),
       home: const MainScreen(),
-      getPages: [GetPage(name: '/settings', page: () => const SettingsScreen())],
+      getPages: [
+        GetPage(name: '/settings', page: () => const SettingsScreen()),
+      ],
       enableLog: true,
       logWriterCallback: (text, {isError = false}) {
         // Print all Get.log messages to the debug console

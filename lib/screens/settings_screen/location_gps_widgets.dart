@@ -16,20 +16,33 @@ class _GPSDetectionSection extends StatelessWidget {
             children: [
               Icon(Icons.gps_fixed, color: Colors.blue[600], size: 20),
               const SizedBox(width: 8),
-              const Text('GPS Detection', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text(
+                'GPS Detection',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
             ],
           ),
           const SizedBox(height: 8),
-          const Text('Detect your current location automatically', style: TextStyle(fontSize: 12, color: Colors.grey)),
+          const Text(
+            'Detect your current location automatically',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
           const SizedBox(height: 12),
 
           // GPS Detection Button and Loading State
           if (controller.isDetectingLocation)
             const Row(
               children: [
-                SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
                 SizedBox(width: 12),
-                Text('Detecting location...', style: TextStyle(color: Colors.blue)),
+                Text(
+                  'Detecting location...',
+                  style: TextStyle(color: Colors.blue),
+                ),
               ],
             )
           else if (!controller.hasLocationSuggestion)
@@ -37,13 +50,18 @@ class _GPSDetectionSection extends StatelessWidget {
               onPressed: controller.detectCurrentLocation,
               icon: const Icon(Icons.my_location, size: 18),
               label: const Text('Detect Current Location'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[600], foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue[600],
+                foregroundColor: Colors.white,
+              ),
             ),
 
           // Location suggestion and error widgets
-          if (controller.hasLocationSuggestion) _LocationSuggestion(controller: controller),
+          if (controller.hasLocationSuggestion)
+            _LocationSuggestion(controller: controller),
 
-          if (controller.locationDetectionError != null) _LocationError(controller: controller),
+          if (controller.locationDetectionError != null)
+            _LocationError(controller: controller),
 
           // Divider
           _OrDivider(),
@@ -77,11 +95,17 @@ class _LocationSuggestion extends StatelessWidget {
               children: [
                 Icon(Icons.check_circle, color: Colors.green[600], size: 20),
                 const SizedBox(width: 8),
-                const Text('Location Detected', style: TextStyle(fontWeight: FontWeight.w600)),
+                const Text(
+                  'Location Detected',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
               ],
             ),
             const SizedBox(height: 8),
-            Text(controller.detectedLocationSuggestion!, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+            Text(
+              controller.detectedLocationSuggestion!,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -89,14 +113,19 @@ class _LocationSuggestion extends StatelessWidget {
                   onPressed: controller.acceptLocationSuggestion,
                   icon: const Icon(Icons.check, size: 18),
                   label: const Text('Accept'),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green[600], foregroundColor: Colors.white),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green[600],
+                    foregroundColor: Colors.white,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 OutlinedButton.icon(
                   onPressed: controller.declineLocationSuggestion,
                   icon: const Icon(Icons.close, size: 18),
                   label: const Text('Decline'),
-                  style: OutlinedButton.styleFrom(foregroundColor: Colors.grey[600]),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.grey[600],
+                  ),
                 ),
               ],
             ),
@@ -131,7 +160,10 @@ class _LocationError extends StatelessWidget {
               Icon(Icons.error_outline, color: Colors.red[600], size: 20),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(controller.locationDetectionError!, style: TextStyle(color: Colors.red[700], fontSize: 12)),
+                child: Text(
+                  controller.locationDetectionError!,
+                  style: TextStyle(color: Colors.red[700], fontSize: 12),
+                ),
               ),
               IconButton(
                 onPressed: controller.clearLocationDetectionState,
@@ -159,7 +191,10 @@ class _GPSUnavailableMessage extends StatelessWidget {
           children: [
             Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
             const SizedBox(width: 8),
-            const Text('GPS detection unavailable', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            const Text(
+              'GPS detection unavailable',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -188,7 +223,11 @@ class _OrDivider extends StatelessWidget {
               ),
               child: const Text(
                 'OR',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
               ),
             ),
             const Expanded(child: Divider()),

@@ -8,7 +8,8 @@ import '../models/location_exceptions.dart';
 class LocationService extends GetxService {
   final GeolocatorWrapper _geolocator;
 
-  LocationService([GeolocatorWrapper? geolocator]) : _geolocator = geolocator ?? GeolocatorWrapper();
+  LocationService([GeolocatorWrapper? geolocator])
+    : _geolocator = geolocator ?? GeolocatorWrapper();
 
   Future<Position> determinePosition() async {
     final serviceEnabled = await _geolocator.isLocationServiceEnabled();
@@ -40,7 +41,10 @@ class LocationService extends GetxService {
       final position = await determinePosition();
 
       // Convert coordinates to human-readable address
-      final placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      final placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
 
       if (placemarks.isEmpty) {
         throw const LocationUnknownException();

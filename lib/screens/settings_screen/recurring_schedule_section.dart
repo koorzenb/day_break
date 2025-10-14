@@ -19,16 +19,26 @@ class _RecurringScheduleSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 24),
-          const Text('Schedule 📅', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+          const Text(
+            'Schedule 📅',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 8),
           Card(
             child: Column(
               children: [
                 // Recurring toggle
                 SwitchListTile(
-                  secondary: Icon(Icons.repeat, color: Theme.of(context).primaryColor),
+                  secondary: Icon(
+                    Icons.repeat,
+                    color: Theme.of(context).primaryColor,
+                  ),
                   title: const Text('Recurring announcements'),
-                  subtitle: Text(controller.isRecurring ? 'Announcements will repeat' : 'One-time announcement only'),
+                  subtitle: Text(
+                    controller.isRecurring
+                        ? 'Announcements will repeat'
+                        : 'One-time announcement only',
+                  ),
                   value: controller.isRecurring,
                   onChanged: controller.toggleRecurring,
                 ),
@@ -41,22 +51,36 @@ class _RecurringScheduleSection extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Repeat Pattern', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                        const Text(
+                          'Repeat Pattern',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         const SizedBox(height: 12),
 
                         // Pattern selection chips
                         _PatternSelectionChips(controller: controller),
 
                         // Custom days selection (shown when custom pattern is selected)
-                        if (controller.recurrencePattern == RecurrencePattern.custom) ...[
+                        if (controller.recurrencePattern ==
+                            RecurrencePattern.custom) ...[
                           const SizedBox(height: 16),
-                          const Text('Select Days', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                          const Text(
+                            'Select Days',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           _CustomDaySelection(controller: controller),
                         ],
 
                         // Summary of selected days
-                        if (controller.isRecurring && controller.recurrenceDays.isNotEmpty) ...[
+                        if (controller.isRecurring &&
+                            controller.recurrenceDays.isNotEmpty) ...[
                           const SizedBox(height: 16),
                           _ScheduleSummary(controller: controller),
                         ],
@@ -90,8 +114,13 @@ class _PatternSelectionChips extends StatelessWidget {
             label: Text(pattern.displayName),
             selected: isSelected,
             onSelected: (_) => controller.updateRecurrencePattern(pattern),
-            selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
-            labelStyle: TextStyle(color: isSelected ? Theme.of(context).primaryColor : null, fontWeight: isSelected ? FontWeight.w600 : null),
+            selectedColor: Theme.of(
+              context,
+            ).primaryColor.withValues(alpha: 0.2),
+            labelStyle: TextStyle(
+              color: isSelected ? Theme.of(context).primaryColor : null,
+              fontWeight: isSelected ? FontWeight.w600 : null,
+            ),
           );
         }).toList(),
       ),
@@ -118,9 +147,14 @@ class _CustomDaySelection extends StatelessWidget {
             label: Text(controller.getDayName(day)),
             selected: isSelected,
             onSelected: (_) => controller.toggleRecurrenceDay(day),
-            selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+            selectedColor: Theme.of(
+              context,
+            ).primaryColor.withValues(alpha: 0.2),
             checkmarkColor: Theme.of(context).primaryColor,
-            labelStyle: TextStyle(color: isSelected ? Theme.of(context).primaryColor : null, fontWeight: isSelected ? FontWeight.w600 : null),
+            labelStyle: TextStyle(
+              color: isSelected ? Theme.of(context).primaryColor : null,
+              fontWeight: isSelected ? FontWeight.w600 : null,
+            ),
           );
         }),
       ),
@@ -143,18 +177,28 @@ class _ScheduleSummary extends StatelessWidget {
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.3)),
+          border: Border.all(
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(Icons.schedule, size: 16, color: Theme.of(context).primaryColor),
+                Icon(
+                  Icons.schedule,
+                  size: 16,
+                  color: Theme.of(context).primaryColor,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Announcement Schedule',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Theme.of(context).primaryColor),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).primaryColor,
+                  ),
                 ),
               ],
             ),

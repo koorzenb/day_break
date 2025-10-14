@@ -20,13 +20,21 @@ class SettingsScreen extends StatelessWidget {
     final controller = Get.put(SettingsController());
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings ⚙️'), backgroundColor: Theme.of(context).colorScheme.inversePrimary, elevation: 0),
+      appBar: AppBar(
+        title: const Text('Settings ⚙️'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        elevation: 0,
+      ),
       body: Obx(() {
         if (controller.isLoading) {
           return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [CircularProgressIndicator(), SizedBox(height: 16), Text('Updating settings...')],
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Updating settings...'),
+              ],
             ),
           );
         }

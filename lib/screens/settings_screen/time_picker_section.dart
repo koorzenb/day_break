@@ -13,15 +13,26 @@ class _TimePickerSection extends StatelessWidget {
       () => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Announcement Time ⏰', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+          const Text(
+            'Announcement Time ⏰',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 8),
           Card(
             child: ListTile(
-              leading: Icon(Icons.access_time, color: Theme.of(context).primaryColor),
+              leading: Icon(
+                Icons.access_time,
+                color: Theme.of(context).primaryColor,
+              ),
               title: const Text('Daily announcement time'),
               subtitle: Text(
                 controller.formattedTime,
-                style: TextStyle(fontWeight: FontWeight.w500, color: controller.selectedTime != null ? Theme.of(context).primaryColor : Colors.grey),
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: controller.selectedTime != null
+                      ? Theme.of(context).primaryColor
+                      : Colors.grey,
+                ),
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: controller.showTimePicker,

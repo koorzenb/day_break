@@ -21,8 +21,17 @@ class _HeaderSection extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Day Break', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                      Text('Configure your daily weather announcements', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                      Text(
+                        'Day Break',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Configure your daily weather announcements',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
                     ],
                   ),
                 ),

@@ -61,11 +61,17 @@ class WeatherAuthException extends WeatherApiException {
 class WeatherRateLimitException extends WeatherApiException {
   final int? retryAfterSeconds;
 
-  const WeatherRateLimitException(super.message, super.statusCode, [this.retryAfterSeconds]);
+  const WeatherRateLimitException(
+    super.message,
+    super.statusCode, [
+    this.retryAfterSeconds,
+  ]);
 
   @override
   String toString() {
-    final retryInfo = retryAfterSeconds != null ? ' (retry after ${retryAfterSeconds}s)' : '';
+    final retryInfo = retryAfterSeconds != null
+        ? ' (retry after ${retryAfterSeconds}s)'
+        : '';
     return 'WeatherRateLimitException ($statusCode): $message$retryInfo';
   }
 }

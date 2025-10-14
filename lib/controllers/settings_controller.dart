@@ -146,7 +146,9 @@ class SettingsController extends GetxController {
     try {
       // Validate location with weather API if available
       if (hasWeatherValidation) {
-        final isValid = await _weatherService!.validateLocation(newLocation.trim());
+        final isValid = await _weatherService!.validateLocation(
+          newLocation.trim(),
+        );
 
         if (!isValid) {
           SnackBarHelper.showError(
@@ -170,7 +172,10 @@ class SettingsController extends GetxController {
       _checkAndNavigateIfComplete();
     } catch (e) {
       // Show error message for network/API issues
-      SnackBarHelper.showError('Validation Error ❌', 'Unable to validate location. Please check your internet connection and try again.');
+      SnackBarHelper.showError(
+        'Validation Error ❌',
+        'Unable to validate location. Please check your internet connection and try again.',
+      );
     } finally {
       _isLoading.value = false;
     }
@@ -185,7 +190,8 @@ class SettingsController extends GetxController {
 
         if (Get.isSnackbarOpen) {
           // wait until snackbar is closed. This is a bit hacky but works for now
-          final delay = AppConstants.snackbarDuration + 1; // add 1 second buffer
+          final delay =
+              AppConstants.snackbarDuration + 1; // add 1 second buffer
           Future.delayed(Duration(seconds: delay), () {
             // Return to previous route and signal completion
             Get.back(result: true);
@@ -200,7 +206,11 @@ class SettingsController extends GetxController {
 
   /// Show time picker dialog
   Future<void> showTimePicker() async {
-    final TimeOfDay? picked = await Get.dialog<TimeOfDay>(TimePickerDialog(initialTime: _selectedTime.value ?? const TimeOfDay(hour: 8, minute: 0)));
+    final TimeOfDay? picked = await Get.dialog<TimeOfDay>(
+      TimePickerDialog(
+        initialTime: _selectedTime.value ?? const TimeOfDay(hour: 8, minute: 0),
+      ),
+    );
 
     if (picked != null) {
       await updateAnnouncementTime(picked);
@@ -216,7 +226,8 @@ class SettingsController extends GetxController {
   String get formattedTime {
     if (_selectedTime.value == null) return 'Not set';
     final context = Get.context;
-    if (context == null) return '${_selectedTime.value!.hour}:${_selectedTime.value!.minute.toString().padLeft(2, '0')}';
+    if (context == null)
+      return '${_selectedTime.value!.hour}:${_selectedTime.value!.minute.toString().padLeft(2, '0')}';
     return _selectedTime.value!.format(context);
   }
 
@@ -254,11 +265,16 @@ class SettingsController extends GetxController {
       }
 
       // Reschedule notifications with new pattern
-      if (_notificationService != null && isSettingsComplete && _isRecurring.value) {
+      if (_notificationService != null &&
+          isSettingsComplete &&
+          _isRecurring.value) {
         await _notificationService!.handleSettingsChange();
       }
     } catch (e) {
-      SnackBarHelper.showError('Error ❌', 'Failed to update recurrence pattern');
+      SnackBarHelper.showError(
+        'Error ❌',
+        'Failed to update recurrence pattern',
+      );
     }
   }
 
@@ -280,7 +296,9 @@ class SettingsController extends GetxController {
       _recurrenceDays.assignAll(currentDays);
 
       // Reschedule notifications with new custom days
-      if (_notificationService != null && isSettingsComplete && _isRecurring.value) {
+      if (_notificationService != null &&
+          isSettingsComplete &&
+          _isRecurring.value) {
         await _notificationService!.handleSettingsChange();
       }
     } catch (e) {
@@ -295,12 +313,17 @@ class SettingsController extends GetxController {
       _isRecurringPaused.value = isPaused;
 
       // Handle notification scheduling based on pause state
-      if (_notificationService != null && isSettingsComplete && _isRecurring.value) {
+      if (_notificationService != null &&
+          isSettingsComplete &&
+          _isRecurring.value) {
         await _notificationService!.handleSettingsChange();
       }
 
       final action = isPaused ? 'paused' : 'resumed';
-      SnackBarHelper.showSuccess('Success ✅', 'Recurring announcements $action');
+      SnackBarHelper.showSuccess(
+        'Success ✅',
+        'Recurring announcements $action',
+      );
     } catch (e) {
       SnackBarHelper.showError('Error ❌', 'Failed to update pause setting');
     }
@@ -310,12 +333,21 @@ class SettingsController extends GetxController {
   Future<void> handleTimezoneChange() async {
     try {
       // If recurring is active, reschedule all notifications with new timezone
-      if (_notificationService != null && isSettingsComplete && _isRecurring.value && !_isRecurringPaused.value) {
+      if (_notificationService != null &&
+          isSettingsComplete &&
+          _isRecurring.value &&
+          !_isRecurringPaused.value) {
         await _notificationService!.handleSettingsChange();
-        SnackBarHelper.showSuccess('Success ✅', 'Recurring schedules updated for timezone change');
+        SnackBarHelper.showSuccess(
+          'Success ✅',
+          'Recurring schedules updated for timezone change',
+        );
       }
     } catch (e) {
-      SnackBarHelper.showError('Error ❌', 'Failed to update schedules for timezone change');
+      SnackBarHelper.showError(
+        'Error ❌',
+        'Failed to update schedules for timezone change',
+      );
     }
   }
 
@@ -327,7 +359,15 @@ class SettingsController extends GetxController {
 
   /// Get full display name for a day of week
   String getFullDayName(int day) {
-    const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const dayNames = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
     return dayNames[day - 1];
   }
 
@@ -367,19 +407,24 @@ class SettingsController extends GetxController {
       final suggestion = await _locationService!
           .getCurrentLocationSuggestion(); // "location":{"lat":44.77346420288086,"lon":-63.688419342041016,"name":"Lower Sackville, Halifax Regional Municipality, Halifax County, Nova Scotia, Canada","type":"administrative"}}
 
-      _detectedLocationSuggestion.value = suggestion; // Lower Sackville, Nova Scotia, Canada
+      _detectedLocationSuggestion.value =
+          suggestion; // Lower Sackville, Nova Scotia, Canada
     } catch (e) {
       String errorMessage;
       if (e is LocationServicesDisabledException) {
-        errorMessage = 'Please enable location services in your device settings';
+        errorMessage =
+            'Please enable location services in your device settings';
       } else if (e is LocationPermissionDeniedException) {
-        errorMessage = 'Location permission denied. Please allow location access in app settings';
+        errorMessage =
+            'Location permission denied. Please allow location access in app settings';
       } else if (e is LocationPermissionPermanentlyDeniedException) {
-        errorMessage = 'Location permission permanently denied. Please enable in device settings';
+        errorMessage =
+            'Location permission permanently denied. Please enable in device settings';
       } else if (e is LocationUnknownException) {
         errorMessage = 'Could not determine location name from GPS coordinates';
       } else {
-        errorMessage = 'Failed to detect location. Please try again or enter manually';
+        errorMessage =
+            'Failed to detect location. Please try again or enter manually';
       }
 
       _locationDetectionError.value = errorMessage;
@@ -404,7 +449,10 @@ class SettingsController extends GetxController {
   void declineLocationSuggestion() {
     _detectedLocationSuggestion.value = null;
     _locationDetectionError.value = null;
-    SnackBarHelper.showInfo('Suggestion Declined 👎', 'You can enter your location manually');
+    SnackBarHelper.showInfo(
+      'Suggestion Declined 👎',
+      'You can enter your location manually',
+    );
   }
 
   /// Clear any location detection state

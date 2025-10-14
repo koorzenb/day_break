@@ -26,7 +26,8 @@ class AppController extends GetxController {
   String get currentStatus => _currentStatus.value;
   bool get isTestNotificationCountdown => _isTestNotificationCountdown.value;
   int get testNotificationCountdown => _testNotificationCountdown.value;
-  bool get isNotificationsAllowed => _notificationService.isNotificationsAllowed;
+  bool get isNotificationsAllowed =>
+      _notificationService.isNotificationsAllowed;
 
   @override
   void onInit() {
@@ -44,7 +45,9 @@ class AppController extends GetxController {
   void checkSettingsStatus() {
     final location = _settingsService.location;
     final hasLocation = location != null && location.isNotEmpty;
-    final hasTime = _settingsService.announcementHour != null && _settingsService.announcementMinute != null;
+    final hasTime =
+        _settingsService.announcementHour != null &&
+        _settingsService.announcementMinute != null;
 
     _hasSettings.value = hasLocation && hasTime;
   }
@@ -56,7 +59,10 @@ class AppController extends GetxController {
     // If settings were completed, refresh the status and show snackbar
     if (result == true) {
       await refreshSettingsStatus();
-      SnackBarHelper.showSuccess('Setup Complete ✅', 'Your daily weather announcements are now configured!');
+      SnackBarHelper.showSuccess(
+        'Setup Complete ✅',
+        'Your daily weather announcements are now configured!',
+      );
     }
   }
 
@@ -74,7 +80,10 @@ class AppController extends GetxController {
   Future<void> scheduleTestNotification(int delaySeconds) async {
     try {
       if (_isTestNotificationCountdown.value) {
-        SnackBarHelper.showWarning('Already Scheduled', 'A test notification is already counting down.');
+        SnackBarHelper.showWarning(
+          'Already Scheduled',
+          'A test notification is already counting down.',
+        );
         return;
       }
 
@@ -89,7 +98,10 @@ class AppController extends GetxController {
       _startCountdownTimer();
     } catch (e) {
       Get.log('Error in scheduleTestNotification: $e', isError: true);
-      SnackBarHelper.showError('Error ❌', 'Failed to schedule test notification: $e');
+      SnackBarHelper.showError(
+        'Error ❌',
+        'Failed to schedule test notification: $e',
+      );
       _isTestNotificationCountdown.value = false;
     }
   }
@@ -119,7 +131,8 @@ class AppController extends GetxController {
     } catch (e) {
       // Ensure the UI is released from the loading state even if initialization fails partially
       _currentStatus.value = 'Limited mode – init error: $e';
-      _isInitialized.value = true; // Allow app to render so user can attempt recovery in settings
+      _isInitialized.value =
+          true; // Allow app to render so user can attempt recovery in settings
     }
   }
 
@@ -139,7 +152,8 @@ class AppController extends GetxController {
       return 'Announcement time not configured';
     }
 
-    final timeString = '${hour.toString()}:${minute.toString().padLeft(2, '0')}';
+    final timeString =
+        '${hour.toString()}:${minute.toString().padLeft(2, '0')}';
     final isRecurring = _settingsService.isRecurring;
 
     if (isRecurring) {
@@ -147,7 +161,10 @@ class AppController extends GetxController {
       final nextDate = _calculateNextAnnouncementDate();
 
       if (nextDate != null) {
-        final isToday = nextDate.day == DateTime.now().day && nextDate.month == DateTime.now().month && nextDate.year == DateTime.now().year;
+        final isToday =
+            nextDate.day == DateTime.now().day &&
+            nextDate.month == DateTime.now().month &&
+            nextDate.year == DateTime.now().year;
 
         final dateString = isToday ? 'today' : 'on ${_formatDate(nextDate)}';
 
@@ -159,7 +176,10 @@ class AppController extends GetxController {
       final nextDate = _calculateNextAnnouncementDate();
 
       if (nextDate != null) {
-        final isToday = nextDate.day == DateTime.now().day && nextDate.month == DateTime.now().month && nextDate.year == DateTime.now().year;
+        final isToday =
+            nextDate.day == DateTime.now().day &&
+            nextDate.month == DateTime.now().month &&
+            nextDate.year == DateTime.now().year;
 
         final dateString = isToday ? 'today' : 'on ${_formatDate(nextDate)}';
 
@@ -206,7 +226,14 @@ class AppController extends GetxController {
     final now = tz.TZDateTime.now(halifaxLocation);
 
     // Create today's scheduled time in Halifax timezone
-    var candidateDate = tz.TZDateTime(halifaxLocation, now.year, now.month, now.day, hour, minute);
+    var candidateDate = tz.TZDateTime(
+      halifaxLocation,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
 
     // If today's time has passed, start checking from tomorrow
     if (candidateDate.isBefore(now)) {
@@ -225,7 +252,8 @@ class AppController extends GetxController {
 
     // Find the next valid day (within 14 days to match system limitations)
     for (int i = 0; i < 14; i++) {
-      final dayOfWeek = candidateDate.weekday % 7; // Convert to 0-6 (Sunday-Saturday)
+      final dayOfWeek =
+          candidateDate.weekday % 7; // Convert to 0-6 (Sunday-Saturday)
 
       if (activeDays.contains(dayOfWeek)) {
         return candidateDate;
@@ -252,7 +280,20 @@ class AppController extends GetxController {
     } else {
       // Format as "Mon, Dec 16"
       const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
 
       final weekday = weekdays[date.weekday % 7];
       final month = months[date.month - 1];

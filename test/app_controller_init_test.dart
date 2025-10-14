@@ -23,12 +23,17 @@ class FakeWeatherService extends WeatherService {
 }
 
 class FailingNotificationService extends NotificationService {
-  FailingNotificationService({required SettingsService settingsService, required WeatherService weatherService})
-    : super(weatherService: weatherService, settingsService: settingsService);
+  FailingNotificationService({
+    required SettingsService settingsService,
+    required WeatherService weatherService,
+  }) : super(weatherService: weatherService, settingsService: settingsService);
 
   @override
-  Future<void> scheduleDailyWeatherNotification({List<int>? customDays, bool? isRecurring, RecurrencePattern? recurrencePattern}) async =>
-      throw Exception('perm denied');
+  Future<void> scheduleDailyWeatherNotification({
+    List<int>? customDays,
+    bool? isRecurring,
+    RecurrencePattern? recurrencePattern,
+  }) async => throw Exception('perm denied');
 }
 
 void main() {
@@ -38,18 +43,34 @@ void main() {
     Get.reset();
   });
 
-  test('AppController releases loading state even if notification service throws', () async {
-    final settings = FakeSettingsService();
-    final weather = FakeWeatherService();
-    Get.put<SettingsService>(settings);
-    Get.put<WeatherService>(weather);
-    Get.put<NotificationService>(FailingNotificationService(settingsService: settings, weatherService: weather));
+  test(
+    'AppController releases loading state even if notification service throws',
+    () async {
+      final settings = FakeSettingsService();
+      final weather = FakeWeatherService();
+      Get.put<SettingsService>(settings);
+      Get.put<WeatherService>(weather);
+      Get.put<NotificationService>(
+        FailingNotificationService(
+          settingsService: settings,
+          weatherService: weather,
+        ),
+      );
 
-    final controller = AppController();
-    Get.put(controller);
-    await Future<void>.delayed(const Duration(milliseconds: 20));
+      final controller = AppController();
+      Get.put(controller);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
 
-    expect(controller.isInitialized, isTrue, reason: 'Controller should set isInitialized true even on error');
-    expect(controller.currentStatus.isNotEmpty, isTrue, reason: 'Status should reflect limited mode/error');
-  });
+      expect(
+        controller.isInitialized,
+        isTrue,
+        reason: 'Controller should set isInitialized true even on error',
+      );
+      expect(
+        controller.currentStatus.isNotEmpty,
+        isTrue,
+        reason: 'Status should reflect limited mode/error',
+      );
+    },
+  );
 }

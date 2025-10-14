@@ -16,12 +16,17 @@ class MockSettingsService extends SettingsService {
   RecurrencePattern _recurrencePattern;
   List<int> _recurrenceDays;
 
-  MockSettingsService({int? hour, int? minute, bool isRecurring = false, RecurrencePattern pattern = RecurrencePattern.daily, List<int>? customDays})
-    : _announcementHour = hour,
-      _announcementMinute = minute,
-      _isRecurring = isRecurring,
-      _recurrencePattern = pattern,
-      _recurrenceDays = customDays ?? pattern.defaultDays;
+  MockSettingsService({
+    int? hour,
+    int? minute,
+    bool isRecurring = false,
+    RecurrencePattern pattern = RecurrencePattern.daily,
+    List<int>? customDays,
+  }) : _announcementHour = hour,
+       _announcementMinute = minute,
+       _isRecurring = isRecurring,
+       _recurrencePattern = pattern,
+       _recurrenceDays = customDays ?? pattern.defaultDays;
 
   @override
   int? get announcementHour => _announcementHour;
@@ -47,7 +52,11 @@ class MockSettingsService extends SettingsService {
     _announcementMinute = minute;
   }
 
-  void setRecurringConfigForTest(bool recurring, RecurrencePattern pattern, List<int>? days) {
+  void setRecurringConfigForTest(
+    bool recurring,
+    RecurrencePattern pattern,
+    List<int>? days,
+  ) {
     _isRecurring = recurring;
     _recurrencePattern = pattern;
     _recurrenceDays = days ?? pattern.defaultDays;
@@ -60,11 +69,17 @@ class MockWeatherService extends WeatherService {
 }
 
 class MockNotificationService extends NotificationService {
-  MockNotificationService({required SettingsService settingsService, required WeatherService weatherService})
-    : super(weatherService: weatherService, settingsService: settingsService);
+  MockNotificationService({
+    required SettingsService settingsService,
+    required WeatherService weatherService,
+  }) : super(weatherService: weatherService, settingsService: settingsService);
 
   @override
-  Future<void> scheduleDailyWeatherNotification({List<int>? customDays, bool? isRecurring, RecurrencePattern? recurrencePattern}) async {
+  Future<void> scheduleDailyWeatherNotification({
+    List<int>? customDays,
+    bool? isRecurring,
+    RecurrencePattern? recurrencePattern,
+  }) async {
     // Mock implementation - just return success
   }
 }
@@ -83,9 +98,16 @@ void main() {
 
   group('AppController Status Display Tests', () {
     test('Shows status message for single notification', () async {
-      final mockSettings = MockSettingsService(hour: 7, minute: 30, isRecurring: false);
+      final mockSettings = MockSettingsService(
+        hour: 7,
+        minute: 30,
+        isRecurring: false,
+      );
       final mockWeather = MockWeatherService();
-      final mockNotification = MockNotificationService(settingsService: mockSettings, weatherService: mockWeather);
+      final mockNotification = MockNotificationService(
+        settingsService: mockSettings,
+        weatherService: mockWeather,
+      );
 
       Get.put<SettingsService>(mockSettings);
       Get.put<WeatherService>(mockWeather);
@@ -99,14 +121,30 @@ void main() {
 
       final status = controller.currentStatus;
       expect(status, isNotEmpty, reason: 'Should generate a status message');
-      expect(status, contains('7:30'), reason: 'Should show the scheduled time');
-      expect(status, isNot(contains('recurring')), reason: 'Should not mention recurring for single notifications');
+      expect(
+        status,
+        contains('7:30'),
+        reason: 'Should show the scheduled time',
+      );
+      expect(
+        status,
+        isNot(contains('recurring')),
+        reason: 'Should not mention recurring for single notifications',
+      );
     });
 
     test('Shows status message for recurring daily notifications', () async {
-      final mockSettings = MockSettingsService(hour: 8, minute: 45, isRecurring: true, pattern: RecurrencePattern.daily);
+      final mockSettings = MockSettingsService(
+        hour: 8,
+        minute: 45,
+        isRecurring: true,
+        pattern: RecurrencePattern.daily,
+      );
       final mockWeather = MockWeatherService();
-      final mockNotification = MockNotificationService(settingsService: mockSettings, weatherService: mockWeather);
+      final mockNotification = MockNotificationService(
+        settingsService: mockSettings,
+        weatherService: mockWeather,
+      );
 
       Get.put<SettingsService>(mockSettings);
       Get.put<WeatherService>(mockWeather);
@@ -119,15 +157,35 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 100));
 
       final status = controller.currentStatus;
-      expect(status, contains('recurring'), reason: 'Should indicate recurring notifications');
-      expect(status, contains('Daily'), reason: 'Should show the recurrence pattern');
-      expect(status, contains('8:45'), reason: 'Should show the scheduled time');
+      expect(
+        status,
+        contains('recurring'),
+        reason: 'Should indicate recurring notifications',
+      );
+      expect(
+        status,
+        contains('Daily'),
+        reason: 'Should show the recurrence pattern',
+      );
+      expect(
+        status,
+        contains('8:45'),
+        reason: 'Should show the scheduled time',
+      );
     });
 
     test('Shows status message for recurring weekdays notifications', () async {
-      final mockSettings = MockSettingsService(hour: 6, minute: 0, isRecurring: true, pattern: RecurrencePattern.weekdays);
+      final mockSettings = MockSettingsService(
+        hour: 6,
+        minute: 0,
+        isRecurring: true,
+        pattern: RecurrencePattern.weekdays,
+      );
       final mockWeather = MockWeatherService();
-      final mockNotification = MockNotificationService(settingsService: mockSettings, weatherService: mockWeather);
+      final mockNotification = MockNotificationService(
+        settingsService: mockSettings,
+        weatherService: mockWeather,
+      );
 
       Get.put<SettingsService>(mockSettings);
       Get.put<WeatherService>(mockWeather);
@@ -140,15 +198,30 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 100));
 
       final status = controller.currentStatus;
-      expect(status, contains('recurring'), reason: 'Should indicate recurring notifications');
-      expect(status, contains('Weekdays'), reason: 'Should show the weekdays pattern');
-      expect(status, contains('6:00'), reason: 'Should show the scheduled time');
+      expect(
+        status,
+        contains('recurring'),
+        reason: 'Should indicate recurring notifications',
+      );
+      expect(
+        status,
+        contains('Weekdays'),
+        reason: 'Should show the weekdays pattern',
+      );
+      expect(
+        status,
+        contains('6:00'),
+        reason: 'Should show the scheduled time',
+      );
     });
 
     test('Shows ready status when announcement time not configured', () async {
       final mockSettings = MockSettingsService(); // No hour/minute set
       final mockWeather = MockWeatherService();
-      final mockNotification = MockNotificationService(settingsService: mockSettings, weatherService: mockWeather);
+      final mockNotification = MockNotificationService(
+        settingsService: mockSettings,
+        weatherService: mockWeather,
+      );
 
       Get.put<SettingsService>(mockSettings);
       Get.put<WeatherService>(mockWeather);
@@ -161,14 +234,27 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 100));
 
       final status = controller.currentStatus;
-      expect(status, equals('Ready'), reason: 'Should show Ready when settings are incomplete');
+      expect(
+        status,
+        equals('Ready'),
+        reason: 'Should show Ready when settings are incomplete',
+      );
     });
 
     test('Shows status for custom recurring pattern', () async {
       final customDays = [1, 3, 5]; // Monday, Wednesday, Friday
-      final mockSettings = MockSettingsService(hour: 9, minute: 30, isRecurring: true, pattern: RecurrencePattern.custom, customDays: customDays);
+      final mockSettings = MockSettingsService(
+        hour: 9,
+        minute: 30,
+        isRecurring: true,
+        pattern: RecurrencePattern.custom,
+        customDays: customDays,
+      );
       final mockWeather = MockWeatherService();
-      final mockNotification = MockNotificationService(settingsService: mockSettings, weatherService: mockWeather);
+      final mockNotification = MockNotificationService(
+        settingsService: mockSettings,
+        weatherService: mockWeather,
+      );
 
       Get.put<SettingsService>(mockSettings);
       Get.put<WeatherService>(mockWeather);
@@ -181,9 +267,17 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 100));
 
       final status = controller.currentStatus;
-      expect(status, contains('recurring'), reason: 'Should indicate recurring notifications');
+      expect(
+        status,
+        contains('recurring'),
+        reason: 'Should indicate recurring notifications',
+      );
       expect(status, contains('Custom'), reason: 'Should show custom pattern');
-      expect(status, contains('9:30'), reason: 'Should show the scheduled time');
+      expect(
+        status,
+        contains('9:30'),
+        reason: 'Should show the scheduled time',
+      );
     });
   });
 }

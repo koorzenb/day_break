@@ -37,7 +37,8 @@ void main(List<String> args) {
   final commitParts = RegExp(r'^(.*?):\s*(.*)$').firstMatch(commitMessage);
 
   String commitType = 'Other'; // Default type if none is provided
-  String commitDescription = commitMessage; // Use the entire message as description
+  String commitDescription =
+      commitMessage; // Use the entire message as description
 
   if (commitParts != null) {
     commitType = commitParts.group(1)!.trim().toLowerCase();
@@ -58,7 +59,12 @@ void main(List<String> args) {
   _commitChanges(commitMessage);
 }
 
-void _updateChangelog(String? nextVersion, String commitType, String commitDescription, File changelogFile) {
+void _updateChangelog(
+  String? nextVersion,
+  String commitType,
+  String commitDescription,
+  File changelogFile,
+) {
   // Update CHANGELOG.md
   var ct = _capitalize(commitType == 'ref' ? 'refactor' : commitType);
   ct = _capitalize(ct == 'Feat' ? 'feature' : ct);
@@ -72,7 +78,9 @@ void _updateChangelog(String? nextVersion, String commitType, String commitDescr
 - $commitDescription
 
 ''';
-  changelogFile.writeAsStringSync(changelogEntry + changelogFile.readAsStringSync());
+  changelogFile.writeAsStringSync(
+    changelogEntry + changelogFile.readAsStringSync(),
+  );
 }
 
 String? _updatePubspecVersion(bool isNextPatch) {
@@ -85,7 +93,9 @@ String? _updatePubspecVersion(bool isNextPatch) {
 
   // Read pubspec.yaml
   final pubspecContent = pubspecFile.readAsStringSync();
-  final currentVersionMatch = RegExp(r'version:\s*(\d+\.\d+\.\d+)\+(\d+)').firstMatch(pubspecContent);
+  final currentVersionMatch = RegExp(
+    r'version:\s*(\d+\.\d+\.\d+)\+(\d+)',
+  ).firstMatch(pubspecContent);
 
   if (currentVersionMatch == null) {
     print('Error: Could not find version in pubspec.yaml!');
@@ -93,8 +103,12 @@ String? _updatePubspecVersion(bool isNextPatch) {
   }
 
   // Extract version and build number
-  final currentVersion = Version.parse(currentVersionMatch.group(1)!); // Semantic version (e.g., 0.3.0)
-  final currentBuildNumber = int.parse(currentVersionMatch.group(2)!); // Build number (e.g., 03000)
+  final currentVersion = Version.parse(
+    currentVersionMatch.group(1)!,
+  ); // Semantic version (e.g., 0.3.0)
+  final currentBuildNumber = int.parse(
+    currentVersionMatch.group(2)!,
+  ); // Build number (e.g., 03000)
 
   // Determine next version based on commit type
   Version nextVersion;
@@ -102,15 +116,23 @@ String? _updatePubspecVersion(bool isNextPatch) {
   if (isNextPatch) {
     nextVersion = currentVersion.nextPatch;
     nextBuildNumber = '${currentBuildNumber + 1}';
-    print('Incrementing patch version: $nextVersion, build number: $nextBuildNumber');
+    print(
+      'Incrementing patch version: $nextVersion, build number: $nextBuildNumber',
+    );
   } else {
     nextVersion = Version(currentVersion.major, currentVersion.minor + 1, 0);
-    nextBuildNumber = '00${((currentBuildNumber ~/ 100) + 1) * 100}'; // manually update this for major releases
-    print('Incrementing patch version: $nextVersion, build number: $nextBuildNumber');
+    nextBuildNumber =
+        '00${((currentBuildNumber ~/ 100) + 1) * 100}'; // manually update this for major releases
+    print(
+      'Incrementing patch version: $nextVersion, build number: $nextBuildNumber',
+    );
   }
 
   // Update pubspec.yaml with new version and build number
-  final updatedPubspecContent = pubspecContent.replaceFirst(RegExp(r'version:\s*\d+\.\d+\.\d+\+\d+'), 'version: $nextVersion+$nextBuildNumber');
+  final updatedPubspecContent = pubspecContent.replaceFirst(
+    RegExp(r'version:\s*\d+\.\d+\.\d+\+\d+'),
+    'version: $nextVersion+$nextBuildNumber',
+  );
   pubspecFile.writeAsStringSync(updatedPubspecContent);
   print('Updated pubspec.yaml to version: $nextVersion+$nextBuildNumber');
 
@@ -134,9 +156,18 @@ void _updateBuildEnv(int nextBuildNumber, Version nextVersion) {
   final buildVersion = '$nextVersion.$nextBuildNumber';
 
   var updatedBuildEnvContent = buildEnvContent
-      .replaceFirst(RegExp(r'set VERSION_NUMBER=.*'), 'set VERSION_NUMBER=$nextVersion')
-      .replaceFirst(RegExp(r'set BUILD_VERSION=.*'), 'set BUILD_VERSION=$buildVersion')
-      .replaceFirst(RegExp(r'set BUILD_NUMBER=.*'), 'set BUILD_NUMBER=$formattedBuildNumber');
+      .replaceFirst(
+        RegExp(r'set VERSION_NUMBER=.*'),
+        'set VERSION_NUMBER=$nextVersion',
+      )
+      .replaceFirst(
+        RegExp(r'set BUILD_VERSION=.*'),
+        'set BUILD_VERSION=$buildVersion',
+      )
+      .replaceFirst(
+        RegExp(r'set BUILD_NUMBER=.*'),
+        'set BUILD_NUMBER=$formattedBuildNumber',
+      );
 
   buildEnvFile.writeAsStringSync(updatedBuildEnvContent);
   print('Updated set-build-env.bat with:');
@@ -167,13 +198,22 @@ String? _promptForCommitMessage() {
 
 void _commitChanges(String commitMessage) {
   // Stage the updated files
-  final gitAddResult = Process.runSync('git', ['add', 'pubspec.yaml', 'CHANGELOG.md', 'set-build-env.bat']);
+  final gitAddResult = Process.runSync('git', [
+    'add',
+    'pubspec.yaml',
+    'CHANGELOG.md',
+    'set-build-env.bat',
+  ]);
   if (gitAddResult.exitCode != 0) {
     print('Error: Failed to stage files. ${gitAddResult.stderr}');
     return;
   }
 
-  final gitCommitResult = Process.runSync('git', ['commit', '-m', commitMessage]);
+  final gitCommitResult = Process.runSync('git', [
+    'commit',
+    '-m',
+    commitMessage,
+  ]);
   if (gitCommitResult.exitCode != 0) {
     print('Error: Failed to commit changes. ${gitCommitResult.stderr}');
     return;
