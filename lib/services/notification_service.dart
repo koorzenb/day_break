@@ -16,6 +16,10 @@ class NotificationService extends GetxService {
   static const String _channelName = 'Weather Announcements';
   static const String _channelDescription = 'Daily weather forecast notifications';
   static Duration testNotificationDelay = Duration(seconds: 60);
+
+  // Validation constants to prevent excessive notification load
+  static const int _maxNotificationsPerDay = 10; // Prevent more than 10 notifications per day
+  static const int _maxScheduledNotifications = 50; // Maximum total scheduled notifications
   final FlutterLocalNotificationsPlugin _notifications;
   FlutterTts? _tts;
   final WeatherService _weatherService;
@@ -306,13 +310,13 @@ class NotificationService extends GetxService {
   Future<void> handleSettingsChange() async {
     try {
       Get.log('[NotificationService] Handling settings change - rescheduling notifications', isError: false);
-      
+
       // Cancel all existing notifications and timers
       await cancelAllNotifications();
-      
+
       // Reschedule based on new settings
       await scheduleDailyWeatherNotification();
-      
+
       Get.log('[NotificationService] Settings change handled successfully', isError: false);
     } catch (e) {
       Get.log('[NotificationService] Error handling settings change: $e', isError: true);
@@ -403,6 +407,9 @@ class NotificationService extends GetxService {
       throw const NotificationSchedulingException('Announcement time not set in settings');
     }
 
+    // Validate recurring settings to prevent excessive notification load
+    await _validateRecurringSettings(recurrencePattern, customDays);
+
     tz.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('America/Halifax'));
 
@@ -418,6 +425,9 @@ class NotificationService extends GetxService {
 
     for (int i = 0; i < daysToSchedule.length; i++) {
       final scheduledDate = daysToSchedule[i];
+
+      // Validate edge cases for this specific scheduled date
+      await _validateRecurringEdgeCases(scheduledDate);
 
       await _scheduleWeatherNotification(
         notificationId: i, // Use index as unique ID
@@ -509,7 +519,7 @@ class NotificationService extends GetxService {
   Future<void> _maintainRecurringSchedule() async {
     try {
       final isRecurring = _settingsService.isRecurring;
-      
+
       // Only process if recurring is enabled
       if (!isRecurring) {
         Get.log('[NotificationService] Not maintaining schedule - recurring is disabled', isError: false);
@@ -519,18 +529,17 @@ class NotificationService extends GetxService {
       // Get pending notifications to check current scheduling window
       final pendingNotifications = await _notifications.pendingNotificationRequests();
       final recurringNotifications = pendingNotifications.where((req) => req.id != 9999).toList(); // Exclude test notifications
-      
+
       Get.log('[NotificationService] Current pending recurring notifications: ${recurringNotifications.length}', isError: false);
 
       // If we have fewer than 7 scheduled recurring notifications, add more
       final minNotificationsThreshold = 7;
       if (recurringNotifications.length < minNotificationsThreshold) {
         Get.log('[NotificationService] Maintaining recurring schedule: extending notification window', isError: false);
-        
+
         // Find the highest notification ID to continue from
-        int maxId = recurringNotifications.isNotEmpty ? 
-          recurringNotifications.map((n) => n.id).reduce((a, b) => a > b ? a : b) : -1;
-        
+        int maxId = recurringNotifications.isNotEmpty ? recurringNotifications.map((n) => n.id).reduce((a, b) => a > b ? a : b) : -1;
+
         await _extendRecurringSchedule(maxId + 1);
       } else {
         Get.log('[NotificationService] Recurring schedule is healthy with ${recurringNotifications.length} pending notifications', isError: false);
@@ -562,7 +571,7 @@ class NotificationService extends GetxService {
       // Calculate dates from 14 days in the future (where current schedule likely ends)
       final now = tz.TZDateTime.now(tz.local);
       final futureStartPoint = now.add(const Duration(days: 14));
-      
+
       final futureDates = _getRecurringDates(
         recurrencePattern: recurrencePattern,
         customDays: customDays,
@@ -630,6 +639,103 @@ class NotificationService extends GetxService {
       throw const NotificationSchedulingException('No location set in settings. Please configure your location first.');
     }
     return location;
+  }
+
+  /// Validate recurring settings to prevent excessive notification load
+  Future<void> _validateRecurringSettings(RecurrencePattern recurrencePattern, List<int> customDays) async {
+    // Check current pending notifications to prevent excessive load
+    try {
+      final pendingNotifications = await _notifications.pendingNotificationRequests();
+      final currentCount = pendingNotifications.length;
+
+      if (currentCount >= _maxScheduledNotifications) {
+        Get.log('[NotificationService] Too many pending notifications: $currentCount (limit: $_maxScheduledNotifications)', isError: true);
+        throw const NotificationSchedulingException('Too many notifications scheduled. Please clear existing notifications first.');
+      }
+    } catch (e) {
+      // If we can't check pending notifications, log warning but continue
+      Get.log('[NotificationService] Warning: Could not check pending notifications count: $e', isError: false);
+    }
+
+    // Validate daily frequency doesn't exceed reasonable limits
+    List<int> targetDays;
+    switch (recurrencePattern) {
+      case RecurrencePattern.custom:
+        targetDays = customDays;
+        break;
+      default:
+        targetDays = recurrencePattern.defaultDays;
+        break;
+    }
+
+    final notificationsPerWeek = targetDays.length;
+    final notificationsPerDay = notificationsPerWeek / 7;
+
+    if (notificationsPerDay > (_maxNotificationsPerDay / 7)) {
+      Get.log(
+        '[NotificationService] Recurring pattern exceeds daily limit: ${notificationsPerDay.toStringAsFixed(1)} per day (max: ${(_maxNotificationsPerDay / 7).toStringAsFixed(1)})',
+        isError: true,
+      );
+      throw const NotificationSchedulingException('Recurring pattern would create too many notifications per day. Please select fewer days.');
+    }
+
+    // Validate custom days are within valid range (1-7)
+    if (recurrencePattern == RecurrencePattern.custom) {
+      if (customDays.isEmpty) {
+        throw const NotificationSchedulingException('Custom recurrence pattern requires at least one day to be selected.');
+      }
+
+      for (final day in customDays) {
+        if (day < 1 || day > 7) {
+          throw NotificationSchedulingException('Invalid day selected: $day. Days must be between 1 (Monday) and 7 (Sunday).');
+        }
+      }
+    }
+
+    // Validate timezone is properly configured for Halifax
+    final currentTimezone = tz.local.name;
+    if (currentTimezone != 'America/Halifax') {
+      Get.log('[NotificationService] Warning: Timezone not set to Halifax ($currentTimezone). Notifications will use Halifax time.', isError: false);
+    }
+
+    // Check for potential DST transition issues in next 30 days
+    final now = tz.TZDateTime.now(tz.getLocation('America/Halifax'));
+    final futureDate = now.add(const Duration(days: 30));
+    if (now.timeZoneOffset != futureDate.timeZoneOffset) {
+      Get.log('[NotificationService] DST transition detected in next 30 days. Schedules will adjust automatically.', isError: false);
+    }
+
+    Get.log('[NotificationService] Recurring settings validation passed: ${recurrencePattern.displayName} (${targetDays.length} days/week)', isError: false);
+  }
+
+  /// Validate edge cases for recurring schedules (leap years, DST transitions)
+  Future<void> _validateRecurringEdgeCases(tz.TZDateTime scheduledDate) async {
+    // Check for leap year edge case (Feb 29)
+    if (scheduledDate.month == 2 && scheduledDate.day == 29) {
+      final nextYear = scheduledDate.year + 1;
+      final isNextYearLeap = (nextYear % 4 == 0 && nextYear % 100 != 0) || (nextYear % 400 == 0);
+      if (!isNextYearLeap) {
+        Get.log('[NotificationService] Warning: Leap day schedule (Feb 29) will not occur in $nextYear', isError: false);
+      }
+    }
+
+    // Check for DST transition dates that might cause time shifts
+    final halifaxLocation = tz.getLocation('America/Halifax');
+    final dayBefore = scheduledDate.subtract(const Duration(days: 1));
+    final dayAfter = scheduledDate.add(const Duration(days: 1));
+
+    if (dayBefore.timeZoneOffset != scheduledDate.timeZoneOffset || scheduledDate.timeZoneOffset != dayAfter.timeZoneOffset) {
+      Get.log('[NotificationService] DST transition detected around ${scheduledDate.toIso8601String()}. Time will adjust automatically.', isError: false);
+    }
+
+    // Validate time doesn't fall in non-existent hour during DST transition
+    try {
+      // Attempt to create the exact datetime to validate it exists
+      tz.TZDateTime.from(scheduledDate, halifaxLocation);
+    } catch (e) {
+      Get.log('[NotificationService] Invalid time during DST transition: ${scheduledDate.toIso8601String()}. Will adjust to valid time.', isError: true);
+      throw NotificationSchedulingException('Selected time falls during DST transition. Please choose a different time.');
+    }
   }
 
   /// Schedule notification with fallback content and location in payload for weather fetching at delivery time

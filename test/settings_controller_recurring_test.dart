@@ -27,6 +27,7 @@ void main() {
       when(mockBox.get('announcementMinute')).thenReturn(null);
       when(mockBox.get('location')).thenReturn(null);
       when(mockBox.get('isRecurring')).thenReturn(false);
+      when(mockBox.get('isRecurringPaused')).thenReturn(false);
       when(mockBox.get('recurrencePattern')).thenReturn(null);
       when(mockBox.get('recurrenceDays')).thenReturn(null);
 
@@ -44,6 +45,7 @@ void main() {
     test('loads recurring settings from service on init', () {
       // Arrange
       when(mockBox.get('isRecurring')).thenReturn(true);
+      when(mockBox.get('isRecurringPaused')).thenReturn(false);
       when(mockBox.get('recurrencePattern')).thenReturn(RecurrencePattern.weekdays.index);
       when(mockBox.get('recurrenceDays')).thenReturn([1, 2, 3, 4, 5]);
       when(mockBox.get('announcementHour')).thenReturn(null);

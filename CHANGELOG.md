@@ -1,3 +1,9 @@
+## 1.6.1
+  
+### Enhancement
+  
+- Enhanced Validation and Edge Cases
+
 ## 1.6.0
   
 ### Feature

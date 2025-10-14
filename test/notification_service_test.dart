@@ -40,6 +40,9 @@ void main() {
       // Set up platform specific implementation stub (needed by areNotificationsEnabled)
       when(mockNotifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()).thenReturn(mockAndroidPlugin);
 
+      // Set up pendingNotificationRequests stub (needed by validation)
+      when(mockNotifications.pendingNotificationRequests()).thenAnswer((_) async => <PendingNotificationRequest>[]);
+
       notificationService = NotificationService(notifications: mockNotifications, weatherService: mockWeatherService, settingsService: mockSettingsService);
     });
 

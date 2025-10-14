@@ -24,6 +24,7 @@ class SettingsController extends GetxController {
 
   // Recurring announcement state management
   final _isRecurring = false.obs;
+  final _isRecurringPaused = false.obs;
   final _recurrencePattern = RecurrencePattern.daily.obs;
   final _recurrenceDays = <int>[].obs;
 
@@ -39,6 +40,8 @@ class SettingsController extends GetxController {
 
   // Recurring announcement getters
   bool get isRecurring => _isRecurring.value;
+  bool get isRecurringPaused => _isRecurringPaused.value;
+  bool get isRecurringActive => _settingsService.isRecurringActive;
   RecurrencePattern get recurrencePattern => _recurrencePattern.value;
   List<int> get recurrenceDays => _recurrenceDays.toList();
 
@@ -96,6 +99,7 @@ class SettingsController extends GetxController {
 
     // Load recurring settings
     _isRecurring.value = _settingsService.isRecurring;
+    _isRecurringPaused.value = _settingsService.isRecurringPaused;
     _recurrencePattern.value = _settingsService.recurrencePattern;
     _recurrenceDays.assignAll(_settingsService.recurrenceDays);
   }
@@ -157,7 +161,7 @@ class SettingsController extends GetxController {
       await _settingsService.setLocation(newLocation.trim());
       _location.value = newLocation.trim();
 
-      // Reschedule notifications with new location  
+      // Reschedule notifications with new location
       if (_notificationService != null && isSettingsComplete) {
         await _notificationService!.handleSettingsChange();
       }
@@ -281,6 +285,37 @@ class SettingsController extends GetxController {
       }
     } catch (e) {
       SnackBarHelper.showError('Error ❌', 'Failed to update recurring days');
+    }
+  }
+
+  /// Toggle pause/resume of recurring announcements
+  Future<void> toggleRecurringPause(bool isPaused) async {
+    try {
+      await _settingsService.setIsRecurringPaused(isPaused);
+      _isRecurringPaused.value = isPaused;
+
+      // Handle notification scheduling based on pause state
+      if (_notificationService != null && isSettingsComplete && _isRecurring.value) {
+        await _notificationService!.handleSettingsChange();
+      }
+
+      final action = isPaused ? 'paused' : 'resumed';
+      SnackBarHelper.showSuccess('Success ✅', 'Recurring announcements $action');
+    } catch (e) {
+      SnackBarHelper.showError('Error ❌', 'Failed to update pause setting');
+    }
+  }
+
+  /// Handle timezone changes for recurring schedules
+  Future<void> handleTimezoneChange() async {
+    try {
+      // If recurring is active, reschedule all notifications with new timezone
+      if (_notificationService != null && isSettingsComplete && _isRecurring.value && !_isRecurringPaused.value) {
+        await _notificationService!.handleSettingsChange();
+        SnackBarHelper.showSuccess('Success ✅', 'Recurring schedules updated for timezone change');
+      }
+    } catch (e) {
+      SnackBarHelper.showError('Error ❌', 'Failed to update schedules for timezone change');
     }
   }
 

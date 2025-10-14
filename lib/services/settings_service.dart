@@ -36,6 +36,13 @@ class SettingsService extends GetxService {
   bool get isRecurring => _settingsBox?.get('isRecurring') ?? false;
   Future<void> setIsRecurring(bool isRecurring) => _settingsBox!.put('isRecurring', isRecurring);
 
+  /// Pause/resume recurring without losing configuration
+  bool get isRecurringPaused => _settingsBox?.get('isRecurringPaused') ?? false;
+  Future<void> setIsRecurringPaused(bool isPaused) => _settingsBox!.put('isRecurringPaused', isPaused);
+
+  /// Check if recurring is enabled and not paused
+  bool get isRecurringActive => isRecurring && !isRecurringPaused;
+
   RecurrencePattern get recurrencePattern {
     final patternIndex = _settingsBox?.get('recurrencePattern') as int?;
     if (patternIndex == null || patternIndex >= RecurrencePattern.values.length) {

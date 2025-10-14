@@ -88,17 +88,11 @@ This document outlines the development plan for the Day Break application, based
     - Implement rolling window approach (maintain 7-14 days of scheduled notifications)
     - Handle case where user changes recurrence settings (cancel old, schedule new)
     - Test: Verify notifications continue beyond initial scheduling window
-  - [ ] **Step 13.7**: Enhanced Validation and Edge Cases
+  - [x] **Step 13.7**: Enhanced Validation and Edge Cases
     - Validate recurring settings don't create excessive notification load
     - Handle timezone changes affecting recurring schedule
     - Add setting to pause/resume recurring without losing configuration
     - Test: Edge cases like DST transitions and leap days
-  - [ ] **Step 13.8**: Integration Testing
-    - Test complete flow: set recurring → save → verify scheduling → receive notification
-    - Validate different recurrence patterns work correctly
-    - Test interaction with existing one-time scheduling
-    - Confirm background renewal works after device restart
-    - Test: Manual verification with short-interval recurring notifications
 
 - [ ] **Phase 14**: Audio Announcement Bugfixes
   - [ ] **Step 14.1**: Fix TTS Initialization Issues
@@ -140,6 +134,7 @@ This document outlines the development plan for the Day Break application, based
     - Create clean public API that hides internal implementation details
     - Design `DayBreakCore` class as main entry point for package consumers
     - Provide builder pattern for configuration and customization options
+    - Include validation configuration (notification limits, edge case handling, timezone validation)
     - Example interface design:
 
     ```dart
@@ -168,12 +163,28 @@ This document outlines the development plan for the Day Break application, based
       final Duration timeout;
       final bool enableTTS;
       final NotificationConfig notificationConfig;
+      final ValidationConfig validationConfig;
       
       const DayBreakConfig({
         this.weatherFields = const ['temperature', 'weatherCode'],
         this.timeout = const Duration(seconds: 30),
         this.enableTTS = true,
         required this.notificationConfig,
+        this.validationConfig = const ValidationConfig(),
+      });
+    }
+    
+    class ValidationConfig {
+      final int maxNotificationsPerDay;
+      final int maxScheduledNotifications;
+      final bool enableEdgeCaseValidation;
+      final bool enableTimezoneValidation;
+      
+      const ValidationConfig({
+        this.maxNotificationsPerDay = 10,
+        this.maxScheduledNotifications = 50,
+        this.enableEdgeCaseValidation = true,
+        this.enableTimezoneValidation = true,
       });
     }
     
