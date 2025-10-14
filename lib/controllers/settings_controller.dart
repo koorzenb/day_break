@@ -5,6 +5,7 @@ import '../models/app_constants.dart';
 import '../models/location_exceptions.dart';
 import '../models/recurrence_pattern.dart';
 import '../services/location_service.dart';
+import '../services/notification_service.dart';
 import '../services/settings_service.dart';
 import '../services/weather_service.dart';
 import '../utils/snackbar_helper.dart';
@@ -14,6 +15,7 @@ class SettingsController extends GetxController {
   final SettingsService _settingsService = Get.find<SettingsService>();
   WeatherService? _weatherService;
   LocationService? _locationService;
+  NotificationService? _notificationService;
 
   // Reactive variables for UI state
   final _selectedTime = Rxn<TimeOfDay>();
@@ -66,6 +68,14 @@ class SettingsController extends GetxController {
       _locationService = null;
     }
 
+    // Try to get NotificationService if available (optional for testing)
+    try {
+      _notificationService = Get.find<NotificationService>();
+    } catch (e) {
+      // NotificationService not available - this is fine for testing
+      _notificationService = null;
+    }
+
     _loadSettings();
   }
 
@@ -96,6 +106,11 @@ class SettingsController extends GetxController {
     try {
       await _settingsService.setAnnouncementTime(time.hour, time.minute);
       _selectedTime.value = time;
+
+      // Reschedule notifications with new time
+      if (_notificationService != null && isSettingsComplete) {
+        await _notificationService!.handleSettingsChange();
+      }
 
       // Check if all settings are now complete
       _checkAndNavigateIfComplete();
@@ -141,6 +156,11 @@ class SettingsController extends GetxController {
       // Save location (validated or not, depending on service availability)
       await _settingsService.setLocation(newLocation.trim());
       _location.value = newLocation.trim();
+
+      // Reschedule notifications with new location  
+      if (_notificationService != null && isSettingsComplete) {
+        await _notificationService!.handleSettingsChange();
+      }
 
       // Check if all settings are now complete
       _checkAndNavigateIfComplete();
@@ -206,6 +226,11 @@ class SettingsController extends GetxController {
       if (isRecurring && _recurrenceDays.isEmpty) {
         await updateRecurrencePattern(_recurrencePattern.value);
       }
+
+      // Reschedule notifications with new recurring settings
+      if (_notificationService != null && isSettingsComplete) {
+        await _notificationService!.handleSettingsChange();
+      }
     } catch (e) {
       SnackBarHelper.showError('Error ❌', 'Failed to update recurring setting');
     }
@@ -222,6 +247,11 @@ class SettingsController extends GetxController {
         final defaultDays = pattern.defaultDays;
         await _settingsService.setRecurrenceDays(defaultDays);
         _recurrenceDays.assignAll(defaultDays);
+      }
+
+      // Reschedule notifications with new pattern
+      if (_notificationService != null && isSettingsComplete && _isRecurring.value) {
+        await _notificationService!.handleSettingsChange();
       }
     } catch (e) {
       SnackBarHelper.showError('Error ❌', 'Failed to update recurrence pattern');
@@ -244,6 +274,11 @@ class SettingsController extends GetxController {
 
       await _settingsService.setRecurrenceDays(currentDays);
       _recurrenceDays.assignAll(currentDays);
+
+      // Reschedule notifications with new custom days
+      if (_notificationService != null && isSettingsComplete && _isRecurring.value) {
+        await _notificationService!.handleSettingsChange();
+      }
     } catch (e) {
       SnackBarHelper.showError('Error ❌', 'Failed to update recurring days');
     }

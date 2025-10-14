@@ -301,6 +301,25 @@ class NotificationService extends GetxService {
     }
   }
 
+  /// Handle settings changes by canceling old notifications and scheduling new ones
+  /// This ensures clean transitions when users modify their recurrence preferences
+  Future<void> handleSettingsChange() async {
+    try {
+      Get.log('[NotificationService] Handling settings change - rescheduling notifications', isError: false);
+      
+      // Cancel all existing notifications and timers
+      await cancelAllNotifications();
+      
+      // Reschedule based on new settings
+      await scheduleDailyWeatherNotification();
+      
+      Get.log('[NotificationService] Settings change handled successfully', isError: false);
+    } catch (e) {
+      Get.log('[NotificationService] Error handling settings change: $e', isError: true);
+      throw NotificationSchedulingException('Failed to handle settings change: $e');
+    }
+  }
+
   /// Schedule a single (non-recurring) weather notification for tomorrow
   Future<void> _scheduleSingleWeatherNotification() async {
     try {
@@ -483,6 +502,119 @@ class NotificationService extends GetxService {
       isError: false,
     );
     return dates;
+  }
+
+  /// Maintain rolling window of recurring notifications after each successful announcement
+  /// This ensures notifications continue beyond the initial 14-day scheduling window
+  Future<void> _maintainRecurringSchedule() async {
+    try {
+      final isRecurring = _settingsService.isRecurring;
+      
+      // Only process if recurring is enabled
+      if (!isRecurring) {
+        Get.log('[NotificationService] Not maintaining schedule - recurring is disabled', isError: false);
+        return;
+      }
+
+      // Get pending notifications to check current scheduling window
+      final pendingNotifications = await _notifications.pendingNotificationRequests();
+      final recurringNotifications = pendingNotifications.where((req) => req.id != 9999).toList(); // Exclude test notifications
+      
+      Get.log('[NotificationService] Current pending recurring notifications: ${recurringNotifications.length}', isError: false);
+
+      // If we have fewer than 7 scheduled recurring notifications, add more
+      final minNotificationsThreshold = 7;
+      if (recurringNotifications.length < minNotificationsThreshold) {
+        Get.log('[NotificationService] Maintaining recurring schedule: extending notification window', isError: false);
+        
+        // Find the highest notification ID to continue from
+        int maxId = recurringNotifications.isNotEmpty ? 
+          recurringNotifications.map((n) => n.id).reduce((a, b) => a > b ? a : b) : -1;
+        
+        await _extendRecurringSchedule(maxId + 1);
+      } else {
+        Get.log('[NotificationService] Recurring schedule is healthy with ${recurringNotifications.length} pending notifications', isError: false);
+      }
+    } catch (e) {
+      Get.log('[NotificationService] Error maintaining recurring schedule: $e', isError: true);
+      // Don't rethrow - this is a background maintenance task
+    }
+  }
+
+  /// Extend recurring notification schedule from given starting ID
+  Future<void> _extendRecurringSchedule(int startingId) async {
+    try {
+      String? location = await _validateNotificationAndLocation();
+
+      final hour = _settingsService.announcementHour;
+      final minute = _settingsService.announcementMinute;
+      final recurrencePattern = _settingsService.recurrencePattern;
+      final customDays = _settingsService.recurrenceDays;
+
+      if (hour == null || minute == null) {
+        Get.log('[NotificationService] Cannot extend schedule - announcement time not set', isError: true);
+        return;
+      }
+
+      tz.initializeTimeZones();
+      tz.setLocalLocation(tz.getLocation('America/Halifax'));
+
+      // Calculate dates from 14 days in the future (where current schedule likely ends)
+      final now = tz.TZDateTime.now(tz.local);
+      final futureStartPoint = now.add(const Duration(days: 14));
+      
+      final futureDates = _getRecurringDates(
+        recurrencePattern: recurrencePattern,
+        customDays: customDays,
+        startDate: futureStartPoint,
+        maxDays: 14, // Add another 14 days worth
+      );
+
+      Get.log('[NotificationService] Extending schedule with ${futureDates.length} additional notifications', isError: false);
+
+      for (int i = 0; i < futureDates.length; i++) {
+        final scheduledDate = futureDates[i];
+        final notificationId = startingId + i;
+
+        await _scheduleWeatherNotification(
+          notificationId: notificationId,
+          scheduledDate: scheduledDate,
+          location: location,
+          defaultTitle: 'Good Morning! ☀️',
+          defaultBody: '🌤️ Your daily weather update is ready! (Audio announcement will start automatically)',
+          fallbackBodyTemplate: 'Daily weather update for \$location - Weather data will be available when you open the notification.',
+          logContext: 'maintenance recurring notification ${i + 1}/${futureDates.length}',
+          payloadPrefix: 'recurring_weather_with_location',
+          androidDetails: AndroidNotificationDetails(
+            _channelId,
+            _channelName,
+            channelDescription: _channelDescription,
+            importance: Importance.defaultImportance,
+            priority: Priority.defaultPriority,
+            icon: '@mipmap/ic_launcher',
+            visibility: NotificationVisibility.public,
+            category: AndroidNotificationCategory.alarm,
+            fullScreenIntent: true,
+            showWhen: true,
+            when: null,
+          ),
+          scheduleMode: _exactAlarmsAllowed ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
+          matchDateTimeComponents: DateTimeComponents.dateAndTime,
+        );
+
+        // Schedule UNATTENDED timer-based announcement for each extended notification
+        final announcementDelay = scheduledDate.difference(now);
+        _scheduleUnattendedAnnouncement(location, announcementDelay, 'maintenance recurring notification ${i + 1}/${futureDates.length}');
+
+        Get.log(
+          '[NotificationService] Extended recurring notification ${i + 1} for ${scheduledDate.day}/${scheduledDate.month}/${scheduledDate.year} at ${scheduledDate.hour.toString().padLeft(2, '0')}:${scheduledDate.minute.toString().padLeft(2, '0')}',
+          isError: false,
+        );
+      }
+    } catch (e) {
+      Get.log('[NotificationService] Error extending recurring schedule: $e', isError: true);
+      // Don't rethrow - this is a background maintenance task
+    }
   }
 
   Future<String> _validateNotificationAndLocation() async {
@@ -755,12 +887,18 @@ class NotificationService extends GetxService {
       await _speakWeatherAnnouncement(intro, weather.formattedAnnouncement);
 
       Get.log('[NotificationService] UNATTENDED: Weather announcement delivered automatically for $location ($context)', isError: false);
+
+      // After successful announcement, reschedule future recurring notifications if needed
+      await _maintainRecurringSchedule();
     } catch (e) {
       Get.log('[NotificationService] Failed to fetch weather for unattended announcement $location ($context): $e', isError: true);
 
       // Fallback message for unattended announcement
       final fallbackMessage = _generateFallbackAnnouncement(location);
       await _speakWeatherAnnouncement('Failed to fetch weather', fallbackMessage);
+
+      // Even if weather fetch failed, maintain recurring schedule
+      await _maintainRecurringSchedule();
     }
   }
 

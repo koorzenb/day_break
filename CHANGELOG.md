@@ -1,3 +1,9 @@
+## 1.6.0
+  
+### Feature
+  
+- Integrate NotificationService for rescheduling notifications on settings changes
+
 ## 1.5.3
   
 ### Docs
