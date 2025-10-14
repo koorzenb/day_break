@@ -1,3 +1,9 @@
+## 1.6.2
+  
+### Chore
+  
+- Add CI workflow for Flutter with analysis, testing, and APK builds
+
 ## 1.6.1
   
 ### Enhancement
