@@ -129,53 +129,66 @@ This document outlines the development plan for the Day Break application, based
 
 - [ ] **Phase 16**: Convert Project to Package
   - [ ] **Step 16.1**: Create Package Structure
-    - Extract core weather announcement functionality into a reusable Flutter package
-    - Create `day_break_core` package with proper directory structure (`lib/`, `example/`, `test/`)
-    - Move weather service, notification service, and settings models to package
+    - Extract core scheduled announcement functionality into a reusable Flutter package
+    - Create `announcement_scheduler` package with proper directory structure (`lib/`, `example/`, `test/`)
+    - Move notification service and scheduling models to package (weather service remains in main app)
     - Update pubspec.yaml for package configuration with proper metadata
-    - Add one-time user prompt to input their Tomorrow.io API key (since package consumers need their own key)
+    - Package focuses on scheduling any text content, not weather-specific functionality
     - Test: Package structure follows pub.dev conventions
   - [ ] **Step 16.2**: Define Public API Interface
     - Create clean public API that hides internal implementation details
-    - Design `DayBreakCore` class as main entry point for package consumers
+    - Design `AnnouncementScheduler` class as main entry point for package consumers
     - Provide builder pattern for configuration and customization options
     - Include validation configuration (notification limits, edge case handling, timezone validation)
     - Example interface design:
 
     ```dart
-    // Public API for day_break_core package
-    class DayBreakCore {
-      static Future<DayBreakCore> initialize({
-        required String apiKey,
-        required DayBreakConfig config,
+    // Public API for announcement_scheduler package
+    class AnnouncementScheduler {
+      static Future<AnnouncementScheduler> initialize({
+        required AnnouncementConfig config,
       }) async { /* ... */ }
       
-      Future<void> scheduleWeatherAnnouncement({
+      Future<void> scheduleAnnouncement({
+        required String content,
         required TimeOfDay announcementTime,
-        required Position location,
         RecurrencePattern? recurrence,
+        List<int>? customDays,
       }) async { /* ... */ }
       
-      Future<WeatherSummary> getCurrentWeather(Position location) async { /* ... */ }
+      Future<void> scheduleOneTimeAnnouncement({
+        required String content,
+        required DateTime dateTime,
+      }) async { /* ... */ }
       
       Future<void> cancelScheduledAnnouncements() async { /* ... */ }
       
+      Future<void> cancelAnnouncementById(String id) async { /* ... */ }
+      
       Stream<AnnouncementStatus> get statusStream;
+      
+      Future<List<ScheduledAnnouncement>> getScheduledAnnouncements() async { /* ... */ }
     }
     
-    class DayBreakConfig {
-      final List<String> weatherFields;
-      final Duration timeout;
+    class AnnouncementConfig {
       final bool enableTTS;
+      final double ttsRate;
+      final double ttsPitch;
+      final double ttsVolume;
       final NotificationConfig notificationConfig;
       final ValidationConfig validationConfig;
+      final bool forceTimezone;
+      final String? timezoneLocation;
       
-      const DayBreakConfig({
-        this.weatherFields = const ['temperature', 'weatherCode'],
-        this.timeout = const Duration(seconds: 30),
+      const AnnouncementConfig({
         this.enableTTS = true,
+        this.ttsRate = 0.5,
+        this.ttsPitch = 1.0,
+        this.ttsVolume = 1.0,
         required this.notificationConfig,
         this.validationConfig = const ValidationConfig(),
+        this.forceTimezone = false,
+        this.timezoneLocation,
       });
     }
     
@@ -200,10 +213,28 @@ This document outlines the development plan for the Day Break application, based
       final Importance importance;
       
       const NotificationConfig({
-        this.channelId = 'weather_announcements',
-        this.channelName = 'Weather Announcements',
-        this.channelDescription = 'Daily weather forecast notifications',
+        this.channelId = 'scheduled_announcements',
+        this.channelName = 'Scheduled Announcements',
+        this.channelDescription = 'Automated text-to-speech announcements',
         this.importance = Importance.high,
+      });
+    }
+    
+    class ScheduledAnnouncement {
+      final String id;
+      final String content;
+      final DateTime scheduledTime;
+      final RecurrencePattern? recurrence;
+      final List<int>? customDays;
+      final bool isActive;
+      
+      const ScheduledAnnouncement({
+        required this.id,
+        required this.content,
+        required this.scheduledTime,
+        this.recurrence,
+        this.customDays,
+        this.isActive = true,
       });
     }
     
@@ -213,27 +244,33 @@ This document outlines the development plan for the Day Break application, based
 
     - Test: API design is intuitive and follows Flutter package conventions
   - [ ] **Step 16.3**: Extract Core Services to Package
-    - Move `WeatherService`, `NotificationService`, and `SettingsService` to package
+    - Move `NotificationService` and scheduling logic to package (keep weather-specific parts in main app)
+    - Extract `SettingsService` functionality related to scheduling (not weather settings)
     - Refactor services to remove app-specific dependencies (GetX, specific UI components)
-    - Create abstract interfaces for dependency injection (HTTP client, storage, etc.)
+    - Create abstract interfaces for dependency injection (storage, etc.)
     - Maintain backward compatibility with existing app implementation
     - Test: Core services work independently of app-specific frameworks
   - [ ] **Step 16.4**: Create Example App
     - Build comprehensive example app demonstrating package usage
     - Show different configuration options and use cases
-    - Include examples for one-time and recurring announcements
+    - Include examples for one-time and recurring announcements with custom content
+    - Demonstrate weather announcements as one example use case
+    - Include examples for reminders, alarms, daily affirmations, etc.
     - Demonstrate error handling and status monitoring
     - Test: Example app compiles and runs successfully with package
   - [ ] **Step 16.5**: Package Documentation and Publishing Preparation
     - Write comprehensive README.md for the package with usage examples
-    - Add API documentation with dartdoc comments
+    - Add API documentation with dartdoc comments for all public methods
     - Create CHANGELOG.md following semantic versioning
     - Add LICENSE file (MIT or Apache 2.0)
     - Prepare for pub.dev publishing with proper package metadata
+    - Document use cases: weather announcements, reminders, alarms, daily quotes, etc.
     - Test: Documentation is clear and examples work as described
   - [ ] **Step 16.6**: Refactor Main App to Use Package
-    - Update main Day Break app to consume the new package as a dependency
-    - Replace direct service calls with package API calls
+    - Update main Day Break app to consume the new `announcement_scheduler` package
+    - Keep weather-specific logic in main app (WeatherService, weather UI)
+    - Replace direct notification scheduling with package API calls
+    - Pass weather announcement content as strings to the scheduler
     - Maintain existing app functionality while using cleaner architecture
     - Update existing tests to work with new package-based architecture
     - Test: App functionality remains identical after package integration
