@@ -1,3 +1,9 @@
+## 1.6.6
+  
+### Chore
+  
+- Updated dependencies
+
 ## 1.6.5
   
 ### Fix

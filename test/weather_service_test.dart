@@ -20,8 +20,8 @@ void main() {
     late Position testPosition;
 
     setUpAll(() async {
-      // Initialize dotenv for tests
-      dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=test_api_key_12345');
+      // Initialize dotenv for testing by loading from test .env file
+      await dotenv.load(fileName: 'test/.env');
     });
 
     setUp(() {
@@ -382,8 +382,8 @@ void main() {
     group('environment variable', () {
       test(
         'should throw WeatherApiException when no supported API key is set',
-        () {
-          dotenv.testLoad(fileInput: '');
+        () async {
+          await dotenv.load(fileName: 'test/.env.empty');
           final testWeatherService = WeatherService(mockHttpClient);
           expect(
             () => testWeatherService.getWeather(testPosition),
@@ -397,7 +397,7 @@ void main() {
             reason:
                 'Should throw WeatherApiException with generic message when key missing',
           );
-          dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=test_api_key_12345');
+          await dotenv.load(fileName: 'test/.env');
         },
       );
     });
@@ -421,34 +421,41 @@ void main() {
         serviceWithoutKey = WeatherService(mockHttpWithoutKey);
       });
 
-      test('should initialize service without API key without throwing', () {
-        // Clear any existing API key
-        dotenv.testLoad(fileInput: '');
+      test(
+        'should initialize service without API key without throwing',
+        () async {
+          // Clear any existing API key
+          await dotenv.load(fileName: 'test/.env.empty');
 
-        // Act & Assert - should not throw
-        expect(
-          () => WeatherService(mockHttpWithoutKey),
-          returnsNormally,
-          reason: 'Service should initialize successfully without API key',
-        );
-      });
+          // Act & Assert - should not throw
+          expect(
+            () => WeatherService(mockHttpWithoutKey),
+            returnsNormally,
+            reason: 'Service should initialize successfully without API key',
+          );
+        },
+      );
 
-      test('hasApiKey should return false when no API key is configured', () {
-        // Clear any existing API key
-        dotenv.testLoad(fileInput: '');
+      test(
+        'hasApiKey should return false when no API key is configured',
+        () async {
+          // Clear any existing API key
+          await dotenv.load(fileName: 'test/.env.empty');
 
-        // Act & Assert
-        expect(
-          serviceWithoutKey.hasApiKey,
-          isFalse,
-          reason: 'hasApiKey should return false when no API key is configured',
-        );
-      });
+          // Act & Assert
+          expect(
+            serviceWithoutKey.hasApiKey,
+            isFalse,
+            reason:
+                'hasApiKey should return false when no API key is configured',
+          );
+        },
+      );
 
       test(
         'hasApiKey should return true when Tomorrow.io API key is configured',
-        () {
-          dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=test_key_123');
+        () async {
+          await dotenv.load(fileName: 'test/.env');
           final serviceWithKey = WeatherService(mockHttpWithoutKey);
           expect(
             serviceWithKey.hasApiKey,
@@ -461,9 +468,9 @@ void main() {
 
       test(
         'apiKeyStatusMessage should return appropriate message when no API key',
-        () {
+        () async {
           // Clear any existing API key
-          dotenv.testLoad(fileInput: '');
+          await dotenv.load(fileName: 'test/.env.empty');
 
           // Act
           final message = serviceWithoutKey.apiKeyStatusMessage;
@@ -485,8 +492,8 @@ void main() {
 
       test(
         'apiKeyStatusMessage should return success message when Tomorrow.io key configured',
-        () {
-          dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=test_key_123');
+        () async {
+          await dotenv.load(fileName: 'test/.env');
           final serviceWithKey = WeatherService(mockHttpWithoutKey);
           final message = serviceWithKey.apiKeyStatusMessage;
           expect(
@@ -506,7 +513,7 @@ void main() {
         'getWeather should throw WeatherApiException when no API key configured',
         () async {
           // Clear any existing API key
-          dotenv.testLoad(fileInput: '');
+          await dotenv.load(fileName: 'test/.env.empty');
 
           // Act & Assert
           await expectLater(
@@ -530,7 +537,7 @@ void main() {
         'getWeatherByLocation should throw WeatherApiException when no API key configured',
         () async {
           // Clear any existing API key
-          dotenv.testLoad(fileInput: '');
+          await dotenv.load(fileName: 'test/.env.empty');
 
           // Act & Assert
           await expectLater(
@@ -553,11 +560,8 @@ void main() {
       test(
         'validateLocation should return false when no API key configured',
         () async {
-          // Initialize binding for this test since it uses SnackBarHelper
-          TestWidgetsFlutterBinding.ensureInitialized();
-
           // Clear any existing API key
-          dotenv.testLoad(fileInput: '');
+          await dotenv.load(fileName: 'test/.env.empty');
 
           // Act
           final result = await serviceWithoutKey.validateLocation(
@@ -577,7 +581,7 @@ void main() {
       test(
         'getWeather should work normally when Tomorrow.io API key is configured',
         () async {
-          dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=test_key_123');
+          await dotenv.load(fileName: 'test/.env');
 
           // Arrange - Tomorrow.io realtime
           final mockResponse = {
@@ -596,8 +600,11 @@ void main() {
             (_) async => http.Response(json.encode(mockResponse), 200),
           );
 
+          // Create a new service instance with the loaded API key
+          final serviceWithKey = WeatherService(mockHttpWithoutKey);
+
           // Act
-          final result = await serviceWithoutKey.getWeather(testPosition);
+          final result = await serviceWithKey.getWeather(testPosition);
 
           // Assert
           expect(
@@ -621,13 +628,14 @@ void main() {
       test(
         'should throw WeatherBadRequestException when validation returns 400',
         () async {
-          dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=bad_request_key');
+          await dotenv.load(fileName: 'test/.env');
+          final serviceWithKey = WeatherService(mockHttpWithoutKey);
           when(mockHttpWithoutKey.get(any)).thenAnswer(
             (_) async => http.Response('{"message": "Bad request"}', 400),
           );
 
           expect(
-            () => serviceWithoutKey.getWeather(testPosition),
+            () => serviceWithKey.getWeather(testPosition),
             throwsA(
               isA<WeatherBadRequestException>()
                   .having((e) => e.statusCode, 'status code', equals(400))
@@ -646,13 +654,14 @@ void main() {
       test(
         'should throw WeatherAuthException when validation returns 401',
         () async {
-          dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=invalid_key');
+          await dotenv.load(fileName: 'test/.env');
+          final serviceWithKey = WeatherService(mockHttpWithoutKey);
           when(mockHttpWithoutKey.get(any)).thenAnswer(
             (_) async => http.Response('{"message": "Unauthorized"}', 401),
           );
 
           expect(
-            () => serviceWithoutKey.getWeather(testPosition),
+            () => serviceWithKey.getWeather(testPosition),
             throwsA(
               isA<WeatherAuthException>()
                   .having((e) => e.statusCode, 'status code', equals(401))
@@ -671,13 +680,14 @@ void main() {
       test(
         'should throw WeatherQuotaExceededException when validation returns 403',
         () async {
-          dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=quota_exceeded_key');
+          await dotenv.load(fileName: 'test/.env');
+          final serviceWithKey = WeatherService(mockHttpWithoutKey);
           when(mockHttpWithoutKey.get(any)).thenAnswer(
             (_) async => http.Response('{"message": "Forbidden"}', 403),
           );
 
           expect(
-            () => serviceWithoutKey.getWeather(testPosition),
+            () => serviceWithKey.getWeather(testPosition),
             throwsA(
               isA<WeatherQuotaExceededException>()
                   .having((e) => e.statusCode, 'status code', equals(403))
@@ -696,17 +706,18 @@ void main() {
       test(
         'should throw WeatherRateLimitException when validation returns 429',
         () async {
-          dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=rate_limited_key');
+          await dotenv.load(fileName: 'test/.env');
+          final serviceWithKey = WeatherService(mockHttpWithoutKey);
           when(mockHttpWithoutKey.get(any)).thenAnswer(
             (_) async => http.Response(
               '{"message": "Too many requests"}',
               429,
-              headers: {'retry-after': '120'},
+              headers: {'retry-after': '1'},
             ),
           );
 
           expect(
-            () => serviceWithoutKey.getWeather(testPosition),
+            () => serviceWithKey.getWeather(testPosition),
             throwsA(
               isA<WeatherRateLimitException>()
                   .having((e) => e.statusCode, 'status code', equals(429))
@@ -718,7 +729,7 @@ void main() {
                   .having(
                     (e) => e.retryAfterSeconds,
                     'retry after seconds',
-                    equals(120),
+                    equals(1),
                   ),
             ),
             reason:
@@ -727,8 +738,9 @@ void main() {
         },
       );
 
-      tearDown(() {
-        dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=test_api_key_12345');
+      tearDown(() async {
+        // Reset to clean state for next test
+        await dotenv.load(fileName: 'test/.env.empty');
       });
     });
   });

@@ -4,8 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Tomorrow.io URL Builders', () {
-    setUp(() {
-      dotenv.testLoad(fileInput: 'TOMORROWIO_API_KEY=test_api_key_12345');
+    setUpAll(() async {
+      // Initialize dotenv for testing by loading from test .env file
+      await dotenv.load(fileName: 'test/.env');
     });
 
     test('realtime URL contains required query parameters', () {

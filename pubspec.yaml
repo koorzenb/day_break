@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.6.5+1605
+version: 1.6.6+1606
 
 environment:
   sdk: ^3.8.1
@@ -37,11 +37,11 @@ dependencies:
   get: ^4.6.6
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  geolocator: ^12.0.0
-  geocoding: ^3.0.0
+  geolocator: ^14.0.2
+  geocoding: ^4.0.0
   flutter_local_notifications: ^19.4.2
   http: ^1.2.1
-  flutter_dotenv: ^5.1.0
+  flutter_dotenv: ^6.0.0
   timezone: ^0.10.1
   flutter_tts: ^4.0.2
   flutter_background_service: ^5.1.0
@@ -55,7 +55,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   pub_semver: ^2.2.0
   mockito: ^5.4.4
   build_runner: ^2.4.11
@@ -71,7 +71,9 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+    - test/.env
+    - test/.env.empty
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

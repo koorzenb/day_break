@@ -4,6 +4,7 @@
 		"apikey",
 		"Bahrint",
 		"Behaviour",
+		"dartdoc",
 		"defineadb",
 		"dotenv",
 		"errorlevel",
@@ -20,6 +21,7 @@
 		"Schyler",
 		"setlocal",
 		"taskkill",
+		"timesteps",
 		"TOMORROWIO",
 		"unawaited",
 		"usebackq"

@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:day_break/utils/snackbar_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -10,6 +9,7 @@ import 'package:get/get.dart';
 import '../http_client_wrapper.dart';
 import '../models/weather_exceptions.dart';
 import '../models/weather_summary.dart';
+import '../utils/snackbar_helper.dart';
 
 class WeatherService extends GetxService {
   // Tomorrow.io endpoints (Phase 12.2 scaffold)
