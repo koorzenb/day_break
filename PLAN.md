@@ -128,7 +128,7 @@ This document outlines the development plan for the Day Break application, based
   - Test: All workflow components validated locally - analyze ✓, test ✓, format ✓, build ✓
 
 - [ ] **Phase 16**: Convert Project to Package
-  - [ ] **Step 16.1**: Create Package Structure
+  - [x] **Step 16.1**: Create Package Structure ✅ **COMPLETED**
     - Extract core scheduled announcement functionality into a reusable Flutter package
     - Create `announcement_scheduler` package with proper directory structure (`lib/`, `example/`, `test/`)
     - Move notification service and scheduling models to package (weather service remains in main app)
@@ -267,9 +267,11 @@ This document outlines the development plan for the Day Break application, based
     - Document use cases: weather announcements, reminders, alarms, daily quotes, etc.
     - Test: Documentation is clear and examples work as described
   - [ ] **Step 16.6**: Refactor Main App to Use Package
-    - Update main Day Break app to consume the new `announcement_scheduler` package
+    - Add `announcement_scheduler` package as local path dependency in main pubspec.yaml
+    - Remove direct dependencies: flutter_local_notifications, flutter_tts, timezone (now via package)
+    - Update imports throughout codebase from direct plugin imports to package imports
+    - Replace NotificationService usage with AnnouncementScheduler API calls
     - Keep weather-specific logic in main app (WeatherService, weather UI)
-    - Replace direct notification scheduling with package API calls
     - Pass weather announcement content as strings to the scheduler
     - Maintain existing app functionality while using cleaner architecture
     - Update existing tests to work with new package-based architecture
