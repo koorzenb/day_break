@@ -1,6 +1,67 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-/// Configuration for notifications used by the announcement scheduler
+/// Configuration for notifications used by the announcement scheduler.
+///
+/// This class defines how notifications are displayed and behave on different
+/// platforms. On Android, these settings create a notification channel. On
+/// iOS and macOS, they control notification presentation.
+///
+/// ## Platform Support
+///
+/// ### Android
+///
+/// - Uses notification channels (required for Android 8.0+)
+/// - Supports importance levels, lights, vibration, and badges
+/// - Requires appropriate permissions in AndroidManifest.xml
+///
+/// ### iOS/macOS
+///
+/// - Requests notification permissions on first use
+/// - Supports alerts, badges, and sounds
+/// - Respects system notification settings
+///
+/// ## Usage Example
+///
+/// ```dart
+/// // High-priority notifications with all features
+/// final config = NotificationConfig(
+///   channelId: 'daily_reminders',
+///   channelName: 'Daily Reminders',
+///   channelDescription: 'Important daily reminder notifications',
+///   importance: Importance.high,
+///   priority: Priority.high,
+///   enableLights: true,
+///   enableVibration: true,
+///   showBadge: true,
+/// );
+///
+/// // Quiet notifications for non-urgent announcements
+/// final quietConfig = NotificationConfig(
+///   channelId: 'background_announcements',
+///   channelName: 'Background Announcements',
+///   channelDescription: 'Low-priority background announcements',
+///   importance: Importance.low,
+///   priority: Priority.low,
+///   enableLights: false,
+///   enableVibration: false,
+/// );
+/// ```
+///
+/// ## Configuration Options
+///
+/// - [channelId]: Unique identifier for the notification channel (Android)
+/// - [channelName]: User-visible name of the notification channel
+/// - [channelDescription]: User-visible description explaining the channel's purpose
+/// - [importance]: How prominently to show notifications (Android 8.0+)
+/// - [priority]: Notification priority for older Android versions
+/// - [showBadge]: Whether to show a badge on the app icon
+/// - [enableLights]: Whether to use LED notification light (Android)
+/// - [enableVibration]: Whether to vibrate on notification arrival
+///
+/// See also:
+///
+/// - [AnnouncementConfig] for overall scheduler configuration
+/// - [Importance] and [Priority] from flutter_local_notifications
 class NotificationConfig {
   /// The unique identifier for the notification channel
   final String channelId;

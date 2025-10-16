@@ -1,6 +1,60 @@
 import 'recurrence_pattern.dart';
 
-/// Represents a scheduled announcement
+/// Represents a scheduled announcement.
+///
+/// This class encapsulates all data associated with a scheduled announcement,
+/// including its content, timing, recurrence pattern, and metadata. Each
+/// announcement has a unique [id] that can be used to cancel or query it.
+///
+/// ## Usage Example
+///
+/// ```dart
+/// // Create a one-time announcement
+/// final oneTime = ScheduledAnnouncement(
+///   id: 'announcement_123',
+///   content: 'Meeting in 5 minutes',
+///   scheduledTime: DateTime.now().add(Duration(minutes: 55)),
+/// );
+///
+/// // Create a recurring announcement
+/// final recurring = ScheduledAnnouncement(
+///   id: 'announcement_456',
+///   content: 'Daily standup time',
+///   scheduledTime: DateTime(2025, 1, 20, 9, 0),
+///   recurrence: RecurrencePattern.weekdays,
+///   metadata: {'type': 'standup', 'team': 'engineering'},
+/// );
+///
+/// // Custom recurrence pattern
+/// final custom = ScheduledAnnouncement(
+///   id: 'announcement_789',
+///   content: 'Workout reminder',
+///   scheduledTime: DateTime(2025, 1, 20, 6, 0),
+///   recurrence: RecurrencePattern.custom,
+///   customDays: [1, 3, 5], // Monday, Wednesday, Friday
+/// );
+/// ```
+///
+/// ## Properties
+///
+/// - [id]: Unique identifier for the announcement
+/// - [content]: Text content to be announced
+/// - [scheduledTime]: When the announcement is scheduled to be delivered
+/// - [recurrence]: Recurrence pattern (null for one-time announcements)
+/// - [customDays]: Days for custom recurrence (1=Monday, 7=Sunday)
+/// - [isActive]: Whether this announcement is currently active
+/// - [metadata]: Optional custom data associated with the announcement
+///
+/// ## Convenience Methods
+///
+/// - [isRecurring]: Returns true if this is a recurring announcement
+/// - [isOneTime]: Returns true if this is a one-time announcement
+/// - [effectiveDays]: Returns the list of days this announcement runs
+///
+/// See also:
+///
+/// - [RecurrencePattern] for recurring announcement patterns
+/// - [AnnouncementScheduler.scheduleAnnouncement] to create announcements
 class ScheduledAnnouncement {
   /// Unique identifier for the announcement
   final String id;

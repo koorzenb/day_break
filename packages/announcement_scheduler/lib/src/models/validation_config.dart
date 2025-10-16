@@ -1,4 +1,62 @@
-/// Configuration for validation rules applied by the announcement scheduler
+/// Configuration for validation rules applied by the announcement scheduler.
+///
+/// This class defines limits and validation rules to prevent excessive
+/// notifications and ensure robust scheduling behavior. These safeguards
+/// help maintain good user experience and system performance.
+///
+/// ## Why Validation?
+///
+/// - Prevents notification spam that could annoy users
+/// - Protects against programming errors that schedule too many notifications
+/// - Ensures announcements work correctly across timezones and edge cases
+/// - Maintains device performance and battery life
+///
+/// ## Usage Example
+///
+/// ```dart
+/// // Strict limits for user-facing apps
+/// final strictConfig = ValidationConfig(
+///   maxNotificationsPerDay: 5,
+///   maxScheduledNotifications: 30,
+///   enableEdgeCaseValidation: true,
+///   enableTimezoneValidation: true,
+///   minAnnouncementIntervalMinutes: 15,
+///   maxSchedulingDaysInAdvance: 7,
+/// );
+///
+/// // Relaxed limits for internal/testing use
+/// final relaxedConfig = ValidationConfig(
+///   maxNotificationsPerDay: 20,
+///   maxScheduledNotifications: 100,
+///   enableEdgeCaseValidation: false,
+///   minAnnouncementIntervalMinutes: 1,
+///   maxSchedulingDaysInAdvance: 30,
+/// );
+/// ```
+///
+/// ## Configuration Options
+///
+/// - [maxNotificationsPerDay]: Maximum announcements allowed per day
+/// - [maxScheduledNotifications]: Maximum total scheduled announcements
+/// - [enableEdgeCaseValidation]: Validate DST transitions, leap days, etc.
+/// - [enableTimezoneValidation]: Validate timezone-related scheduling
+/// - [minAnnouncementIntervalMinutes]: Minimum time between announcements
+/// - [maxSchedulingDaysInAdvance]: How far ahead to schedule recurring announcements
+///
+/// ## Default Values
+///
+/// The defaults provide reasonable limits for most applications:
+///
+/// - Up to 10 announcements per day
+/// - Up to 50 total scheduled announcements
+/// - Edge case validation enabled
+/// - Timezone validation enabled
+/// - Minimum 1 minute between announcements
+/// - Schedule up to 14 days in advance
+///
+/// See also:
+///
+/// - [AnnouncementConfig] for overall scheduler configuration
 class ValidationConfig {
   /// Maximum number of notifications that can be scheduled per day
   final int maxNotificationsPerDay;

@@ -1,7 +1,72 @@
 import 'notification_config.dart';
 import 'validation_config.dart';
 
-/// Configuration for the announcement scheduler
+/// Configuration for the announcement scheduler.
+///
+/// This class encapsulates all configuration options for the announcement
+/// scheduler, including TTS (Text-to-Speech) settings, notification
+/// preferences, validation rules, and timezone configuration.
+///
+/// ## Usage Example
+///
+/// ```dart
+/// final config = AnnouncementConfig(
+///   // TTS Configuration
+///   enableTTS: true,
+///   ttsRate: 0.5,           // Normal speech rate
+///   ttsPitch: 1.0,          // Normal pitch
+///   ttsVolume: 1.0,         // Full volume
+///   ttsLanguage: 'en-US',   // American English
+///
+///   // Timezone Configuration
+///   forceTimezone: true,
+///   timezoneLocation: 'America/Halifax',
+///
+///   // Notification Settings
+///   notificationConfig: NotificationConfig(
+///     channelId: 'announcements',
+///     channelName: 'Announcements',
+///     importance: Importance.high,
+///   ),
+///
+///   // Validation Rules
+///   validationConfig: ValidationConfig(
+///     maxNotificationsPerDay: 10,
+///     maxScheduledNotifications: 50,
+///   ),
+///
+///   // Debug Options
+///   enableDebugLogging: true,
+/// );
+/// ```
+///
+/// ## TTS Configuration
+///
+/// Control how announcements are spoken:
+///
+/// - [enableTTS]: Enable/disable text-to-speech functionality
+/// - [ttsRate]: Speech rate (0.0 to 1.0, where 0.5 is normal)
+/// - [ttsPitch]: Voice pitch (0.5 to 2.0, where 1.0 is normal)
+/// - [ttsVolume]: Speech volume (0.0 to 1.0, where 1.0 is maximum)
+/// - [ttsLanguage]: TTS language code (e.g., 'en-US', 'en-GB', 'es-ES')
+///
+/// ## Timezone Configuration
+///
+/// Control how times are interpreted:
+///
+/// - [forceTimezone]: Whether to use a specific timezone instead of system
+/// - [timezoneLocation]: Timezone name (e.g., 'America/Halifax', 'Europe/London')
+///
+/// ## Other Configuration
+///
+/// - [notificationConfig]: Notification channel and appearance settings
+/// - [validationConfig]: Limits and validation rules for scheduling
+/// - [enableDebugLogging]: Enable detailed logging for troubleshooting
+///
+/// See also:
+///
+/// - [NotificationConfig] for notification settings
+/// - [ValidationConfig] for validation rules
 class AnnouncementConfig {
   /// Whether to enable text-to-speech functionality
   final bool enableTTS;

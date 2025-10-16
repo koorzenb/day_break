@@ -27,6 +27,11 @@
 /// ```
 library;
 
+// Re-export commonly needed types from dependencies
+export 'package:flutter_local_notifications/flutter_local_notifications.dart'
+    show Importance, Priority;
+
+// Export public API
 export 'src/announcement_scheduler.dart';
 export 'src/models/announcement_config.dart';
 export 'src/models/announcement_exceptions.dart';
