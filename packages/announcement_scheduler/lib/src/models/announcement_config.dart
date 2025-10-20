@@ -20,7 +20,7 @@ import 'validation_config.dart';
 ///
 ///   // Timezone Configuration
 ///   forceTimezone: true,
-///   timezoneLocation: 'America/Halifax',
+///   timezoneLocation: 'America/New_York',  // Or use user's location
 ///
 ///   // Notification Settings
 ///   notificationConfig: NotificationConfig(
@@ -55,7 +55,7 @@ import 'validation_config.dart';
 /// Control how times are interpreted:
 ///
 /// - [forceTimezone]: Whether to use a specific timezone instead of system
-/// - [timezoneLocation]: Timezone name (e.g., 'America/Halifax', 'Europe/London')
+/// - [timezoneLocation]: Timezone name (e.g., 'America/New_York', 'Europe/London', 'Asia/Tokyo')
 ///
 /// ## Other Configuration
 ///
@@ -90,7 +90,7 @@ class AnnouncementConfig {
   final bool forceTimezone;
 
   /// The timezone location to use when forceTimezone is true
-  /// (e.g., 'America/Halifax', 'Europe/London')
+  /// (e.g., 'America/New_York', 'Europe/London', 'Asia/Tokyo')
   final String? timezoneLocation;
 
   /// Whether to enable debug logging

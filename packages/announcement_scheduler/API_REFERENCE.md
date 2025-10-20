@@ -46,7 +46,7 @@ AnnouncementConfig(
   
   // Timezone Settings
   forceTimezone: true,
-  timezoneLocation: 'America/Halifax',
+  timezoneLocation: 'America/New_York',  // Or use user's location
   
   // Sub-configurations
   notificationConfig: NotificationConfig(...),

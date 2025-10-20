@@ -130,7 +130,7 @@ class AnnouncementScheduler {
   ///     ttsRate: 0.5,
   ///     ttsPitch: 1.0,
   ///     forceTimezone: true,
-  ///     timezoneLocation: 'America/Halifax',
+  ///     timezoneLocation: 'America/New_York',  // Or use user's location
   ///     notificationConfig: NotificationConfig(
   ///       channelId: 'daily_weather',
   ///       channelName: 'Daily Weather',

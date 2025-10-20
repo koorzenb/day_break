@@ -72,7 +72,7 @@ final config = AnnouncementConfig(
   ttsVolume: 1.0,        // Speech volume (0.0 to 1.0)
   ttsLanguage: 'en-US',  // TTS language
   forceTimezone: true,
-  timezoneLocation: 'America/Halifax',
+  timezoneLocation: 'America/New_York',  // Or use user's location
   enableDebugLogging: true,
   notificationConfig: NotificationConfig(
     channelId: 'announcements',
