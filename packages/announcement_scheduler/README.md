@@ -124,6 +124,71 @@ await scheduler.scheduleOneTimeAnnouncement(
 );
 ```
 
+### Timezone Configuration
+
+The package supports flexible timezone configuration to ensure announcements are delivered at the correct local time for your users:
+
+#### Using System Timezone (Default)
+
+By default, the package uses the device's system timezone:
+
+```dart
+final scheduler = await AnnouncementScheduler.initialize(
+  config: AnnouncementConfig(
+    // forceTimezone is false by default, uses system timezone
+    notificationConfig: NotificationConfig(...),
+  ),
+);
+```
+
+#### Using a Specific Timezone
+
+You can force a specific timezone for consistent scheduling regardless of device location:
+
+```dart
+final scheduler = await AnnouncementScheduler.initialize(
+  config: AnnouncementConfig(
+    forceTimezone: true,
+    timezoneLocation: 'America/New_York',  // IANA timezone identifier
+    notificationConfig: NotificationConfig(...),
+  ),
+);
+```
+
+#### Dynamic Timezone Based on User Location
+
+For apps that serve users in different timezones, you can determine the timezone based on the user's selected location:
+
+```dart
+// Example: Get timezone from user's city selection
+String getUserTimezone(String city) {
+  final timezoneMap = {
+    'New York': 'America/New_York',
+    'Los Angeles': 'America/Los_Angeles',
+    'London': 'Europe/London',
+    'Tokyo': 'Asia/Tokyo',
+    'Sydney': 'Australia/Sydney',
+  };
+  return timezoneMap[city] ?? 'America/New_York';  // Default fallback
+}
+
+// Initialize with user's timezone
+final userCity = getUserSelectedCity();  // Your app's method
+final scheduler = await AnnouncementScheduler.initialize(
+  config: AnnouncementConfig(
+    forceTimezone: true,
+    timezoneLocation: getUserTimezone(userCity),
+    notificationConfig: NotificationConfig(...),
+  ),
+);
+```
+
+**Important Notes:**
+- Use standard IANA timezone identifiers (e.g., 'America/New_York', 'Europe/London')
+- Timezone configuration affects when announcements are delivered, not the content
+- The package handles DST (Daylight Saving Time) transitions automatically
+- For location-based apps, update the scheduler configuration when the user changes their location
+
 ## Use Cases
 
 This package is perfect for:
