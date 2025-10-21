@@ -1,8 +1,7 @@
 # Copilot Instructions
 
 This guide is intended **only for GitHub Copilot** and other AI coding
-  assistants. Follow these instructions for every code suggestion, review, or
-Th  refactor in this repository.
+assistants. Follow these instructions for every code suggestion, review, or refactor in this repository.
 
 **Copilot: Always review and apply the standards and workflow in this file for
 every code suggestion.**
@@ -12,7 +11,7 @@ every code suggestion.**
 ## Context Awareness
 
 - Always use the latest `PRD.md` and `PLAN.md` for context, requirements, and
-milestones.
+  milestones.
 - Reference `PRD.md` for product features, users, and goals.
 - Reference `PLAN.md` for execution strategy, timelines, and milestones.
 
@@ -22,10 +21,10 @@ milestones.
 
 - Use Flutter 3.35.3 (`.fvmrc`) and Android SDK (API 35+).
 - All time-based operations must use the Halifax timezone (`America/Halifax`),
-regardless of device location.
+  regardless of device location.
 - Use single quotes for all strings.
 - Use arrow functions for callbacks.
-- Follow the [Dart style guide](https://dart.dev/guides/language/effective-dart/style).
+- Follow the Dart style guide: https://dart.dev/guides/language/effective-dart/style
 - Write meaningful comments for complex logic.
 - Keep functions small and focused.
 - Use async/await for asynchronous operations.
@@ -40,12 +39,12 @@ regardless of device location.
 - Use `///` documentation comments for public APIs.
 - Separate logical sections with blank lines.
 - Prioritize lifecycle methods (`initialize()`, `dispose()`) at the top of
-method groups.
+  method groups.
 - Use alphabetical ordering within groups if no logical order exists.
 - Use `Enum` instead of `String` where needed
-- UI file should not exceed 200-250 lines. Break files using part | part of 
+- UI file should not exceed 200-250 lines. Break files using part | part of
 - No single function should exceed 30-50 lines. Refactor into smaller helpers if
-needed.
+  needed.
 
 ---
 
@@ -53,7 +52,7 @@ needed.
 
 - All tests must use `expect` with a `reason` property for comments.
 - Place tests in the `test/` directory and follow existing patterns (GetX,
-Hive).
+  Hive).
 
 ---
 
@@ -83,7 +82,7 @@ Hive).
 ## Permissions
 
 - When adding permission handlers, ensure relevant entries are present in
-`AndroidManifest.xml`.
+  `AndroidManifest.xml`.
 - Verify permissions are declared to avoid runtime issues.
 
 ---
@@ -96,7 +95,7 @@ Hive).
   - Run all tests: `flutter test`
   - Build debug APK: `flutter build apk --debug`
   - Build release APK: `flutter build apk --release --obfuscate
-  --split-debug-info=./debug-info`
+--split-debug-info=./debug-info`
   - Run app: `flutter run`
 - Before suggesting a commit, ensure code passes `flutter analyze` and `flutter
 test`.
@@ -116,7 +115,7 @@ update_version.dart` script for versioning and changelog updates.
 ## Design and Architecture
 
 - When generating or refactoring code, apply SOLID principles, GoF design
-patterns, and clean architecture where appropriate.
+  patterns, and clean architecture where appropriate.
 - Coach the user on these principles when relevant.
 
 ---

@@ -1,3 +1,9 @@
+## 1.7.1
+  
+### Chore
+  
+- Add .env file to assets in pubspec.yaml
+
 ## 1.7.0
   
 ### Feature
