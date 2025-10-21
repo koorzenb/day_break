@@ -25,7 +25,8 @@ milestones.
 regardless of device location.
 - Use single quotes for all strings.
 - Use arrow functions for callbacks.
-- Follow the [Dart style guide](https://dart.dev/guides/language/effective-dart/style).
+- Follow the
+  [Dart style guide](https://dart.dev/guides/language/effective-dart/style).
 - Write meaningful comments for complex logic.
 - Keep functions small and focused.
 - Use async/await for asynchronous operations.
