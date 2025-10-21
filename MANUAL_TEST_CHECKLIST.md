@@ -1,6 +1,7 @@
 # Manual Test Checklist – Phase 8
 
-This checklist ensures core Day Break functionality works end-to-end before release. Execute on a physical device and at least one emulator.
+This checklist ensures core Day Break functionality works end-to-end before
+  release. Execute on a physical device and at least one emulator.
 
 ## Environment Prep
 
@@ -10,7 +11,8 @@ This checklist ensures core Day Break functionality works end-to-end before rele
 
 ## 1. Initial Launch & Setup Flow
 
-- [ ] App shows splash/loading then navigates (or prompts) to Settings when no config present.
+- [ ] App shows splash/loading then navigates (or prompts) to Settings when no
+config present.
 - [ ] No infinite spinner; UI responsive.
 
 ## 2. Set Announcement Time
@@ -44,8 +46,10 @@ This checklist ensures core Day Break functionality works end-to-end before rele
 
 ## 6. Settings Completion & Return
 
-- [ ] When both time + location configured, status card indicates setup complete.
-- [ ] Returning to main screen shows status "Daily notifications scheduled" (or transitional status then final).
+- [ ] When both time + location configured, status card indicates setup
+complete.
+- [ ] Returning to main screen shows status "Daily notifications scheduled" (or
+transitional status then final).
 
 ## 7. Persistent Settings
 
@@ -58,18 +62,23 @@ This checklist ensures core Day Break functionality works end-to-end before rele
 - [ ] Tap button; spinner/status update visible ("Fetching weather...").
 - [ ] Notification appears with emoji + temp range.
 - [ ] Voice (TTS) plays forecast (if volume on and TTS supported).
-- [ ] If network off: fallback notification text appears (service unavailable) and spoken error if TTS.
+- [ ] If network off: fallback notification text appears (service unavailable)
+and spoken error if TTS.
 
 ## 9. Daily Scheduling Sanity
 
-- [ ] After changing time, confirm prior schedule cleared (no duplicate pending entries if inspected via debug logs or plugin API).
-- [ ] (Optional) Temporarily set time a minute ahead; verify daily notification fires.
+- [ ] After changing time, confirm prior schedule cleared (no duplicate pending
+entries if inspected via debug logs or plugin API).
+- [ ] (Optional) Temporarily set time a minute ahead; verify daily notification
+fires.
 
 ## 10. Restart & Limited Mode Scenarios
 
 - Temporarily simulate failure (revoke notification permission):
-  - [ ] App still initializes (not stuck). Status indicates limited mode or still Ready.
-  - [ ] Weather test still produces a local notification if permission later re-granted.
+  - [ ] App still initializes (not stuck). Status indicates limited mode or
+  still Ready.
+  - [ ] Weather test still produces a local notification if permission later
+  re-granted.
 
 ## 11. TTS Behaviour
 
@@ -87,7 +96,8 @@ This checklist ensures core Day Break functionality works end-to-end before rele
 - Disable network mid-fetch:
   - [ ] App handles error gracefully without crash.
 - Corrupt or missing TOMORROWIO_API_KEY:
-  - [ ] Weather fetch path logs or surfaces meaningful message (current behavior: exception—documented; improvement planned Phase 9).
+  - [ ] Weather fetch path logs or surfaces meaningful message (current
+  behavior: exception—documented; improvement planned Phase 9).
 
 ## 14. Performance
 
@@ -103,7 +113,8 @@ This checklist ensures core Day Break functionality works end-to-end before rele
 
 ### Prerequisites for Lock Screen Tests
 
-- Physical Android device (emulator may not replicate all lock screen behaviors accurately)
+- Physical Android device (emulator may not replicate all lock screen behaviors
+accurately)
 - Set device lock screen security (PIN, pattern, or fingerprint)
 - Ensure app has notification permissions granted
 - Test in various device orientations if applicable
@@ -151,7 +162,8 @@ This checklist ensures core Day Break functionality works end-to-end before rele
   - [ ] Notification shows full content
   - [ ] Tap opens app immediately
 - [ ] **PIN/Pattern/Password Security:**
-  - [ ] Notification content visibility (should show with `NotificationVisibility.public`)
+  - [ ] Notification content visibility (should show with
+  `NotificationVisibility.public`)
   - [ ] Tap requires authentication before opening app
 - [ ] **Fingerprint/Face Unlock:**
   - [ ] Quick unlock via biometric should open app directly
@@ -163,7 +175,8 @@ This checklist ensures core Day Break functionality works end-to-end before rele
   - [ ] Disable "Show on lock screen"
   - [ ] Verify notifications don't appear on lock screen but TTS may still play
 - [ ] **Battery Optimization:**
-  - [ ] Check if app is optimized for battery (Settings > Battery > Battery optimization)
+  - [ ] Check if app is optimized for battery (Settings > Battery > Battery
+  optimization)
   - [ ] Test notification delivery with optimization enabled/disabled
 - [ ] **Notification Priority Settings:**
   - [ ] Test with various system notification importance levels
@@ -210,18 +223,23 @@ This checklist ensures core Day Break functionality works end-to-end before rele
 
 ### Pass Criteria
 
-All mandatory checklist items (1–15) must pass. Items 16–17 are for locked device validation and extended testing - recommended for production release, not blocking for development unless severe defects found.
+All mandatory checklist items (1–15) must pass. Items 16–17 are for locked
+  device validation and extended testing - recommended for production release,
+Al  not blocking for development unless severe defects found.
 
-**Locked Device Testing (Item 16):** At minimum, sections 16.1, 16.2, and 16.3 must pass on at least one physical Android device before production release.
+**Locked Device Testing (Item 16):** At minimum, sections 16.1, 16.2, and 16.3
+must pass on at least one physical Android device before production release.
 
 ### Known Limitations
 
 - Permission denial snackbar (Phase 9 planned).
 - No offline cache of last weather yet.
 - API key absence is fatal (Phase 9 improvement planned).
-- Lock screen behavior may vary significantly between device manufacturers and Android versions.
+- Lock screen behavior may vary significantly between device manufacturers and
+Android versions.
 - TTS during active phone calls may be limited by system audio focus policies.
-- Some Android skins (Samsung One UI, etc.) may have additional lock screen notification restrictions.
+- Some Android skins (Samsung One UI, etc.) may have additional lock screen
+notification restrictions.
 
 ### Sign-off
 

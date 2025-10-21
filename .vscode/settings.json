@@ -40,5 +40,12 @@
     "**/ios/Pods/**": true,
     "**/android/app/build/**": true
   },
-  "dart.flutterSdkPath": ".fvm/versions/3.35.3"
+  "dart.flutterSdkPath": ".fvm/versions/3.35.3",
+  "[markdown]": {
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80,
+    "editor.rulers": [
+      80
+    ]
+  }
 }

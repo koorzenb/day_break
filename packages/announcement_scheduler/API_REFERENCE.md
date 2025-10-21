@@ -2,7 +2,9 @@
 
 ## Overview
 
-The `announcement_scheduler` package provides a clean, intuitive API for scheduling text-to-speech announcements with support for one-time and recurring notifications.
+The `announcement_scheduler` package provides a clean, intuitive API for
+scheduling text-to-speech announcements with support for one-time and recurring
+  notifications.
 
 ## Core Components
 
@@ -11,6 +13,7 @@ The `announcement_scheduler` package provides a clean, intuitive API for schedul
 The central class for all scheduling operations.
 
 **Initialization:**
+
 ```dart
 final scheduler = await AnnouncementScheduler.initialize(
   config: AnnouncementConfig(...),
@@ -18,6 +21,7 @@ final scheduler = await AnnouncementScheduler.initialize(
 ```
 
 **Scheduling Operations:**
+
 - `scheduleAnnouncement()` - Schedule recurring or one-time announcement
 - `scheduleOneTimeAnnouncement()` - Schedule at specific DateTime
 - `cancelScheduledAnnouncements()` - Cancel all announcements
@@ -25,14 +29,17 @@ final scheduler = await AnnouncementScheduler.initialize(
 - `getScheduledAnnouncements()` - Query scheduled items
 
 **Monitoring:**
+
 - `statusStream` - Stream of announcement status updates
 
 **Cleanup:**
+
 - `dispose()` - Release resources
 
 ### 2. Configuration Classes
 
 #### AnnouncementConfig
+
 Main configuration for the scheduler.
 
 ```dart
@@ -58,6 +65,7 @@ AnnouncementConfig(
 ```
 
 #### NotificationConfig
+
 Notification appearance and behavior.
 
 ```dart
@@ -74,6 +82,7 @@ NotificationConfig(
 ```
 
 #### ValidationConfig
+
 Limits and validation rules.
 
 ```dart
@@ -90,6 +99,7 @@ ValidationConfig(
 ### 3. Data Models
 
 #### ScheduledAnnouncement
+
 Represents a scheduled announcement.
 
 ```dart
@@ -105,33 +115,40 @@ ScheduledAnnouncement(
 ```
 
 **Properties:**
+
 - `isRecurring` - Whether this is a recurring announcement
 - `isOneTime` - Whether this is a one-time announcement
 - `effectiveDays` - List of days this announcement runs
 
 #### RecurrencePattern
+
 Enum for recurrence patterns.
 
 **Values:**
+
 - `daily` - Every day (all 7 days)
 - `weekdays` - Monday through Friday
 - `weekends` - Saturday and Sunday
 - `custom` - User-specified days
 
 **Extension Methods:**
+
 - `displayName` - User-friendly name
 - `defaultDays` - List of days (1=Monday, 7=Sunday)
 
 #### AnnouncementStatus
+
 Enum for announcement lifecycle states.
 
 **Values:**
+
 - `scheduled` - Announcement is scheduled
 - `delivering` - Currently being delivered
 - `completed` - Successfully delivered
 - `failed` - Delivery failed
 
 **Extension Methods:**
+
 - `displayName` - User-friendly name
 - `isActive` - Whether announcement is active
 - `isComplete` - Whether announcement is complete
@@ -141,6 +158,7 @@ Enum for announcement lifecycle states.
 All exceptions extend `AnnouncementException`.
 
 **Exception Types:**
+
 - `NotificationPermissionDeniedException` - Permission denied by user
 - `NotificationInitializationException` - Notification setup failed
 - `NotificationSchedulingException` - Scheduling operation failed
@@ -149,6 +167,7 @@ All exceptions extend `AnnouncementException`.
 - `ValidationException` - Input validation failed
 
 **Example Error Handling:**
+
 ```dart
 try {
   await scheduler.scheduleAnnouncement(...);
@@ -164,6 +183,7 @@ try {
 ## Usage Examples
 
 ### Basic Daily Announcement
+
 ```dart
 final scheduler = await AnnouncementScheduler.initialize(
   config: AnnouncementConfig(
@@ -182,6 +202,7 @@ await scheduler.scheduleAnnouncement(
 ```
 
 ### Weekday Work Reminder
+
 ```dart
 await scheduler.scheduleAnnouncement(
   content: 'Time for work!',
@@ -191,6 +212,7 @@ await scheduler.scheduleAnnouncement(
 ```
 
 ### Custom Schedule
+
 ```dart
 await scheduler.scheduleAnnouncement(
   content: 'Gym day!',
@@ -201,6 +223,7 @@ await scheduler.scheduleAnnouncement(
 ```
 
 ### One-Time Announcement
+
 ```dart
 await scheduler.scheduleOneTimeAnnouncement(
   content: 'Meeting in 5 minutes',
@@ -209,6 +232,7 @@ await scheduler.scheduleOneTimeAnnouncement(
 ```
 
 ### Monitoring Status
+
 ```dart
 scheduler.statusStream.listen((status) {
   switch (status) {
@@ -229,6 +253,7 @@ scheduler.statusStream.listen((status) {
 ```
 
 ### Managing Announcements
+
 ```dart
 // Get all scheduled
 final announcements = await scheduler.getScheduledAnnouncements();
@@ -246,24 +271,28 @@ await scheduler.dispose();
 ## API Design Principles
 
 ### 1. Simplicity
+
 - Single entry point (`AnnouncementScheduler`)
 - Intuitive method names
 - Sensible defaults
 - Clear error messages
 
 ### 2. Flexibility
+
 - Multiple recurrence patterns
 - Configurable TTS settings
 - Customizable notifications
 - Optional metadata support
 
 ### 3. Safety
+
 - Input validation
 - Type safety
 - Comprehensive error handling
 - Resource cleanup
 
 ### 4. Observability
+
 - Status stream for monitoring
 - Query scheduled announcements
 - Debug logging option

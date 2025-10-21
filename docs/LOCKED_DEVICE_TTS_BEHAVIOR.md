@@ -2,7 +2,9 @@
 
 ## Overview
 
-This document details how the Day Break app's Text-to-Speech (TTS) functionality behaves when the device is locked, including system limitations, expected behavior, and troubleshooting guidance.
+This document details how the Day Break app's Text-to-Speech (TTS) functionality
+  behaves when the device is locked, including system limitations, expected
+Th  behavior, and troubleshooting guidance.
 
 ## Current TTS Implementation
 
@@ -11,8 +13,10 @@ This document details how the Day Break app's Text-to-Speech (TTS) functionality
 Day Break uses two approaches for TTS announcements:
 
 1. **Foreground TTS**: When app is running and user taps notification
-2. **Timer-based TTS**: Scheduled to play automatically after notification is delivered
-3. **Background Context Limitation**: TTS cannot be triggered directly from background notification handlers
+2. **Timer-based TTS**: Scheduled to play automatically after notification is
+  delivered
+3. **Background Context Limitation**: TTS cannot be triggered directly from
+  background notification handlers
 
 ### Key TTS Configuration
 
@@ -29,8 +33,10 @@ await _tts!.awaitSpeakCompletion(true);
 
 #### When Device is Locked
 
-- ✅ **Visual notifications** appear on lock screen (with proper `NotificationVisibility.public`)
-- ✅ **Timer-based TTS** should play automatically when scheduled (respects system volume)
+- ✅ **Visual notifications** appear on lock screen (with proper
+`NotificationVisibility.public`)
+- ✅ **Timer-based TTS** should play automatically when scheduled (respects
+system volume)
 - ⚠️ **Tap-triggered TTS** requires device unlock first
 - ⚠️ **Background TTS** cannot be triggered directly from notification handlers
 
@@ -39,7 +45,8 @@ await _tts!.awaitSpeakCompletion(true);
 - **System Volume**: TTS respects notification/media volume levels
 - **Muted Device**: TTS will not play when system volume is muted
 - **Do Not Disturb**: TTS typically suppressed unless app is whitelisted
-- **Battery Optimization**: May delay or prevent TTS if app is aggressively optimized
+- **Battery Optimization**: May delay or prevent TTS if app is aggressively
+optimized
 
 ### Limitations and Constraints
 
@@ -47,14 +54,17 @@ await _tts!.awaitSpeakCompletion(true);
 
 1. **Background Execution**: TTS engines typically require foreground context
 2. **Audio Focus**: System may prevent audio during calls or media playback
-3. **Power Management**: Battery optimization may delay or kill background processes
-4. **Manufacturer Restrictions**: Some Android skins have additional TTS limitations
+3. **Power Management**: Battery optimization may delay or kill background
+  processes
+4. **Manufacturer Restrictions**: Some Android skins have additional TTS
+  limitations
 
 #### Flutter/Plugin Limitations
 
 1. **Flutter TTS Plugin**: Limited background execution capabilities
 2. **Platform Channels**: May not work reliably in background isolates
-3. **Get.log**: Unavailable in background notification handlers (use print instead)
+3. **Get.log**: Unavailable in background notification handlers (use print
+  instead)
 
 ## Testing Protocol for Locked Device TTS
 

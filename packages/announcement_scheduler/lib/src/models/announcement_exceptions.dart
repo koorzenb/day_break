@@ -55,7 +55,7 @@ abstract class AnnouncementException implements Exception {
 /// ```
 class NotificationPermissionDeniedException extends AnnouncementException {
   const NotificationPermissionDeniedException()
-      : super('Notification permission denied by user');
+    : super('Notification permission denied by user');
 }
 
 /// Thrown when notification system initialization fails.

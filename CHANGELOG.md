@@ -44,7 +44,8 @@
   
 ### Feature
   
-- Integrate NotificationService for rescheduling notifications on settings changes
+- Integrate NotificationService for rescheduling notifications on settings
+changes
 
 ## 1.5.3
   
@@ -59,30 +60,38 @@
 "✅ Complete Phase 13.3: Enhanced NotificationService for Recurring Announcements
 
 🚀 Major Features Implemented:
-- Enhanced scheduleDailyWeatherNotification() with recurring parameters (isRecurring, recurrencePattern, customDays)
-- Added _scheduleRecurringWeatherNotifications() for multiple future notifications
-- Implemented _getRecurringDates() with Halifax timezone and 14-day Android limit
+
+- Enhanced scheduleDailyWeatherNotification() with recurring parameters
+(isRecurring, recurrencePattern, customDays)
+- Added _scheduleRecurringWeatherNotifications() for multiple future
+notifications
+- Implemented _getRecurringDates() with Halifax timezone and 14-day Android
+limit
 - Created timer-based unattended announcements for truly automatic delivery
 
 🎯 Timer-Based Unattended System:
+
 - Dual scheduling: Visual notifications + automatic timers
 - Runtime weather fetching at delivery time (not scheduling time)
 - Automatic speech delivery without user interaction required
 - Smart timer management with cleanup on cancellation
 
 🧪 Comprehensive Testing:
+
 - 8 new recurring notification tests (95 total tests passing)
 - Full backward compatibility maintained for existing single notifications
 - Proper mocking for all new recurring functionality
 - Integration validation with existing controllers and services
 
 📊 Technical Improvements:
+
 - RecurrencePattern enum support (daily/weekdays/weekends/custom)
 - Halifax timezone handling for all date calculations
 - Android system limits respected (14-day scheduling window)
 - Personalized announcements with time-aware greetings
 
 🔧 Code Quality:
+
 - All lint checks passing (flutter analyze clean)
 - Following established patterns from copilot-instructions.md
 - Proper error handling and fallback messages
@@ -94,24 +103,31 @@
   
 Add location and recurring schedule sections to settings screen
 
-- Implemented _GPSDetectionSection for automatic location detection with suggestions and error handling.
-- Created _LocationSection to manage location settings, including manual input and GPS detection.
-- Added _RecurringScheduleSection to configure recurring announcements with pattern and day selection.
-- Introduced _SettingsStatusSection to display setup status and provide reset functionality.
+- Implemented _GPSDetectionSection for automatic location detection with
+suggestions and error handling.
+- Created _LocationSection to manage location settings, including manual input
+and GPS detection.
+- Added _RecurringScheduleSection to configure recurring announcements with
+pattern and day selection.
+- Introduced _SettingsStatusSection to display setup status and provide reset
+functionality.
 - Developed _TimePickerSection for daily announcement time selection.
-- Enhanced settings controller with recurring functionality tests and mock implementations.
+- Enhanced settings controller with recurring functionality tests and mock
+implementations.
 
 ## 1.5.0
   
 ### Feature
   
-- Implement recurrence pattern management for weather announcements in settings service
+- Implement recurrence pattern management for weather announcements in settings
+service
 
 ## 1.4.4
   
 ### Docs
   
-- Update Plan.md  to convert project to package and define public API interface for core weather functionality
+- Update Plan.md  to convert project to package and define public API interface
+for core weather functionality
 
 ## 1.4.3
   
@@ -129,13 +145,15 @@ Add location and recurring schedule sections to settings screen
   
 ### Enhancement
   
-- Add forecast URL builder and enhance temperature extraction for new Tomorrow.io format
+- Add forecast URL builder and enhance temperature extraction for new
+Tomorrow.io format
 
 ## 1.4.0
   
 ### Feature
   
-- Enhance weather service error handling and implement retry logic for API requests
+- Enhance weather service error handling and implement retry logic for API
+requests
 
 ## 1.3.0
   
@@ -145,28 +163,33 @@ Migrate weather service to Tomorrow.io API
 
 - Introduced ForecastRange class to encapsulate min/max temperature logic.
 - Updated WeatherSummary to support copyWith method for temperature overrides.
-- Replaced OpenWeatherMap API calls with Tomorrow.io endpoints for realtime and forecast data.
+- Replaced OpenWeatherMap API calls with Tomorrow.io endpoints for realtime and
+forecast data.
 - Implemented parsing logic for Tomorrow.io's realtime weather data.
 - Added tests for forecast min/max functionality and Tomorrow.io parsing.
-- Updated existing tests to reflect changes in API response structure and validation.
+- Updated existing tests to reflect changes in API response structure and
+validation.
 
 ## 1.2.1
   
 ### Refactor
   
-- Update codebase to replace OpenWeatherMap API key references with Tomorrow.io API key
+- Update codebase to replace OpenWeatherMap API key references with Tomorrow.io
+API key
 
 ## 1.2.0
   
 ### Feature
   
-- Implement lazy API key validation and improve error handling for missing API key
+- Implement lazy API key validation and improve error handling for missing API
+key
 
 ## 1.1.0
   
 ### Feature
   
-- Enhance WeatherSummary to calculate daily temperature range and update API response handling
+- Enhance WeatherSummary to calculate daily temperature range and update API
+response handling
 
 1.0.0
 
@@ -184,7 +207,8 @@ Migrate weather service to Tomorrow.io API
   
 ### Feature
   
-- Implement locked device notification testing and enhance TTS behavior documentation
+- Implement locked device notification testing and enhance TTS behavior
+documentation
 
 ## 0.15.6
   
@@ -196,7 +220,8 @@ Migrate weather service to Tomorrow.io API
   
 ### Fix
   
-- Remove redundant greeting from weather announcement in formattedAnnouncement method
+- Remove redundant greeting from weather announcement in formattedAnnouncement
+method
 
 ## 0.15.4
   
@@ -208,25 +233,29 @@ Migrate weather service to Tomorrow.io API
   
 ### Refactor
   
-- Matched scheduleDailyWeatherNotification() to a working scheduleTestNotification()
+- Matched scheduleDailyWeatherNotification() to a working
+scheduleTestNotification()
 
 ## 0.15.2
   
 ### Refactor
   
-- Replace custom snackbar methods with SnackbarHelper utility in AppController and SettingsController
+- Replace custom snackbar methods with SnackbarHelper utility in AppController
+and SettingsController
 
 ## 0.15.1
   
 ### Refactor
   
-- Matched scheduleDailyWeatherNotification() to a working scheduleTestNotification()
+- Matched scheduleDailyWeatherNotification() to a working
+scheduleTestNotification()
 
 ## 0.15.0
   
 ### Refactor
   
-- Clean up AppController and NotificationService; reorganize service initialization and remove unused methods
+- Clean up AppController and NotificationService; reorganize service
+initialization and remove unused methods
 
 ## 0.14.8
   
@@ -246,13 +275,19 @@ Migrate weather service to Tomorrow.io API
   
 Refactor settings and notification services; implement background service
 
-- Removed success snackbar messages from SettingsController after location update.
-- Added background service initialization in main.dart, including notification channel setup.
+- Removed success snackbar messages from SettingsController after location
+update.
+- Added background service initialization in main.dart, including notification
+channel setup.
 - Created a new background_service.dart file to handle background tasks.
-- Updated notification_service.dart to remove pending notifications retrieval and adjust scheduling logic.
-- Refactored weather_service.dart to modularize URL building for weather API requests.
-- Updated notification_service_test.dart to reflect changes in notification scheduling and removed pending notifications test.
-- Adjusted mock classes in notification_service_test.mocks.dart to align with updated service interfaces.
+- Updated notification_service.dart to remove pending notifications retrieval
+and adjust scheduling logic.
+- Refactored weather_service.dart to modularize URL building for weather API
+requests.
+- Updated notification_service_test.dart to reflect changes in notification
+scheduling and removed pending notifications test.
+- Adjusted mock classes in notification_service_test.mocks.dart to align with
+updated service interfaces.
 
 ## 0.14.5
   
@@ -264,19 +299,22 @@ Refactor settings and notification services; implement background service
   
 ### Chore
   
-- Enhance adb-install.bat for APK installation and improve build-prod-apk.bat with fast build option; update cspell.json for additional terms
+- Enhance adb-install.bat for APK installation and improve build-prod-apk.bat
+with fast build option; update cspell.json for additional terms
 
 ## 0.14.3
   
 ### Chore
   
-- Add adb-install.bat for APK installation and launch; update build-prod-apk.bat to use --nt argument for skipping tests
+- Add adb-install.bat for APK installation and launch; update build-prod-apk.
+bat to use --nt argument for skipping tests
 
 ## 0.14.2
   
 ### Chore
   
-- Add permissions for foreground service and notifications in AndroidManifest.xml; enhance logging in NotificationService for better debugging
+- Add permissions for foreground service and notifications in AndroidManifest.
+xml; enhance logging in NotificationService for better debugging
 
 ## 0.14.1
   
@@ -300,7 +338,8 @@ Refactor settings and notification services; implement background service
   
 ### Feature
   
-- Integrate text-to-speech for weather announcements and enhance notification service
+- Integrate text-to-speech for weather announcements and enhance notification
+service
 
 ## 0.11.0
   
@@ -309,19 +348,25 @@ Refactor settings and notification services; implement background service
 Enhance location services and weather notifications
 
 - Added LocationUnknownException to handle unknown location errors.
-- Implemented getCurrentLocationSuggestion method in LocationService to provide human-readable location names.
-- Integrated location suggestion feature into SettingsController for improved user experience.
+- Implemented getCurrentLocationSuggestion method in LocationService to provide
+human-readable location names.
+- Integrated location suggestion feature into SettingsController for improved
+user experience.
 - Updated SettingsScreen to display current location and allow GPS detection.
-- Added weather notification functionality in NotificationService using detected location names.
+- Added weather notification functionality in NotificationService using
+detected location names.
 - Enhanced WeatherService to fetch weather data based on location names.
-- Updated WeatherSummary to include temperature min and max values in announcements.
-- Improved unit tests for location service and weather service to cover new features and error handling.
+- Updated WeatherSummary to include temperature min and max values in
+announcements.
+- Improved unit tests for location service and weather service to cover new
+features and error handling.
 
 ## 0.10.0
   
 ### Feature
   
-- Add SettingsController and SettingsScreen for user configuration of weather announcements
+- Add SettingsController and SettingsScreen for user configuration of weather
+announcements
 
 ## 0.9.0
   
@@ -331,9 +376,11 @@ Implement Notification Service with scheduling and error handling
 
 - Added NotificationService to manage local notifications.
 - Integrated weather updates and settings for daily notifications.
-- Implemented error handling for notification permission and scheduling failures.
+- Implemented error handling for notification permission and scheduling
+failures.
 - Created custom exceptions for notification-related errors.
-- Added tests for NotificationService to ensure functionality and error handling.
+- Added tests for NotificationService to ensure functionality and error
+handling.
 - Updated dependencies in pubspec.yaml and pubspec.lock for timezone support.
 
 ## 0.8.0
@@ -362,13 +409,15 @@ style: Update .gitignore to exclude .env files
   
 ### Refactor
   
-- Mmm, refactored the settings service, I have. Pass the tests, they do. Wise, this change is.
+- Mmm, refactored the settings service, I have. Pass the tests, they do. Wise,
+this change is.
 
 ## 0.4.0
   
 ### Feature
   
-- Settings service is now a dependency injection ninja!  All tests pass, Hive is happy.
+- Settings service is now a dependency injection ninja!  All tests pass, Hive
+is happy.
 
 ## 0.3.0
   
