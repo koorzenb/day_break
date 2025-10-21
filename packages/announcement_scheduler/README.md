@@ -1,16 +1,19 @@
 # Announcement Scheduler
 
-A Flutter package for scheduling text-to-speech announcements with support for one-time and recurring notifications.
+A Flutter package for scheduling text-to-speech announcements with support for
+one-time and recurring notifications.
 
 ## Features
 
-- 📅 **Flexible Scheduling**: Schedule announcements for specific times or recurring patterns
+- 📅 **Flexible Scheduling**: Schedule announcements for specific times or
+recurring patterns
 - 🔄 **Recurring Patterns**: Daily, weekdays, weekends, or custom day selections
 - 🔊 **Text-to-Speech**: Built-in TTS support with configurable voice settings
 - 📱 **Cross-Platform**: Works on Android, iOS, macOS, Linux, Windows, and Web
 - ⚙️ **Configurable**: Extensive configuration options for notifications and TTS
 - 🛡️ **Validation**: Built-in validation to prevent excessive notifications
-- 🌍 **Timezone Support**: Timezone-aware scheduling with optional forced timezones
+- 🌍 **Timezone Support**: Timezone-aware scheduling with optional forced
+timezones
 
 ## Installation
 
@@ -126,7 +129,8 @@ await scheduler.scheduleOneTimeAnnouncement(
 
 ### Timezone Configuration
 
-The package supports flexible timezone configuration to ensure announcements are delivered at the correct local time for your users:
+The package supports flexible timezone configuration to ensure announcements
+are delivered at the correct local time for your users:
 
 #### Using System Timezone (Default)
 
@@ -143,7 +147,8 @@ final scheduler = await AnnouncementScheduler.initialize(
 
 #### Using a Specific Timezone
 
-You can force a specific timezone for consistent scheduling regardless of device location:
+You can force a specific timezone for consistent scheduling regardless of
+device location:
 
 ```dart
 final scheduler = await AnnouncementScheduler.initialize(
@@ -157,7 +162,8 @@ final scheduler = await AnnouncementScheduler.initialize(
 
 #### Dynamic Timezone Based on User Location
 
-For apps that serve users in different timezones, you can determine the timezone based on the user's selected location:
+For apps that serve users in different timezones, you can determine the
+timezone based on the user's selected location:
 
 ```dart
 // Example: Get timezone from user's city selection
@@ -184,10 +190,14 @@ final scheduler = await AnnouncementScheduler.initialize(
 ```
 
 **Important Notes:**
-- Use standard IANA timezone identifiers (e.g., 'America/New_York', 'Europe/London')
-- Timezone configuration affects when announcements are delivered, not the content
+
+- Use standard IANA timezone identifiers (e.g., 'America/New_York', 'Europe/
+London')
+- Timezone configuration affects when announcements are delivered, not the
+content
 - The package handles DST (Daylight Saving Time) transitions automatically
-- For location-based apps, update the scheduler configuration when the user changes their location
+- For location-based apps, update the scheduler configuration when the user
+changes their location
 
 ## Use Cases
 
@@ -216,7 +226,8 @@ Add permissions to `android/app/src/main/AndroidManifest.xml`:
 Add receivers within the `<application>` tag:
 
 ```xml
-<receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+<receiver android:exported="false" android:name="com.dexterous.
+flutterlocalnotifications.ScheduledNotificationReceiver" />
 <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
     <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED"/>
@@ -275,11 +286,13 @@ try {
 
 ## Contributing
 
-Contributions are welcome! Please read the [contributing guidelines](CONTRIBUTING.md) before submitting pull requests.
+Contributions are welcome! Please read the
+ [contributing guidelines](CONTRIBUTING.md) before submitting pull requests.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the
+[LICENSE](LICENSE) file for details.
 
 ## Support
 
@@ -287,7 +300,8 @@ If you have questions or need help, please:
 
 1. Check the [documentation](https://pub.dev/packages/announcement_scheduler)
 2. Search [existing issues](https://github.com/koorzenb/day_break/issues)
-3. Create a [new issue](https://github.com/koorzenb/day_break/issues/new) if needed
+3. Create a [new issue](https://github.com/koorzenb/day_break/issues/new) if
+  needed
 
 ## Changelog
 

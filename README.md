@@ -1,12 +1,15 @@
 # Day Break
 
-A Flutter app for announcing daily weather forecasts at dawn with both visual notifications and text-to-speech announcements.
+A Flutter app for announcing daily weather forecasts at dawn with both visual
+notifications and text-to-speech announcements.
 
 ## Features
 
-- **Daily Weather Notifications**: Scheduled notifications with current weather conditions
+- **Daily Weather Notifications**: Scheduled notifications with current weather
+  conditions
 - **Text-to-Speech Announcements**: Audible weather forecasts using TTS
-- **GPS Location Detection**: Automatic location detection with manual entry fallback
+- **GPS Location Detection**: Automatic location detection with manual entry
+  fallback
 - **Lock Screen Support**: Notifications and TTS work when device is locked
 - **Customizable Timing**: User-configurable announcement time
 
@@ -20,7 +23,8 @@ A Flutter app for announcing daily weather forecasts at dawn with both visual no
 
 ### Weather API Setup
 
-Day Break uses Tomorrow.io for weather data. You'll need a free API key to get started.
+Day Break uses Tomorrow.io for weather data. You'll need a free API key to get
+started.
 
 #### Getting Your Tomorrow.io API Key
 
@@ -50,7 +54,8 @@ Day Break uses Tomorrow.io for weather data. You'll need a free API key to get s
 
 - **Free Tier**: 500 calls/day, 25 calls/hour
 - **App Usage**: ~2-3 calls per weather update (realtime + forecast)
-- **Daily Consumption**: 1-3 calls per day per user (depending on test notifications)
+- **Daily Consumption**: 1-3 calls per day per user (depending on test
+  notifications)
 - **Optimization**: App uses minimal field set to reduce payload size
 
 #### Advanced Weather Configuration
@@ -66,16 +71,20 @@ The app requests these fields from Tomorrow.io by default:
  'windSpeed', 'precipitationProbability', 'cloudCover']
 ```
 
-To customize fields, edit `_tomorrowDefaultFields` in `lib/services/weather_service.dart`.
+To customize fields, edit `_tomorrowDefaultFields` in
+`lib/services/weather_service.dart`.
 
 ### Migration from OpenWeatherMap
 
-**Note**: This app previously used OpenWeatherMap but migrated to Tomorrow.io in v1.4.0 for better API reliability and forecast accuracy.
+**Note**: This app previously used OpenWeatherMap but migrated to Tomorrow.io
+in v1.4.0 for better API reliability and forecast accuracy.
 
 #### Breaking Changes (v1.4.0+)
 
-- Environment variable changed from `OPENWEATHER_API_KEY` to `TOMORROWIO_API_KEY`
-- Weather data format updated (Tomorrow.io uses weather codes instead of descriptions)
+- Environment variable changed from `OPENWEATHER_API_KEY` to
+  `TOMORROWIO_API_KEY`
+- Weather data format updated (Tomorrow.io uses weather codes instead of
+  descriptions)
 - Improved forecast min/max temperature accuracy
 - Enhanced error handling with specific quota/rate limit messages
 
@@ -124,14 +133,20 @@ To customize fields, edit `_tomorrowDefaultFields` in `lib/services/weather_serv
 
 ## Lock Screen Functionality
 
-Day Break is designed to work reliably when your device is locked, ensuring you get your weather update even if you don't immediately interact with your phone.
+Day Break is designed to work reliably when your device is locked, ensuring
+you get your weather update even if you don't immediately interact with your
+phone.
 
 ### What Works on Locked Devices
 
-✅ **Visual Notifications**: Weather notifications appear on lock screen with full content
-✅ **Automatic TTS**: Text-to-speech announcements play even when screen is locked
-✅ **Proper Permissions**: App requests necessary lock screen permissions automatically
-✅ **System Integration**: Respects system volume, Do Not Disturb, and notification settings
+✅ **Visual Notifications**: Weather notifications appear on lock screen with
+full content
+✅ **Automatic TTS**: Text-to-speech announcements play even when screen is
+locked
+✅ **Proper Permissions**: App requests necessary lock screen permissions
+automatically
+✅ **System Integration**: Respects system volume, Do Not Disturb, and
+notification settings
 
 ### Lock Screen Requirements
 
@@ -145,8 +160,10 @@ Day Break is designed to work reliably when your device is locked, ensuring you 
 #### Recommended Device Configuration
 
 1. **Grant notification permissions** when prompted during first launch
-2. **Add Day Break to Do Not Disturb exceptions** for reliable morning announcements
-3. **Disable battery optimization** for Day Break to prevent delayed notifications
+2. **Add Day Break to Do Not Disturb exceptions** for reliable morning
+   announcements
+3. **Disable battery optimization** for Day Break to prevent delayed
+   notifications
 4. **Ensure notification volume is audible** (system volume affects TTS)
 
 ### System Settings That Affect Lock Screen Behavior
@@ -206,7 +223,8 @@ Day Break is designed to work reliably when your device is locked, ensuring you 
 
 ### Testing Lock Screen Functionality
 
-Use the "Test Notification (15s)" button in the app to verify lock screen behavior:
+Use the "Test Notification (15s)" button in the app to verify lock screen
+  behavior:
 
 1. Lock your device
 2. Trigger test notification from app
@@ -214,4 +232,5 @@ Use the "Test Notification (15s)" button in the app to verify lock screen behavi
 4. Confirm TTS plays automatically
 5. Test interaction by tapping notification
 
-For comprehensive testing, see `MANUAL_TEST_CHECKLIST.md` section 16: "Locked Device Notification Testing"
+For comprehensive testing, see `MANUAL_TEST_CHECKLIST.md` section 16: "Locked
+Device Notification Testing"
