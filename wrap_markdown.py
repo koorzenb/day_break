@@ -18,9 +18,7 @@ def wrap_line(line, max_length=80):
     # Don't wrap certain lines
     if (content.startswith('#') or          # Headers
         content.startswith('```') or        # Code blocks
-        content.startswith('http') or       # URLs
-        content.startswith('- ') and '(http' in content or  # Bullet with URL
-        content.strip().startswith('*') and '(http' in content):  # List item with URL
+        content.startswith('http')):        # URLs only (not embedded in text)
         return [line]
     
     wrapped_lines = []
@@ -30,9 +28,29 @@ def wrap_line(line, max_length=80):
         # Find the best break point
         break_point = max_length - leading_whitespace
         
-        # Look for word boundary
-        while break_point > 0 and remaining[break_point] != ' ':
-            break_point -= 1
+        # Avoid breaking inside markdown links [text](url)
+        # Find if we're inside a markdown link
+        link_start = remaining.rfind('[', 0, break_point)
+        link_end = remaining.find(')', link_start) if link_start >= 0 else -1
+        
+        if link_start >= 0 and link_end > break_point:
+            # We're trying to break inside a markdown link
+            # Break before the link starts
+            if link_start > 0:
+                break_point = link_start
+                # Find word boundary before the link
+                while break_point > 0 and remaining[break_point - 1] != ' ':
+                    break_point -= 1
+                if break_point == 0:
+                    # Can't break before link, break after it instead
+                    break_point = link_end + 1
+            else:
+                # Link starts at beginning, break after it
+                break_point = link_end + 1
+        else:
+            # Look for word boundary
+            while break_point > 0 and remaining[break_point] != ' ':
+                break_point -= 1
         
         if break_point == 0:  # No good break point found
             break_point = max_length - leading_whitespace
@@ -40,9 +58,14 @@ def wrap_line(line, max_length=80):
         # Add the wrapped line
         wrapped_lines.append(indent + remaining[:break_point].rstrip())
         
-        # Continue with remaining text, adding continuation indent for non-list items
+        # Continue with remaining text, adding continuation indent
         remaining = remaining[break_point:].lstrip()
-        if not (content.startswith('*') or content.startswith('-')):
+        
+        # For list items, indent to align with the text after the bullet
+        if content.startswith('- ') or content.startswith('* '):
+            if leading_whitespace == 0 and len(wrapped_lines) == 1:
+                indent = '  '  # Standard 2-space indent for list continuation
+        elif not (content.startswith('*') or content.startswith('-')):
             # Add continuation indent for regular paragraphs
             if leading_whitespace == 0:
                 indent = '  '
@@ -96,18 +119,16 @@ def main():
     # Find all markdown files
     md_files = []
     
-    # Root level markdown files
-    for file in os.listdir('.'):
-        if file.endswith('.md'):
-            md_files.append(file)
-    
-    # Search subdirectories
+    # Search all directories including root
     for root, dirs, files in os.walk('.'):
+        # Skip .git directory but not .github
+        if '/.git/' in root or root == './.git':
+            continue
+            
         for file in files:
             if file.endswith('.md'):
                 full_path = os.path.join(root, file)
-                if full_path not in md_files and not full_path.startswith('./'):
-                    md_files.append(full_path)
+                md_files.append(full_path)
     
     # Process each file
     for md_file in md_files:
