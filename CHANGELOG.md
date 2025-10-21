@@ -1,3 +1,9 @@
+## 1.7.2
+  
+### Docs
+  
+- Updated hint text
+
 ## 1.7.1
   
 ### Chore

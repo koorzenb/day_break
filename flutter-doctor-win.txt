@@ -1,15 +1,15 @@
-[√] Flutter (Channel stable, 3.35.3, on Microsoft Windows [Version 10.0.26100.6584], locale en-CA) [683ms]
+[√] Flutter (Channel stable, 3.35.3, on Microsoft Windows [Version 10.0.26200.6899], locale en-CA) [594ms]
     • Flutter version 3.35.3 on channel stable at C:\Users\koorz\fvm\versions\3.35.3
     • Upstream repository https://github.com/flutter/flutter.git
-    • Framework revision a402d9a437 (6 weeks ago), 2025-09-03 14:54:31 -0700
+    • Framework revision a402d9a437 (7 weeks ago), 2025-09-03 14:54:31 -0700
     • Engine revision ddf47dd3ff
     • Dart version 3.9.2
     • DevTools version 2.48.0
     • Feature flags: enable-web, enable-linux-desktop, enable-macos-desktop, enable-windows-desktop, enable-android, enable-ios, cli-animations, enable-lldb-debugging
 
-[√] Windows Version (Windows 11 or higher, 24H2, 2009) [1,794ms]
+[√] Windows Version (Windows 11 or higher, 25H2, 2009) [4.9s]
 
-[√] Android toolchain - develop for Android devices (Android SDK version 36.0.0) [5.6s]
+[√] Android toolchain - develop for Android devices (Android SDK version 36.0.0) [8.0s]
     • Android SDK at C:\Users\koorz\AppData\Local\Android\sdk
     • Emulator version 35.6.11.0 (build_id 13610412) (CL:N/A)
     • Platform android-36, build-tools 36.0.0
@@ -19,15 +19,15 @@
     • Java version OpenJDK Runtime Environment (build 21.0.6+-13391695-b895.109)
     • All Android licenses accepted.
 
-[√] Chrome - develop for the web [339ms]
+[√] Chrome - develop for the web [294ms]
     • Chrome at C:\Program Files\Google\Chrome\Application\chrome.exe
 
-[√] Visual Studio - develop Windows apps (Visual Studio Community 2022 17.14.5) [337ms]
+[√] Visual Studio - develop Windows apps (Visual Studio Community 2022 17.14.5) [292ms]
     • Visual Studio at C:\Program Files\Microsoft Visual Studio\2022\Community
     • Visual Studio Community 2022 version 17.14.36203.30
     • Windows 10 SDK version 10.0.26100.0
 
-[√] Android Studio (version 2025.1.1) [15ms]
+[√] Android Studio (version 2025.1.1) [13ms]
     • Android Studio at C:\Program Files\Android\Android Studio
     • Flutter plugin can be installed from:
        https://plugins.jetbrains.com/plugin/9212-flutter
@@ -35,61 +35,45 @@
        https://plugins.jetbrains.com/plugin/6351-dart
     • Java version OpenJDK Runtime Environment (build 21.0.6+-13391695-b895.109)
 
-[√] VS Code (version 1.105.0) [12ms]
+[√] VS Code (version 1.105.1) [11ms]
     • VS Code at C:\Users\koorz\AppData\Local\Programs\Microsoft VS Code
     • Flutter extension version 3.120.0
 
-[√] Connected device (4 available) [626ms]
+[√] Connected device (5 available) [1,368ms]
+    • HTC Desire 22 pro (mobile)   • SM28E1Y00359  • android-arm64  • Android 12 (API 31)
     • sdk gphone64 x86 64 (mobile) • emulator-5554 • android-x64    • Android 12 (API 31) (emulator)
-    • Windows (desktop)            • windows       • windows-x64    • Microsoft Windows [Version 10.0.26100.6584]
-    • Chrome (web)                 • chrome        • web-javascript • Google Chrome 141.0.7390.67
-    • Edge (web)                   • edge          • web-javascript • Microsoft Edge 141.0.3537.71
+    • Windows (desktop)            • windows       • windows-x64    • Microsoft Windows [Version 10.0.26200.6899]
+    • Chrome (web)                 • chrome        • web-javascript • Google Chrome 141.0.7390.108
+    • Edge (web)                   • edge          • web-javascript • Microsoft Edge 141.0.3537.85
 
-[√] Network resources [897ms]
+[√] Network resources [873ms]
     • All expected network resources are available.
 
 • No issues found!
 Showing outdated packages.
 [*] indicates versions that are not the latest available.
 
-Package Name                          Current  Upgradable  Resolvable  Latest  
+Package Name                 Current  Upgradable  Resolvable  Latest  
 
-direct dependencies:                 
-flutter_dotenv                        *5.2.1   *5.2.1      6.0.0       6.0.0   
-geocoding                             *3.0.0   *3.0.0      4.0.0       4.0.0   
-geolocator                            *12.0.0  *12.0.0     14.0.2      14.0.2  
+direct dependencies:        
+flutter_local_notifications  *19.4.2  19.5.0      19.5.0      19.5.0  
 
-dev_dependencies:                    
-build_runner                          *2.8.0   2.9.0       2.9.0       2.9.0   
-flutter_lints                         *5.0.0   *5.0.0      6.0.0       6.0.0   
+dev_dependencies:           
+build_runner                 *2.9.0   2.10.0      2.10.0      2.10.0  
 
-transitive dependencies:             
-characters                            *1.4.0   *1.4.0      *1.4.0      1.4.1   
-geoclue                               -        -           0.1.1       0.1.1   
-geocoding_android                     *3.3.1   *3.3.1      4.0.1       4.0.1   
-geolocator_android                    *4.6.2   *4.6.2      5.0.2       5.0.2   
-geolocator_linux                      -        -           0.2.3       0.2.3   
-gsettings                             -        -           0.2.8       0.2.8   
-material_color_utilities              *0.11.1  *0.11.1     *0.11.1     0.13.0  
-meta                                  *1.16.0  *1.16.0     *1.16.0     1.17.0  
-package_info_plus                     -        -           *8.3.1      9.0.0   
-package_info_plus_platform_interface  -        -           3.2.1       3.2.1   
-path_provider_android                 *2.2.18  2.2.19      2.2.19      2.2.19  
-win32                                 -        -           5.15.0      5.15.0  
+transitive dependencies:    
+characters                   *1.4.0   *1.4.0      *1.4.0      1.4.1   
+material_color_utilities     *0.11.1  *0.11.1     *0.11.1     0.13.0  
+meta                         *1.16.0  *1.16.0     *1.16.0     1.17.0  
+package_info_plus            *8.3.1   *8.3.1      *8.3.1      9.0.0   
+path_provider_android        *2.2.19  2.2.20      2.2.20      2.2.20  
+path_provider_foundation     *2.4.2   2.4.3       2.4.3       2.4.3   
 
-transitive dev_dependencies:         
-_fe_analyzer_shared                   *88.0.0  90.0.0      90.0.0      90.0.0  
-analyzer                              *8.1.1   8.3.0       8.3.0       8.3.0   
-build                                 *4.0.0   4.0.2       4.0.2       4.0.2   
-lints                                 *5.1.1   *5.1.1      6.0.0       6.0.0   
-pool                                  *1.5.1   1.5.2       1.5.2       1.5.2   
-source_gen                            *4.0.1   4.0.2       4.0.2       4.0.2   
-test_api                              *0.7.6   *0.7.6      *0.7.6      0.7.7   
-vm_service                            *15.0.0  15.0.2      15.0.2      15.0.2  
-watcher                               *1.1.3   1.1.4       1.1.4       1.1.4   
+transitive dev_dependencies:
+_fe_analyzer_shared          *90.0.0  91.0.0      91.0.0      91.0.0  
+analyzer                     *8.3.0   8.4.0       8.4.0       8.4.0   
+build_daemon                 *4.0.4   4.1.0       4.1.0       4.1.0   
+test_api                     *0.7.6   *0.7.6      *0.7.6      0.7.7   
 
-9 upgradable dependencies are locked (in pubspec.lock) to older versions.
+7 upgradable dependencies are locked (in pubspec.lock) to older versions.
 To update these dependencies, use `flutter pub upgrade`.
-
-7  dependencies are constrained to versions that are older than a resolvable version.
-To update these dependencies, edit pubspec.yaml, or run `flutter pub upgrade --major-versions`.
