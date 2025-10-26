@@ -184,6 +184,12 @@ class _ManualLocationInputState extends State<_ManualLocationInput> {
         _textController.text = widget.controller.location;
       }
 
+      _textController.text =
+          'Lower Sackville, Nova Scotia, Canada'; // TODO: remove this
+
+
+      head reset with wip commit 
+      
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
