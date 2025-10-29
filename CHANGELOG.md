@@ -1,3 +1,9 @@
+## 1.8.0
+  
+### Other
+  
+- Extract Core Services to Package
+
 ## 1.7.2
   
 ### Docs

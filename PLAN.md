@@ -285,7 +285,7 @@ This  practices.
 
     - Test: ✅ API design validated - intuitive, follows Flutter conventions,
     comprehensive documentation
-  - [ ] **Step 16.3**: Extract Core Services to Package
+  - [x] **Step 16.3**: Extract Core Services to Package
     - Move `NotificationService` and scheduling logic to package (keep
     weather-specific parts in main app)
     - Extract `SettingsService` functionality related to scheduling (not weather
