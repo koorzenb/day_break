@@ -1,3 +1,9 @@
+## 1.9.0
+  
+### Other
+  
+- Add permissions for scheduling exact alarms in AndroidManifest.xml in example app
+
 ## 1.8.0
   
 ### Other
