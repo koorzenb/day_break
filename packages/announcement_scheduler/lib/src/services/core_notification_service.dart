@@ -120,12 +120,16 @@ class CoreNotificationService {
 
       final tzDateTime = tz.TZDateTime.from(dateTime, tz.local);
 
+      final notificationId = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       await _scheduleNotification(
-        notificationId: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        notificationId: notificationId,
         scheduledDate: tzDateTime,
         content: content,
         title: 'Scheduled Announcement',
       );
+
+      // Store the scheduled time for later retrieval
+      await _settingsService.setScheduledTime(notificationId, tzDateTime);
 
       if (_config.enableTTS) {
         final delay = tzDateTime.difference(tz.TZDateTime.now(tz.local));
@@ -191,6 +195,9 @@ class CoreNotificationService {
         timer.cancel();
       }
       _activeAnnouncementTimers.clear();
+
+      // Clear stored scheduled times
+      await _settingsService.clearScheduledTimes();
     } catch (e) {
       throw NotificationSchedulingException(
         'Failed to cancel notifications: $e',
@@ -218,12 +225,21 @@ class CoreNotificationService {
       final pendingNotifications = await _notifications
           .pendingNotificationRequests();
 
+      // Retrieve stored scheduled times
+      // flutter_local_notifications doesn't expose scheduled times in its API,
+      // so we persist them separately when scheduling and retrieve them here
+      final scheduledTimes = await _settingsService.getScheduledTimes();
+
       return pendingNotifications.map((notification) {
+        final storedTime = scheduledTimes[notification.id.toString()];
+        final scheduledTime = storedTime != null
+            ? DateTime.fromMillisecondsSinceEpoch(storedTime)
+            : DateTime.now();
+
         return ScheduledAnnouncement(
           id: notification.id.toString(),
           content: notification.body ?? '',
-          scheduledTime:
-              DateTime.now(), // This would need to be stored separately
+          scheduledTime: scheduledTime,
           isActive: true,
         );
       }).toList();
@@ -341,6 +357,9 @@ class CoreNotificationService {
       title: 'Scheduled Announcement',
     );
 
+    // Store the scheduled time for later retrieval
+    await _settingsService.setScheduledTime(0, scheduledDate);
+
     if (_config.enableTTS) {
       final announcementDelay = scheduledDate.difference(now);
       _scheduleUnattendedAnnouncement(content, announcementDelay);
@@ -376,6 +395,9 @@ class CoreNotificationService {
       maxDays: 14, // Android system limitation
     );
 
+    // Build map of notification IDs to scheduled times for batch storage
+    final scheduledTimesMap = <int, DateTime>{};
+
     for (int i = 0; i < daysToSchedule.length; i++) {
       final scheduledDate = daysToSchedule[i];
       await _scheduleNotification(
@@ -385,12 +407,17 @@ class CoreNotificationService {
         title: 'Recurring Announcement',
       );
 
+      // Store scheduled time for later retrieval
+      scheduledTimesMap[i] = scheduledDate;
+
       if (_config.enableTTS && i == 0) {
         // Only schedule TTS for the next occurrence
         final announcementDelay = scheduledDate.difference(now);
         _scheduleUnattendedAnnouncement(content, announcementDelay);
       }
     }
+
+    await _settingsService.setScheduledTimes(scheduledTimesMap);
   }
 
   /// Schedule a notification with the platform-specific implementation

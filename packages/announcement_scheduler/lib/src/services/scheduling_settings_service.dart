@@ -83,6 +83,42 @@ class SchedulingSettingsService {
     await setRecurrenceDays(daysToSet);
   }
 
+  // Scheduled times persistence
+  // Maps notification ID to scheduled time in milliseconds since epoch
+
+  Future<void> setScheduledTime(
+    int notificationId,
+    DateTime scheduledTime,
+  ) async {
+    final times = await getScheduledTimes();
+    times[notificationId.toString()] = scheduledTime.millisecondsSinceEpoch;
+    await _storage.set('scheduledTimes', times);
+  }
+
+  Future<DateTime?> getScheduledTime(int notificationId) async {
+    final times = await getScheduledTimes();
+    final millis = times[notificationId.toString()];
+    if (millis == null) return null;
+    return DateTime.fromMillisecondsSinceEpoch(millis);
+  }
+
+  Future<Map<String, int>> getScheduledTimes() async {
+    final data = await _storage.get<Map<dynamic, dynamic>>('scheduledTimes');
+    if (data == null) return {};
+    return data.map((key, value) => MapEntry(key.toString(), value as int));
+  }
+
+  Future<void> setScheduledTimes(Map<int, DateTime> scheduledTimes) async {
+    final times = scheduledTimes.map(
+      (key, value) => MapEntry(key.toString(), value.millisecondsSinceEpoch),
+    );
+    await _storage.set('scheduledTimes', times);
+  }
+
+  Future<void> clearScheduledTimes() async {
+    await _storage.remove('scheduledTimes');
+  }
+
   /// Clear all settings
   Future<void> clearSettings() async {
     await _storage.clear();

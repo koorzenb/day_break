@@ -1,3 +1,9 @@
+## 1.10.0
+  
+### Feature
+  
+- Added GetX to package for state management. Separated concerns in Example app
+
 ## 1.9.0
   
 ### Other
