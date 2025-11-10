@@ -13,10 +13,10 @@ class ExampleHomePage extends StatelessWidget {
     // Initialize the controller using GetX dependency injection
     final controller = Get.put(ExamplePageController(AnnouncementService()));
 
-    // Initialize the scheduler when the controller is first created
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Check timezone configuration and initialize scheduler
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!controller.isSchedulerInitialized) {
-        controller.initializeScheduler();
+        await controller.initializeScheduler();
       }
     });
 
@@ -63,7 +63,7 @@ class ExampleHomePage extends StatelessWidget {
                             Text('• TTS (Text-to-Speech) integration'),
                             SizedBox(height: 8),
                             Text(
-                              'Suggest starting at AnnouncementScheduler.scheduleAnnouncement()',
+                              'See QuickStart in README.md for more details.',
                             ),
                           ],
                         ),

@@ -1,4 +1,6 @@
 import 'package:announcement_scheduler/announcement_scheduler.dart';
+import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 /// Service class that encapsulates all AnnouncementScheduler operations
 /// Follows the Service/Repository pattern to separate data access from UI
@@ -9,8 +11,48 @@ class AnnouncementService {
 
   Stream<AnnouncementStatus>? get statusStream => _scheduler?.statusStream;
 
+  /// Check and request notification permissions
+  Future<bool> checkAndRequestNotificationPermissions() async {
+    // Check if notification permission is granted
+    var status = await Permission.notification.status;
+
+    debugPrint(
+      '[AnnouncementService] Current notification permission status: $status',
+    );
+
+    if (status.isDenied) {
+      debugPrint('[AnnouncementService] Requesting notification permission...');
+      status = await Permission.notification.request();
+      debugPrint('[AnnouncementService] Permission request result: $status');
+    }
+
+    if (status.isPermanentlyDenied) {
+      debugPrint(
+        '[AnnouncementService] Notification permission permanently denied. Opening app settings...',
+      );
+      // User has permanently denied permission, open app settings
+      return false;
+    }
+
+    final isGranted = status.isGranted;
+    debugPrint(
+      '[AnnouncementService] Notification permission granted: $isGranted',
+    );
+    return isGranted;
+  }
+
   /// Initialize the announcement scheduler with default configuration
   Future<void> initialize() async {
+    // Check notification permissions first
+    final hasPermission = await checkAndRequestNotificationPermissions();
+
+    if (!hasPermission) {
+      debugPrint(
+        '[AnnouncementService] Cannot initialize scheduler - notification permission not granted',
+      );
+      throw Exception('Notification permission not granted');
+    }
+
     _scheduler = await AnnouncementScheduler.initialize(
       config: AnnouncementConfig(
         enableTTS: true,
@@ -18,6 +60,8 @@ class AnnouncementService {
         ttsPitch: 1.0,
         ttsVolume: 1.0,
         enableDebugLogging: true,
+        forceTimezone: true, // Use the timezone from settings
+        timezoneLocation: 'America/Halifax',
         notificationConfig: NotificationConfig(
           channelId: 'example_announcements',
           channelName: 'Example Announcements',

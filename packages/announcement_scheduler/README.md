@@ -9,7 +9,7 @@ one-time and recurring notifications.
 recurring patterns
 - 🔄 **Recurring Patterns**: Daily, weekdays, weekends, or custom day selections
 - 🔊 **Text-to-Speech**: Built-in TTS support with configurable voice settings
-- 📱 **Cross-Platform**: Works on Android, iOS, macOS, Linux, Windows, and Web
+- 📱 **Single-Platform**: Currently only Android support. 
 - ⚙️ **Configurable**: Extensive configuration options for notifications and TTS
 - 🛡️ **Validation**: Built-in validation to prevent excessive notifications
 - 🌍 **Timezone Support**: Timezone-aware scheduling with optional forced
@@ -75,8 +75,7 @@ final config = AnnouncementConfig(
   ttsVolume: 1.0,        // Speech volume (0.0 to 1.0)
   ttsLanguage: 'en-US',  // TTS language
   forceTimezone: true,
-  timezoneLocation: 'America/New_York',  // Or use user's location
-  enableDebugLogging: true,
+  timezoneLocation: 'UTC',  // Important to update this to device/user timezone, otherwise notifications will default to show at UTC time
   notificationConfig: NotificationConfig(
     channelId: 'announcements',
     channelName: 'Announcements',

@@ -1,3 +1,9 @@
+## 1.10.2
+  
+### Fix
+  
+- Added permission handler check
+
 ## 1.10.1
   
 ### Test
