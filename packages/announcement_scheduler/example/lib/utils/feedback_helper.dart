@@ -55,7 +55,7 @@ class FeedbackHelper {
                       child: ListTile(
                         title: Text(
                           announcement.content,
-                          maxLines: 2,
+                          maxLines: 4,
                           overflow: TextOverflow.ellipsis,
                         ),
                         subtitle: Column(
