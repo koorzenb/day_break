@@ -83,23 +83,23 @@ class AnnouncementService {
 
     final ids = <String>[];
 
-    // // Schedule a daily morning motivation
-    // final dailyId = await _scheduler!.scheduleAnnouncement(
-    //   content: 'Good morning! Time to start your day with positive energy!',
-    //   announcementTime: const TimeOfDay(hour: 8, minute: 0),
-    //   recurrence: RecurrencePattern.daily,
-    //   metadata: {'type': 'motivation', 'category': 'morning'},
-    // );
-    // ids.add(dailyId);
+    // Schedule a daily morning motivation
+    final dailyId = await _scheduler!.scheduleAnnouncement(
+      content: 'Good morning! Time to start your day with positive energy!',
+      announcementTime: const TimeOfDay(hour: 8, minute: 0),
+      recurrence: RecurrencePattern.daily,
+      metadata: {'type': 'motivation', 'category': 'morning'},
+    );
+    ids.add(dailyId);
 
-    // // Schedule a weekday work reminder
-    // final weekdayId = await _scheduler!.scheduleAnnouncement(
-    //   content: 'Don\'t forget to review your daily goals and priorities.',
-    //   announcementTime: const TimeOfDay(hour: 9, minute: 30),
-    //   recurrence: RecurrencePattern.weekdays,
-    //   metadata: {'type': 'productivity', 'category': 'work'},
-    // );
-    // ids.add(weekdayId);
+    // Schedule a weekday work reminder
+    final weekdayId = await _scheduler!.scheduleAnnouncement(
+      content: 'Don\'t forget to review your daily goals and priorities.',
+      announcementTime: const TimeOfDay(hour: 9, minute: 30),
+      recurrence: RecurrencePattern.weekdays,
+      metadata: {'type': 'productivity', 'category': 'work'},
+    );
+    ids.add(weekdayId);
 
     // Schedule a one-time reminder
     final oneTimeId = await _scheduler!.scheduleOneTimeAnnouncement(
