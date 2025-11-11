@@ -1,3 +1,9 @@
+## 1.10.3
+  
+### Fix
+  
+- Fixed notification display and cleanup
+
 ## 1.10.2
   
 ### Fix
