@@ -45,6 +45,8 @@ every code suggestion.**
 - UI file should not exceed 200-250 lines. Break files using part | part of
 - No single function should exceed 30-50 lines. Refactor into smaller helpers if
   needed.
+- When refactoring a method signature, always update the associated API
+  documentation in `API_REFERENCE.md` to reflect the changes.
 
 ---
 
