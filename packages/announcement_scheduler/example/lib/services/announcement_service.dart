@@ -16,10 +16,6 @@ class AnnouncementService {
     // Check if notification permission is granted
     var status = await Permission.notification.status;
 
-    debugPrint(
-      '[AnnouncementService] Current notification permission status: $status',
-    );
-
     if (status.isDenied) {
       debugPrint('[AnnouncementService] Requesting notification permission...');
       status = await Permission.notification.request();
@@ -27,17 +23,12 @@ class AnnouncementService {
     }
 
     if (status.isPermanentlyDenied) {
-      debugPrint(
-        '[AnnouncementService] Notification permission permanently denied. Opening app settings...',
-      );
+      debugPrint('[AnnouncementService] Notification permission permanently denied. Opening app settings...');
       // User has permanently denied permission, open app settings
       return false;
     }
 
     final isGranted = status.isGranted;
-    debugPrint(
-      '[AnnouncementService] Notification permission granted: $isGranted',
-    );
     return isGranted;
   }
 
@@ -47,9 +38,7 @@ class AnnouncementService {
     final hasPermission = await checkAndRequestNotificationPermissions();
 
     if (!hasPermission) {
-      debugPrint(
-        '[AnnouncementService] Cannot initialize scheduler - notification permission not granted',
-      );
+      debugPrint('[AnnouncementService] Cannot initialize scheduler - notification permission not granted');
       throw Exception('Notification permission not granted');
     }
 
@@ -67,50 +56,39 @@ class AnnouncementService {
           channelName: 'Example Announcements',
           channelDescription: 'Example scheduled announcements',
         ),
-        validationConfig: const ValidationConfig(
-          maxNotificationsPerDay: 5,
-          maxScheduledNotifications: 20,
-        ),
+        validationConfig: const ValidationConfig(maxNotificationsPerDay: 5, maxScheduledNotifications: 20),
       ),
     );
   }
 
   /// Schedule predefined example announcements
-  Future<List<String>> scheduleExampleAnnouncements() async {
+  Future<void> scheduleExampleAnnouncements() async {
     if (_scheduler == null) {
       throw Exception('Scheduler not initialized');
     }
 
-    final ids = <String>[];
-
     // Schedule a daily morning motivation
-    final dailyId = await _scheduler!.scheduleAnnouncement(
+    await _scheduler!.scheduleAnnouncement(
       content: 'Good morning! Time to start your day with positive energy!',
       announcementTime: const TimeOfDay(hour: 8, minute: 0),
       recurrence: RecurrencePattern.daily,
       metadata: {'type': 'motivation', 'category': 'morning'},
     );
-    ids.add(dailyId);
 
     // Schedule a weekday work reminder
-    final weekdayId = await _scheduler!.scheduleAnnouncement(
+    await _scheduler!.scheduleAnnouncement(
       content: 'Don\'t forget to review your daily goals and priorities.',
       announcementTime: const TimeOfDay(hour: 9, minute: 30),
       recurrence: RecurrencePattern.weekdays,
       metadata: {'type': 'productivity', 'category': 'work'},
     );
-    ids.add(weekdayId);
 
     // Schedule a one-time reminder
-    final oneTimeId = await _scheduler!.scheduleOneTimeAnnouncement(
-      content:
-          'This is a one-time announcement scheduled for 5 seconds from now.',
+    await _scheduler!.scheduleOneTimeAnnouncement(
+      content: 'This is a one-time announcement scheduled for 5 seconds from now.',
       dateTime: DateTime.now().add(const Duration(seconds: 5)),
       metadata: {'type': 'reminder', 'category': 'test'},
     );
-    ids.add(oneTimeId);
-
-    return ids;
   }
 
   /// Cancel all scheduled announcements

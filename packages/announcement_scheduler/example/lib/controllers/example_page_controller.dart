@@ -9,7 +9,6 @@ import '../services/announcement_service.dart';
 class ExamplePageController extends GetxController {
   final AnnouncementService _announcementService;
 
-  final _scheduledAnnouncementIds = <String>[].obs;
   final _isInitializing = false.obs;
   final _errorMessage = Rxn<String>();
 
@@ -18,7 +17,6 @@ class ExamplePageController extends GetxController {
   // Getters for state (GetX reactive)
   bool get isInitializing => _isInitializing.value;
   bool get isSchedulerInitialized => _announcementService.isInitialized;
-  List<String> get scheduledAnnouncementIds => _scheduledAnnouncementIds;
   String? get errorMessage => _errorMessage.value;
   bool get hasError => _errorMessage.value != null;
 
@@ -47,8 +45,7 @@ class ExamplePageController extends GetxController {
     _errorMessage.value = null;
 
     try {
-      final ids = await _announcementService.scheduleExampleAnnouncements();
-      _scheduledAnnouncementIds.addAll(ids);
+      await _announcementService.scheduleExampleAnnouncements();
       return true;
     } catch (e) {
       _errorMessage.value = 'Failed to schedule announcements: $e';
@@ -62,7 +59,6 @@ class ExamplePageController extends GetxController {
 
     try {
       await _announcementService.cancelAllAnnouncements();
-      _scheduledAnnouncementIds.clear();
       return true;
     } catch (e) {
       _errorMessage.value = 'Failed to cancel announcements: $e';

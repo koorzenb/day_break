@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -72,7 +73,7 @@ class CoreNotificationService {
       tz.setLocalLocation(tz.getLocation(_config.timezoneLocation!));
     }
 
-    await _initializeTts();
+    await _initializeTTS();
 
     // Android initialization settings
     const androidSettings = AndroidInitializationSettings(
@@ -107,9 +108,10 @@ class CoreNotificationService {
 
     // Request permissions for Android 13+
     await _requestPermissions();
-
     // Create notification channel for Android
-    await _createNotificationChannel();
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      await _createNotificationChannel();
+    }
   }
 
   /// Schedule a one-time announcement
@@ -177,6 +179,16 @@ class CoreNotificationService {
     RecurrencePattern? recurrence,
     List<int>? customDays,
   }) async {
+    await _validateSchedulingLimits(
+      ScheduledAnnouncement(
+        id: 'temp',
+        content: content,
+        scheduledTime: DateTime.now(),
+        isActive: true,
+        recurrence: recurrence,
+      ),
+    );
+
     try {
       _statusController.add(AnnouncementStatus.scheduled);
 
@@ -207,6 +219,33 @@ class CoreNotificationService {
       throw NotificationSchedulingException(
         'Failed to schedule recurring announcement: $e',
       );
+    }
+  }
+
+  /// Validate scheduling limits
+  Future<void> _validateSchedulingLimits(
+    ScheduledAnnouncement announcement,
+  ) async {
+    final config = _config.validationConfig;
+
+    // Check total scheduled notifications limit
+    final pendingNotifications = await _notifications
+        .pendingNotificationRequests();
+    if (pendingNotifications.length >= config.maxScheduledNotifications) {
+      throw ValidationException(
+        'Cannot schedule more than ${config.maxScheduledNotifications} notifications',
+      );
+    }
+
+    // For recurring announcements, estimate daily load
+    if (announcement.isRecurring) {
+      final dailyOccurrences = announcement.effectiveDays.length;
+      if (dailyOccurrences > config.maxNotificationsPerDay) {
+        throw ValidationException(
+          'Recurring pattern would create $dailyOccurrences daily notifications, '
+          'exceeding limit of ${config.maxNotificationsPerDay}',
+        );
+      }
     }
   }
 
@@ -405,12 +444,13 @@ class CoreNotificationService {
   }
 
   /// Initialize TTS with configuration
-  Future<void> _initializeTts() async {
+  Future<void> _initializeTTS() async {
     if (!_config.enableTTS) return;
 
     try {
       _tts = FlutterTts();
       if (_tts != null) {
+        await _tts!.setLanguage(_config.ttsLanguage ?? 'en-US');
         await _tts!.setSpeechRate(_config.ttsRate);
         await _tts!.setPitch(_config.ttsPitch);
         await _tts!.setVolume(_config.ttsVolume);
@@ -508,26 +548,80 @@ class CoreNotificationService {
     required RecurrencePattern recurrencePattern,
     required List<int> customDays,
   }) async {
-    final hour = await _settingsService.getAnnouncementHour();
-    final minute = await _settingsService.getAnnouncementMinute();
+    await scheduleRecurringNotificationsImpl(
+      content: content,
+      recurrencePattern: recurrencePattern,
+      customDays: customDays,
+      config: _config,
+      getAnnouncementHour: _settingsService.getAnnouncementHour,
+      getAnnouncementMinute: _settingsService.getAnnouncementMinute,
+      setScheduledTimes: _settingsService.setScheduledTimes,
+      getRecurringDates: _getRecurringDates,
+      validateRecurringSettings: _validateRecurringSettings,
+      scheduleRecurringNotification: _scheduleRecurringNotification,
+      scheduleUnattendedAnnouncement: _scheduleUnattendedAnnouncement,
+    );
+  }
+
+  /// Testable implementation of schedule recurring notifications
+  @visibleForTesting
+  static Future<void> scheduleRecurringNotificationsImpl({
+    required String content,
+    required RecurrencePattern recurrencePattern,
+    required List<int> customDays,
+    required AnnouncementConfig config,
+    required Future<int?> Function() getAnnouncementHour,
+    required Future<int?> Function() getAnnouncementMinute,
+    required Future<void> Function(Map<int, DateTime>) setScheduledTimes,
+    required List<tz.TZDateTime> Function({
+      required RecurrencePattern recurrencePattern,
+      required List<int> customDays,
+      required tz.TZDateTime startDate,
+      required int maxDays,
+    })
+    getRecurringDates,
+    required Future<void> Function(RecurrencePattern, List<int>)
+    validateRecurringSettings,
+    required Future<void> Function({
+      required int notificationId,
+      required tz.TZDateTime scheduledDate,
+      required String content,
+      required String title,
+    })
+    scheduleRecurringNotification,
+    required void Function(String, Duration) scheduleUnattendedAnnouncement,
+  }) async {
+    final hour = await getAnnouncementHour();
+    final minute = await getAnnouncementMinute();
 
     if (hour == null || minute == null) {
       throw const NotificationSchedulingException('Announcement time not set');
     }
 
     // Validate recurring settings
-    await _validateRecurringSettings(recurrencePattern, customDays);
+    await validateRecurringSettings(recurrencePattern, customDays);
 
     tz.initializeTimeZones();
-    if (_config.forceTimezone && _config.timezoneLocation != null) {
-      tz.setLocalLocation(tz.getLocation(_config.timezoneLocation!));
+    if (config.forceTimezone && config.timezoneLocation != null) {
+      tz.setLocalLocation(tz.getLocation(config.timezoneLocation!));
     }
 
     final now = tz.TZDateTime.now(tz.local);
-    final daysToSchedule = _getRecurringDates(
+
+    // Create the base scheduled time using the configured hour and minute
+    final baseScheduledTime = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
+
+    final daysToSchedule = getRecurringDates(
       recurrencePattern: recurrencePattern,
       customDays: customDays,
-      startDate: now,
+      startDate: baseScheduledTime,
       maxDays: 14, // Android system limitation
     );
 
@@ -536,7 +630,7 @@ class CoreNotificationService {
 
     for (int i = 0; i < daysToSchedule.length; i++) {
       final scheduledDate = daysToSchedule[i];
-      await _scheduleRecurringNotification(
+      await scheduleRecurringNotification(
         notificationId: i,
         scheduledDate: scheduledDate,
         content: content,
@@ -546,14 +640,14 @@ class CoreNotificationService {
       // Store scheduled time for later retrieval
       scheduledTimesMap[i] = scheduledDate;
 
-      if (_config.enableTTS && i == 0) {
+      if (config.enableTTS && i == 0) {
         // Only schedule TTS for the next occurrence
         final announcementDelay = scheduledDate.difference(now);
-        _scheduleUnattendedAnnouncement(content, announcementDelay);
+        scheduleUnattendedAnnouncement(content, announcementDelay);
       }
     }
 
-    await _settingsService.setScheduledTimes(scheduledTimesMap);
+    await setScheduledTimes(scheduledTimesMap);
   }
 
   /// Schedule a one-time notification (no recurrence)
@@ -787,7 +881,7 @@ class CoreNotificationService {
       );
 
       // Skip if the time has already passed today
-      if (dayOffset == 0 && scheduledDateTime.isBefore(startDate)) {
+      if (dayOffset == 0 && !scheduledDateTime.isAfter(startDate)) {
         continue;
       }
 

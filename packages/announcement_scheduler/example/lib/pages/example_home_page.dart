@@ -129,9 +129,6 @@ class ExampleHomePage extends StatelessWidget {
                             Text(
                               'Scheduler initialized: ${controller.isSchedulerInitialized ? "✅" : "❌"}',
                             ),
-                            Text(
-                              'Scheduled announcements: ${controller.scheduledAnnouncementIds.length}',
-                            ),
                           ],
                         ),
                       ),

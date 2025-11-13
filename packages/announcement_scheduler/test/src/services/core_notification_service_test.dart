@@ -1,19 +1,17 @@
 import 'dart:async';
 
-import 'package:announcement_scheduler/src/models/announcement_config.dart';
-import 'package:announcement_scheduler/src/models/announcement_status.dart';
-import 'package:announcement_scheduler/src/models/notification_config.dart';
+import 'package:announcement_scheduler/announcement_scheduler.dart';
 import 'package:announcement_scheduler/src/services/core_notification_service.dart';
-import 'package:announcement_scheduler/src/services/scheduling_settings_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 import 'core_notification_service_test.mocks.dart';
 
-@GenerateMocks([FlutterTts, SchedulingSettingsService])
+@GenerateMocks([FlutterTts])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -305,4 +303,511 @@ void main() {
       verify(mockTts.speak('Third announcement')).called(1);
     });
   });
+
+  group('scheduleRecurringNotifications', () {
+    late MockSettingsService mockSettings;
+    late List<ScheduledNotificationData> scheduledNotifications;
+    late List<UnattendedAnnouncementData> unattendedAnnouncements;
+
+    setUp(() {
+      mockSettings = MockSettingsService();
+      scheduledNotifications = [];
+      unattendedAnnouncements = [];
+    });
+
+    test('throws NotificationSchedulingException when hour is null', () async {
+      mockSettings.hour = null;
+      mockSettings.minute = 30;
+
+      expect(
+        () => CoreNotificationService.scheduleRecurringNotificationsImpl(
+          content: 'Test',
+          recurrencePattern: RecurrencePattern.daily,
+          customDays: [],
+          config: const AnnouncementConfig(
+            notificationConfig: NotificationConfig(),
+          ),
+          getAnnouncementHour: mockSettings.getAnnouncementHour,
+          getAnnouncementMinute: mockSettings.getAnnouncementMinute,
+          setScheduledTimes: mockSettings.setScheduledTimes,
+          getRecurringDates:
+              ({
+                required recurrencePattern,
+                required customDays,
+                required startDate,
+                required maxDays,
+              }) => [],
+          validateRecurringSettings: (pattern, days) async {},
+          scheduleRecurringNotification:
+              ({
+                required notificationId,
+                required scheduledDate,
+                required content,
+                required title,
+              }) async {},
+          scheduleUnattendedAnnouncement: (content, delay) {},
+        ),
+        throwsA(isA<NotificationSchedulingException>()),
+        reason: 'Should throw when announcement hour is not set',
+      );
+    });
+
+    test(
+      'throws NotificationSchedulingException when minute is null',
+      () async {
+        mockSettings.hour = 10;
+        mockSettings.minute = null;
+
+        expect(
+          () => CoreNotificationService.scheduleRecurringNotificationsImpl(
+            content: 'Test',
+            recurrencePattern: RecurrencePattern.daily,
+            customDays: [],
+            config: const AnnouncementConfig(
+              notificationConfig: NotificationConfig(),
+            ),
+            getAnnouncementHour: mockSettings.getAnnouncementHour,
+            getAnnouncementMinute: mockSettings.getAnnouncementMinute,
+            setScheduledTimes: mockSettings.setScheduledTimes,
+            getRecurringDates:
+                ({
+                  required recurrencePattern,
+                  required customDays,
+                  required startDate,
+                  required maxDays,
+                }) => [],
+            validateRecurringSettings: (pattern, days) async {},
+            scheduleRecurringNotification:
+                ({
+                  required notificationId,
+                  required scheduledDate,
+                  required content,
+                  required title,
+                }) async {},
+            scheduleUnattendedAnnouncement: (content, delay) {},
+          ),
+          throwsA(isA<NotificationSchedulingException>()),
+          reason: 'Should throw when announcement minute is not set',
+        );
+      },
+    );
+
+    test('calls validateRecurringSettings with correct parameters', () async {
+      mockSettings.hour = 10;
+      mockSettings.minute = 30;
+      RecurrencePattern? receivedPattern;
+      List<int>? receivedDays;
+
+      await CoreNotificationService.scheduleRecurringNotificationsImpl(
+        content: 'Test',
+        recurrencePattern: RecurrencePattern.custom,
+        customDays: [1, 3, 5],
+        config: const AnnouncementConfig(
+          notificationConfig: NotificationConfig(),
+        ),
+        getAnnouncementHour: mockSettings.getAnnouncementHour,
+        getAnnouncementMinute: mockSettings.getAnnouncementMinute,
+        setScheduledTimes: mockSettings.setScheduledTimes,
+        getRecurringDates:
+            ({
+              required recurrencePattern,
+              required customDays,
+              required startDate,
+              required maxDays,
+            }) => [],
+        validateRecurringSettings: (pattern, days) async {
+          receivedPattern = pattern;
+          receivedDays = days;
+        },
+        scheduleRecurringNotification:
+            ({
+              required notificationId,
+              required scheduledDate,
+              required content,
+              required title,
+            }) async {},
+        scheduleUnattendedAnnouncement: (content, delay) {},
+      );
+
+      expect(
+        receivedPattern,
+        equals(RecurrencePattern.custom),
+        reason: 'Recurrence pattern should be passed to validation',
+      );
+      expect(
+        receivedDays,
+        equals([1, 3, 5]),
+        reason: 'Custom days should be passed to validation',
+      );
+    });
+
+    test('calls getRecurringDates with maxDays of 14', () async {
+      mockSettings.hour = 8;
+      mockSettings.minute = 45;
+      int? receivedMaxDays;
+
+      await CoreNotificationService.scheduleRecurringNotificationsImpl(
+        content: 'Test',
+        recurrencePattern: RecurrencePattern.weekdays,
+        customDays: [],
+        config: const AnnouncementConfig(
+          notificationConfig: NotificationConfig(),
+        ),
+        getAnnouncementHour: mockSettings.getAnnouncementHour,
+        getAnnouncementMinute: mockSettings.getAnnouncementMinute,
+        setScheduledTimes: mockSettings.setScheduledTimes,
+        getRecurringDates:
+            ({
+              required recurrencePattern,
+              required customDays,
+              required startDate,
+              required maxDays,
+            }) {
+              receivedMaxDays = maxDays;
+              return [];
+            },
+        validateRecurringSettings: (pattern, days) async {},
+        scheduleRecurringNotification:
+            ({
+              required notificationId,
+              required scheduledDate,
+              required content,
+              required title,
+            }) async {},
+        scheduleUnattendedAnnouncement: (content, delay) {},
+      );
+
+      expect(
+        receivedMaxDays,
+        equals(14),
+        reason: 'Max days should be 14 (Android limitation)',
+      );
+    });
+
+    test('schedules notifications for each returned date', () async {
+      mockSettings.hour = 10;
+      mockSettings.minute = 0;
+
+      final testDates = [
+        tz.TZDateTime.now(tz.local).add(const Duration(days: 1)),
+        tz.TZDateTime.now(tz.local).add(const Duration(days: 2)),
+        tz.TZDateTime.now(tz.local).add(const Duration(days: 3)),
+      ];
+
+      await CoreNotificationService.scheduleRecurringNotificationsImpl(
+        content: 'Daily reminder',
+        recurrencePattern: RecurrencePattern.daily,
+        customDays: [],
+        config: const AnnouncementConfig(
+          notificationConfig: NotificationConfig(),
+        ),
+        getAnnouncementHour: mockSettings.getAnnouncementHour,
+        getAnnouncementMinute: mockSettings.getAnnouncementMinute,
+        setScheduledTimes: mockSettings.setScheduledTimes,
+        getRecurringDates:
+            ({
+              required recurrencePattern,
+              required customDays,
+              required startDate,
+              required maxDays,
+            }) => testDates,
+        validateRecurringSettings: (pattern, days) async {},
+        scheduleRecurringNotification:
+            ({
+              required notificationId,
+              required scheduledDate,
+              required content,
+              required title,
+            }) async {
+              scheduledNotifications.add(
+                ScheduledNotificationData(
+                  id: notificationId,
+                  date: scheduledDate,
+                  content: content,
+                  title: title,
+                ),
+              );
+            },
+        scheduleUnattendedAnnouncement: (content, delay) {},
+      );
+
+      expect(
+        scheduledNotifications.length,
+        equals(3),
+        reason: 'Should schedule one notification per date',
+      );
+      expect(
+        scheduledNotifications[0].content,
+        equals('Daily reminder'),
+        reason: 'Content should be passed to each notification',
+      );
+      expect(
+        scheduledNotifications[0].title,
+        equals('Recurring Announcement'),
+        reason: 'Title should be "Recurring Announcement"',
+      );
+      expect(
+        scheduledNotifications[0].id,
+        equals(0),
+        reason: 'First notification should have ID 0',
+      );
+      expect(
+        scheduledNotifications[2].id,
+        equals(2),
+        reason: 'Third notification should have ID 2',
+      );
+    });
+
+    test('stores scheduled times for all notifications', () async {
+      mockSettings.hour = 14;
+      mockSettings.minute = 30;
+
+      final testDates = [
+        tz.TZDateTime.now(tz.local).add(const Duration(days: 1)),
+        tz.TZDateTime.now(tz.local).add(const Duration(days: 2)),
+      ];
+
+      await CoreNotificationService.scheduleRecurringNotificationsImpl(
+        content: 'Test',
+        recurrencePattern: RecurrencePattern.daily,
+        customDays: [],
+        config: const AnnouncementConfig(
+          notificationConfig: NotificationConfig(),
+        ),
+        getAnnouncementHour: mockSettings.getAnnouncementHour,
+        getAnnouncementMinute: mockSettings.getAnnouncementMinute,
+        setScheduledTimes: mockSettings.setScheduledTimes,
+        getRecurringDates:
+            ({
+              required recurrencePattern,
+              required customDays,
+              required startDate,
+              required maxDays,
+            }) => testDates,
+        validateRecurringSettings: (pattern, days) async {},
+        scheduleRecurringNotification:
+            ({
+              required notificationId,
+              required scheduledDate,
+              required content,
+              required title,
+            }) async {},
+        scheduleUnattendedAnnouncement: (content, delay) {},
+      );
+
+      expect(
+        mockSettings.storedTimes.length,
+        equals(2),
+        reason: 'Should store scheduled time for each notification',
+      );
+      expect(
+        mockSettings.storedTimes[0],
+        equals(testDates[0]),
+        reason: 'Should store correct time for first notification',
+      );
+      expect(
+        mockSettings.storedTimes[1],
+        equals(testDates[1]),
+        reason: 'Should store correct time for second notification',
+      );
+    });
+
+    test(
+      'schedules unattended announcement for first occurrence when TTS enabled',
+      () async {
+        mockSettings.hour = 9;
+        mockSettings.minute = 0;
+
+        final now = tz.TZDateTime.now(tz.local);
+        final firstDate = now.add(const Duration(hours: 2));
+        final testDates = [firstDate, now.add(const Duration(days: 1))];
+
+        await CoreNotificationService.scheduleRecurringNotificationsImpl(
+          content: 'Morning announcement',
+          recurrencePattern: RecurrencePattern.daily,
+          customDays: [],
+          config: const AnnouncementConfig(
+            enableTTS: true,
+            notificationConfig: NotificationConfig(),
+          ),
+          getAnnouncementHour: mockSettings.getAnnouncementHour,
+          getAnnouncementMinute: mockSettings.getAnnouncementMinute,
+          setScheduledTimes: mockSettings.setScheduledTimes,
+          getRecurringDates:
+              ({
+                required recurrencePattern,
+                required customDays,
+                required startDate,
+                required maxDays,
+              }) => testDates,
+          validateRecurringSettings: (pattern, days) async {},
+          scheduleRecurringNotification:
+              ({
+                required notificationId,
+                required scheduledDate,
+                required content,
+                required title,
+              }) async {},
+          scheduleUnattendedAnnouncement: (content, delay) {
+            unattendedAnnouncements.add(
+              UnattendedAnnouncementData(content: content, delay: delay),
+            );
+          },
+        );
+
+        expect(
+          unattendedAnnouncements.length,
+          equals(1),
+          reason: 'Should schedule TTS only for first occurrence',
+        );
+        expect(
+          unattendedAnnouncements[0].content,
+          equals('Morning announcement'),
+          reason: 'TTS content should match announcement content',
+        );
+      },
+    );
+
+    test(
+      'does not schedule unattended announcement when TTS disabled',
+      () async {
+        mockSettings.hour = 9;
+        mockSettings.minute = 0;
+
+        final now = tz.TZDateTime.now(tz.local);
+        final testDates = [
+          now.add(const Duration(hours: 2)),
+          now.add(const Duration(days: 1)),
+        ];
+
+        await CoreNotificationService.scheduleRecurringNotificationsImpl(
+          content: 'Test',
+          recurrencePattern: RecurrencePattern.daily,
+          customDays: [],
+          config: const AnnouncementConfig(
+            enableTTS: false,
+            notificationConfig: NotificationConfig(),
+          ),
+          getAnnouncementHour: mockSettings.getAnnouncementHour,
+          getAnnouncementMinute: mockSettings.getAnnouncementMinute,
+          setScheduledTimes: mockSettings.setScheduledTimes,
+          getRecurringDates:
+              ({
+                required recurrencePattern,
+                required customDays,
+                required startDate,
+                required maxDays,
+              }) => testDates,
+          validateRecurringSettings: (pattern, days) async {},
+          scheduleRecurringNotification:
+              ({
+                required notificationId,
+                required scheduledDate,
+                required content,
+                required title,
+              }) async {},
+          scheduleUnattendedAnnouncement: (content, delay) {
+            unattendedAnnouncements.add(
+              UnattendedAnnouncementData(content: content, delay: delay),
+            );
+          },
+        );
+
+        expect(
+          unattendedAnnouncements.length,
+          equals(0),
+          reason: 'Should not schedule TTS when disabled',
+        );
+      },
+    );
+
+    test('handles empty recurring dates list', () async {
+      mockSettings.hour = 10;
+      mockSettings.minute = 0;
+
+      await CoreNotificationService.scheduleRecurringNotificationsImpl(
+        content: 'Test',
+        recurrencePattern: RecurrencePattern.custom,
+        customDays: [1],
+        config: const AnnouncementConfig(
+          notificationConfig: NotificationConfig(),
+        ),
+        getAnnouncementHour: mockSettings.getAnnouncementHour,
+        getAnnouncementMinute: mockSettings.getAnnouncementMinute,
+        setScheduledTimes: mockSettings.setScheduledTimes,
+        getRecurringDates:
+            ({
+              required recurrencePattern,
+              required customDays,
+              required startDate,
+              required maxDays,
+            }) => [],
+        validateRecurringSettings: (pattern, days) async {},
+        scheduleRecurringNotification:
+            ({
+              required notificationId,
+              required scheduledDate,
+              required content,
+              required title,
+            }) async {
+              scheduledNotifications.add(
+                ScheduledNotificationData(
+                  id: notificationId,
+                  date: scheduledDate,
+                  content: content,
+                  title: title,
+                ),
+              );
+            },
+        scheduleUnattendedAnnouncement: (content, delay) {},
+      );
+
+      expect(
+        scheduledNotifications.length,
+        equals(0),
+        reason: 'Should not schedule any notifications when no dates returned',
+      );
+      expect(
+        mockSettings.storedTimes.length,
+        equals(0),
+        reason: 'Should not store any times when no dates returned',
+      );
+    });
+  });
+}
+
+/// Mock settings service for testing
+class MockSettingsService {
+  int? hour;
+  int? minute;
+  Map<int, DateTime> storedTimes = {};
+
+  Future<int?> getAnnouncementHour() async => hour;
+  Future<int?> getAnnouncementMinute() async => minute;
+  Future<void> setScheduledTimes(Map<int, DateTime> times) async {
+    storedTimes = Map.from(times);
+  }
+}
+
+/// Helper class to track scheduled notifications
+class ScheduledNotificationData {
+  final int id;
+  final tz.TZDateTime date;
+  final String content;
+  final String title;
+
+  ScheduledNotificationData({
+    required this.id,
+    required this.date,
+    required this.content,
+    required this.title,
+  });
+}
+
+/// Helper class to track unattended announcements
+class UnattendedAnnouncementData {
+  final String content;
+  final Duration delay;
+
+  UnattendedAnnouncementData({required this.content, required this.delay});
 }

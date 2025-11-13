@@ -83,13 +83,16 @@ import 'services/scheduling_settings_service.dart';
 /// - [AnnouncementStatus] for announcement lifecycle states
 class AnnouncementScheduler {
   final AnnouncementConfig _config;
-  final CoreNotificationService _notificationService;
+  final CoreNotificationService? _notificationService;
+  DateTime Function(TimeOfDay time, RecurrencePattern? recurrence, List<int>? customDays, DateTime from) _calculateNextOccurrence;
 
   AnnouncementScheduler._({
     required AnnouncementConfig config,
-    required CoreNotificationService notificationService,
+    CoreNotificationService? notificationService,
+    DateTime Function(TimeOfDay time, RecurrencePattern? recurrence, List<int>? customDays, DateTime from)? calculateNextOccurrence,
   }) : _config = config,
-       _notificationService = notificationService;
+       _notificationService = notificationService,
+       _calculateNextOccurrence = calculateNextOccurrence ?? _calculateNextOccurrenceFn;
 
   /// Initialize the announcement scheduler with the given configuration.
   ///
@@ -108,6 +111,11 @@ class AnnouncementScheduler {
   /// - [config]: Configuration for the scheduler, including TTS settings,
   ///   notification preferences, and validation rules. See [AnnouncementConfig]
   ///   for all available options.
+  ///
+  /// - [notificationService]: Optional notification service for dependency
+  ///   injection. If not provided, a default service will be created and
+  ///   initialized. Use this parameter for testing purposes to inject a mock
+  ///   service.
   ///
   /// ## Returns
   ///
@@ -147,9 +155,7 @@ class AnnouncementScheduler {
   /// - [AnnouncementConfig] for configuration details
   /// - [NotificationConfig] for notification channel settings
   /// - [ValidationConfig] for validation rules
-  static Future<AnnouncementScheduler> initialize({
-    required AnnouncementConfig config,
-  }) async {
+  static Future<AnnouncementScheduler> initialize({required AnnouncementConfig config, CoreNotificationService? notificationService}) async {
     // Initialize timezone data
     tz.initializeTimeZones();
 
@@ -158,29 +164,27 @@ class AnnouncementScheduler {
       try {
         tz.setLocalLocation(tz.getLocation(config.timezoneLocation!));
       } catch (e) {
-        throw NotificationInitializationException(
-          'Failed to set timezone location ${config.timezoneLocation}: $e',
-        );
+        throw NotificationInitializationException('Failed to set timezone location ${config.timezoneLocation}: $e');
       }
     }
 
-    // Initialize storage service
-    final storageService = await HiveStorageService.create();
+    // Use provided notification service or create default
+    final CoreNotificationService service;
+    if (notificationService != null) {
+      service = notificationService;
+    } else {
+      // Initialize storage service
+      final storageService = await HiveStorageService.create();
 
-    // Initialize settings service
-    final settingsService = SchedulingSettingsService(storageService);
+      // Initialize settings service
+      final settingsService = SchedulingSettingsService(storageService);
 
-    // Initialize core notification service
-    final notificationService = CoreNotificationService(
-      settingsService: settingsService,
-      config: config,
-    );
-    await notificationService.initialize();
+      // Initialize core notification service
+      service = CoreNotificationService(settingsService: settingsService, config: config);
+      await service.initialize();
+    }
 
-    return AnnouncementScheduler._(
-      config: config,
-      notificationService: notificationService,
-    );
+    return AnnouncementScheduler._(config: config, notificationService: service);
   }
 
   /// Schedule an announcement with optional recurrence.
@@ -216,8 +220,8 @@ class AnnouncementScheduler {
   ///
   /// ## Returns
   ///
-  /// A [Future] that completes with a unique announcement ID that can be used
-  /// to cancel the announcement later via [cancelAnnouncementById].
+  /// A [Future] that completes when the announcement has been scheduled.
+  /// Use [getScheduledAnnouncements] to view all scheduled announcements.
   ///
   /// ## Throws
   ///
@@ -234,7 +238,7 @@ class AnnouncementScheduler {
   ///
   /// ```dart
   /// // Daily announcement
-  /// final id = await scheduler.scheduleAnnouncement(
+  /// await scheduler.scheduleAnnouncement(
   ///   content: 'Good morning! Time to start your day.',
   ///   announcementTime: TimeOfDay(hour: 7, minute: 0),
   ///   recurrence: RecurrencePattern.daily,
@@ -266,15 +270,18 @@ class AnnouncementScheduler {
   /// See also:
   ///
   /// - [scheduleOneTimeAnnouncement] for scheduling at a specific DateTime
-  /// - [cancelAnnouncementById] to cancel a scheduled announcement
+  /// - [getScheduledAnnouncements] to view all scheduled announcements
+  /// - [cancelScheduledAnnouncements] to cancel all announcements
   /// - [RecurrencePattern] for available recurrence options
-  Future<String> scheduleAnnouncement({
+  Future<void> scheduleAnnouncement({
     required String content,
     required TimeOfDay announcementTime,
     RecurrencePattern? recurrence,
     List<int>? customDays,
     Map<String, dynamic>? metadata,
+    DateTime? currentTime,
   }) async {
+    currentTime ??= DateTime.now();
     // Validate content
     if (content.trim().isEmpty) {
       throw const ValidationException('Announcement content cannot be empty');
@@ -283,39 +290,25 @@ class AnnouncementScheduler {
     // Validate custom days if using custom recurrence
     if (recurrence == RecurrencePattern.custom) {
       if (customDays == null || customDays.isEmpty) {
-        throw const ValidationException(
-          'Custom days must be provided when using custom recurrence pattern',
-        );
+        throw const ValidationException('Custom days must be provided when using custom recurrence pattern');
       }
       if (customDays.any((day) => day < 1 || day > 7)) {
-        throw const ValidationException(
-          'Custom days must be between 1 (Monday) and 7 (Sunday)',
-        );
+        throw const ValidationException('Custom days must be between 1 (Monday) and 7 (Sunday)');
       }
     }
 
-    // Generate unique ID
-    final id = 'announcement_${DateTime.now().millisecondsSinceEpoch}';
-
-    // Calculate next occurrence
-    final now = DateTime.now();
-    final nextOccurrence = _calculateNextOccurrence(
-      announcementTime,
-      recurrence,
-      customDays,
-      now,
-    );
+    // Calculate next occurrence for logging
+    final nextOccurrence = _calculateNextOccurrence(announcementTime, recurrence, customDays, currentTime);
 
     // Schedule with the notification service
-    await _notificationService.scheduleRecurringAnnouncement(
+    await _notificationService!.scheduleRecurringAnnouncement(
       content: content,
       announcementTime: announcementTime,
       recurrence: recurrence,
       customDays: customDays,
     );
 
-    _log('Scheduled announcement: $id at $nextOccurrence');
-    return id;
+    _log('Scheduled announcement at $nextOccurrence');
   }
 
   /// Schedule a one-time announcement at a specific date and time.
@@ -338,8 +331,8 @@ class AnnouncementScheduler {
   ///
   /// ## Returns
   ///
-  /// A [Future] that completes with a unique announcement ID that can be used
-  /// to cancel the announcement later via [cancelAnnouncementById].
+  /// A [Future] that completes when the announcement has been scheduled.
+  /// Use [getScheduledAnnouncements] to view all scheduled announcements.
   ///
   /// ## Throws
   ///
@@ -355,7 +348,7 @@ class AnnouncementScheduler {
   ///
   /// ```dart
   /// // Schedule for 2 hours from now
-  /// final id = await scheduler.scheduleOneTimeAnnouncement(
+  /// await scheduler.scheduleOneTimeAnnouncement(
   ///   content: 'Meeting reminder: Team standup in 5 minutes',
   ///   dateTime: DateTime.now().add(Duration(hours: 2)),
   /// );
@@ -371,12 +364,9 @@ class AnnouncementScheduler {
   /// See also:
   ///
   /// - [scheduleAnnouncement] for recurring or time-based announcements
-  /// - [cancelAnnouncementById] to cancel a scheduled announcement
-  Future<String> scheduleOneTimeAnnouncement({
-    required String content,
-    required DateTime dateTime,
-    Map<String, dynamic>? metadata,
-  }) async {
+  /// - [getScheduledAnnouncements] to view all scheduled announcements
+  /// - [cancelScheduledAnnouncements] to cancel all announcements
+  Future<void> scheduleOneTimeAnnouncement({required String content, required DateTime dateTime, Map<String, dynamic>? metadata}) async {
     // Validate content
     if (content.trim().isEmpty) {
       throw const ValidationException('Announcement content cannot be empty');
@@ -387,17 +377,10 @@ class AnnouncementScheduler {
       throw const ValidationException('Scheduled time must be in the future');
     }
 
-    // Generate unique ID
-    final id = 'announcement_${DateTime.now().millisecondsSinceEpoch}';
-
     // Schedule with the notification service
-    await _notificationService.scheduleOneTimeAnnouncement(
-      content: content,
-      dateTime: dateTime,
-    );
+    await _notificationService!.scheduleOneTimeAnnouncement(content: content, dateTime: dateTime);
 
-    _log('Scheduled one-time announcement: $id at $dateTime');
-    return id;
+    _log('Scheduled one-time announcement at $dateTime');
   }
 
   /// Cancel all scheduled announcements.
@@ -429,7 +412,7 @@ class AnnouncementScheduler {
   /// - [cancelAnnouncementById] to cancel a specific announcement
   /// - [getScheduledAnnouncements] to view currently scheduled announcements
   Future<void> cancelScheduledAnnouncements() async {
-    await _notificationService.cancelAllNotifications();
+    await _notificationService!.cancelAllNotifications();
     _log('Cancelled all scheduled announcements');
   }
 
@@ -463,7 +446,7 @@ class AnnouncementScheduler {
   /// - [cancelScheduledAnnouncements] to cancel all announcements
   /// - [getScheduledAnnouncements] to view currently scheduled announcements
   Future<void> cancelAnnouncementById(String id) async {
-    await _notificationService.cancelAnnouncementById(id);
+    await _notificationService!.cancelAnnouncementById(id);
     _log('Cancelled announcement: $id');
   }
 
@@ -501,7 +484,7 @@ class AnnouncementScheduler {
   /// - [ScheduledAnnouncement] for the announcement data model
   /// - [cancelAnnouncementById] to cancel specific announcements
   Future<List<ScheduledAnnouncement>> getScheduledAnnouncements() async {
-    return await _notificationService.getScheduledAnnouncements();
+    return await _notificationService!.getScheduledAnnouncements();
   }
 
   /// Stream of announcement status updates.
@@ -543,8 +526,7 @@ class AnnouncementScheduler {
   /// See also:
   ///
   /// - [AnnouncementStatus] for status values and their meanings
-  Stream<AnnouncementStatus> get statusStream =>
-      _notificationService.statusStream;
+  Stream<AnnouncementStatus> get statusStream => _notificationService!.statusStream;
 
   /// Dispose resources and clean up.
   ///
@@ -582,24 +564,13 @@ class AnnouncementScheduler {
   /// - [cancelScheduledAnnouncements] to cancel pending announcements
   /// - [initialize] to create a new scheduler instance
   Future<void> dispose() async {
-    await _notificationService.dispose();
+    await _notificationService!.dispose();
   }
 
   /// Calculate the next occurrence based on recurrence pattern
-  DateTime _calculateNextOccurrence(
-    TimeOfDay time,
-    RecurrencePattern? recurrence,
-    List<int>? customDays,
-    DateTime from,
-  ) {
+  static DateTime _calculateNextOccurrenceFn(TimeOfDay time, RecurrencePattern? recurrence, List<int>? customDays, DateTime from) {
     final now = from;
-    final today = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      time.hour,
-      time.minute,
-    );
+    final today = DateTime(now.year, now.month, now.day, time.hour, time.minute);
 
     // For one-time announcements
     if (recurrence == null) {
@@ -612,9 +583,7 @@ class AnnouncementScheduler {
     }
 
     // For recurring announcements, find the next valid day
-    final targetDays = recurrence == RecurrencePattern.custom
-        ? (customDays ?? [])
-        : recurrence.defaultDays;
+    final targetDays = recurrence == RecurrencePattern.custom ? (customDays ?? []) : recurrence.defaultDays;
 
     // Start checking from today
     var candidate = today;
@@ -637,5 +606,12 @@ class AnnouncementScheduler {
     if (_config.enableDebugLogging) {
       debugPrint('[AnnouncementScheduler] $message');
     }
+  }
+
+  /// This setter allows overriding the calculation function for testing
+  /// purposes. In production, the default implementation is used.
+  @visibleForTesting
+  set calculateNextOccurrence(DateTime Function(TimeOfDay time, RecurrencePattern? recurrence, List<int>? customDays, DateTime from) fn) {
+    _calculateNextOccurrence = fn;
   }
 }

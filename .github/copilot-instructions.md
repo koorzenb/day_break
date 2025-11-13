@@ -55,6 +55,35 @@ every code suggestion.**
 - All tests must use `expect` with a `reason` property for comments.
 - Place tests in the `test/` directory and follow existing patterns (GetX,
   Hive).
+- **Prefer Dependency Injection over mocking frameworks for testability:**
+
+  - Use factory methods with private constructors for dependency injection
+  - Make injected dependencies private instance fields
+  - Provide static default implementation functions
+  - Use `initialize()` factory method that accepts optional dependencies
+  - Example pattern:
+
+    ```dart
+    class MyClass {
+      final DateTime Function(...) _myFunction;
+
+      MyClass._({
+        required DateTime Function(...) myFunction,
+      }) : _myFunction = myFunction;
+
+      static DateTime _myFunctionDefault(...) {
+        // Production implementation
+      }
+
+      static MyClass initialize({
+        DateTime Function(...)? myFunction,
+      }) {
+        return MyClass._(
+          myFunction: myFunction ?? _myFunctionDefault,
+        );
+      }
+    }
+    ```
 
 ---
 
