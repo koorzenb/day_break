@@ -18,6 +18,17 @@ import 'scheduling_settings_service.dart';
 ///
 /// This service handles the low-level notification scheduling, TTS configuration,
 /// and announcement delivery without dependencies on specific app frameworks.
+///
+/// ## Android Platform Limitation
+///
+/// **Important**: Android's `PendingNotificationRequest` (from `flutter_local_notifications`)
+/// does not expose the scheduled DateTime for pending notifications. The API only provides:
+/// - Notification ID
+/// - Title, body, payload
+///
+/// **Workaround**: This service persists scheduled times separately using
+/// [SchedulingSettingsService] and reconciles them with platform notifications.
+/// This enables accurate per-day validation and correct scheduled time retrieval.
 class CoreNotificationService {
   static const String _defaultChannelId = 'scheduled_announcements';
   static const String _defaultChannelName = 'Scheduled Announcements';
@@ -179,7 +190,9 @@ class CoreNotificationService {
     RecurrencePattern? recurrence,
     List<int>? customDays,
   }) async {
-    await _validateSchedulingLimits(
+    final existingAnnouncements = await getScheduledAnnouncements();
+
+    await validateSchedulingLimits(
       ScheduledAnnouncement(
         id: 'temp',
         content: content,
@@ -187,6 +200,7 @@ class CoreNotificationService {
         isActive: true,
         recurrence: recurrence,
       ),
+      existingAnnouncements,
     );
 
     try {
@@ -222,30 +236,79 @@ class CoreNotificationService {
     }
   }
 
-  /// Validate scheduling limits
-  Future<void> _validateSchedulingLimits(
+  /// Validate scheduling limits to prevent excessive notifications.
+  ///
+  /// **Platform Note**: Android does not enforce notification scheduling limits
+  /// at the OS level, allowing apps to schedule unlimited notifications. However,
+  /// excessive scheduling can lead to performance degradation, battery drain, and
+  /// poor user experience.
+  ///
+  /// This validation is **highly recommended** to maintain app quality and prevent:
+  /// - Notification fatigue (users disabling notifications or uninstalling)
+  /// - Battery and memory impact from excessive pending notifications
+  /// - System resource exhaustion
+  /// - Degraded notification delivery reliability
+  ///
+  /// **Validation checks**:
+  /// - Total scheduled notifications limit ([ValidationConfig.maxScheduledNotifications])
+  /// - Per-day notification limit ([ValidationConfig.maxNotificationsPerDay])
+  ///
+  /// Throws [ValidationException] if limits would be exceeded.
+  ///
+  /// **Example**:
+  /// ```dart
+  /// // Configure reasonable limits
+  /// final config = AnnouncementConfig(
+  ///   validationConfig: ValidationConfig(
+  ///     maxNotificationsPerDay: 5,
+  ///     maxScheduledNotifications: 30,
+  ///   ),
+  /// );
+  /// ```
+  @visibleForTesting
+  Future<void> validateSchedulingLimits(
     ScheduledAnnouncement announcement,
+    List<ScheduledAnnouncement> existingAnnouncements,
   ) async {
-    final config = _config.validationConfig;
-
     // Check total scheduled notifications limit
-    final pendingNotifications = await _notifications
-        .pendingNotificationRequests();
-    if (pendingNotifications.length >= config.maxScheduledNotifications) {
+    final totalScheduled = existingAnnouncements.length;
+    if (totalScheduled >= _config.validationConfig.maxScheduledNotifications) {
       throw ValidationException(
-        'Cannot schedule more than ${config.maxScheduledNotifications} notifications',
+        'Cannot schedule announcement: maximum scheduled notifications limit '
+        '(${_config.validationConfig.maxScheduledNotifications}) reached. '
+        'Currently have $totalScheduled scheduled notifications.',
       );
     }
 
-    // For recurring announcements, estimate daily load
-    if (announcement.isRecurring) {
-      final dailyOccurrences = announcement.effectiveDays.length;
-      if (dailyOccurrences > config.maxNotificationsPerDay) {
-        throw ValidationException(
-          'Recurring pattern would create $dailyOccurrences daily notifications, '
-          'exceeding limit of ${config.maxNotificationsPerDay}',
-        );
+    // Check per-day limit
+    final announcementDate = DateTime(
+      announcement.scheduledTime.year,
+      announcement.scheduledTime.month,
+      announcement.scheduledTime.day,
+    );
+
+    // Count how many existing announcements are scheduled for the same day
+    int sameDayCount = 0;
+    for (final existing in existingAnnouncements) {
+      final scheduledDate = DateTime(
+        existing.scheduledTime.year,
+        existing.scheduledTime.month,
+        existing.scheduledTime.day,
+      );
+      if (scheduledDate == announcementDate) {
+        sameDayCount++;
       }
+    }
+
+    // Add 1 for the new announcement being scheduled
+    sameDayCount++;
+
+    if (sameDayCount > _config.validationConfig.maxNotificationsPerDay) {
+      throw ValidationException(
+        'Cannot schedule announcement: maximum notifications per day limit '
+        '(${_config.validationConfig.maxNotificationsPerDay}) would be exceeded. '
+        'Would have $sameDayCount notifications for ${announcementDate.year}-${announcementDate.month.toString().padLeft(2, '0')}-${announcementDate.day.toString().padLeft(2, '0')}.',
+      );
     }
   }
 
@@ -283,7 +346,15 @@ class CoreNotificationService {
     }
   }
 
-  /// Get list of scheduled announcements
+  /// Get list of scheduled announcements.
+  ///
+  /// **Platform Limitation**: Android's `PendingNotificationRequest` does not expose
+  /// the scheduled DateTime. This method retrieves scheduled times from persistent
+  /// storage ([SchedulingSettingsService]) where they are saved during scheduling.
+  ///
+  /// Returns a list of [ScheduledAnnouncement] objects with accurate scheduled times.
+  /// If a notification exists in the system but has no stored time (edge case),
+  /// it defaults to the current time.
   Future<List<ScheduledAnnouncement>> getScheduledAnnouncements() async {
     try {
       final pendingNotifications = await _notifications
@@ -362,11 +433,15 @@ class CoreNotificationService {
     });
   }
 
-  /// Clean up completed announcements from storage
+  /// Clean up completed announcements from storage.
   ///
-  /// This method reconciles the stored scheduled times with actual pending
-  /// notifications. Any notification IDs that exist in storage but are no
-  /// longer pending (i.e., have been executed) are removed from storage.
+  /// **Reconciliation Strategy**: Since Android's `PendingNotificationRequest` doesn't
+  /// expose scheduled times, we maintain a separate persistence layer. This method
+  /// reconciles stored scheduled times with actual pending notifications from the system.
+  ///
+  /// Platform notifications are the source of truth. Any notification IDs that exist
+  /// in storage but are no longer pending (i.e., have been executed or canceled)
+  /// are removed from storage to prevent stale data.
   Future<void> _cleanupCompletedAnnouncements() async {
     try {
       final pendingNotifications = await _notifications

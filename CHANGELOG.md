@@ -1,3 +1,9 @@
+## 1.10.5
+  
+### Enhancement
+  
+- Add Serialization to ScheduledAnnouncement
+
 ## 1.10.4
   
 ### Docs

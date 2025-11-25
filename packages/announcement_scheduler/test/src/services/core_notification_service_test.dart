@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:announcement_scheduler/announcement_scheduler.dart';
 import 'package:announcement_scheduler/src/services/core_notification_service.dart';
+import 'package:announcement_scheduler/src/services/scheduling_settings_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -11,7 +12,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import 'core_notification_service_test.mocks.dart';
 
-@GenerateMocks([FlutterTts])
+@GenerateMocks([FlutterTts, SchedulingSettingsService])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -772,6 +773,261 @@ void main() {
         equals(0),
         reason: 'Should not store any times when no dates returned',
       );
+    });
+  });
+
+  group('validateSchedulingLimits', () {
+    late CoreNotificationService service;
+    late MockSchedulingSettingsService mockSettingsService;
+
+    setUp(() {
+      mockSettingsService = MockSchedulingSettingsService();
+    });
+
+    group('Valid scheduling within limits', () {
+      test('should pass when scheduling first announcement', () async {
+        final config = AnnouncementConfig(
+          notificationConfig: const NotificationConfig(),
+          validationConfig: const ValidationConfig(
+            maxNotificationsPerDay: 10,
+            maxScheduledNotifications: 50,
+          ),
+        );
+        service = CoreNotificationService(
+          settingsService: mockSettingsService,
+          config: config,
+        );
+
+        final announcement = ScheduledAnnouncement(
+          id: '1',
+          content: 'Morning reminder',
+          scheduledTime: DateTime.now().add(const Duration(hours: 1)),
+          isActive: true,
+          recurrence: RecurrencePattern.daily,
+        );
+
+        final existingAnnouncements = <ScheduledAnnouncement>[];
+
+        await service.validateSchedulingLimits(
+          announcement,
+          existingAnnouncements,
+        );
+
+        expect(
+          true,
+          isTrue,
+          reason:
+              'Should pass when no existing notifications and adding first announcement',
+        );
+      });
+
+      test('should pass when within daily limit', () async {
+        final config = AnnouncementConfig(
+          notificationConfig: const NotificationConfig(),
+          validationConfig: const ValidationConfig(
+            maxNotificationsPerDay: 5,
+            maxScheduledNotifications: 50,
+          ),
+        );
+        service = CoreNotificationService(
+          settingsService: mockSettingsService,
+          config: config,
+        );
+
+        final announcement = ScheduledAnnouncement(
+          id: '2',
+          content: 'Afternoon reminder',
+          scheduledTime: DateTime(2025, 11, 20, 14, 0),
+          isActive: true,
+          recurrence: RecurrencePattern.daily,
+        );
+
+        // 4 existing announcements on the same day + 1 on a different day
+        final sameDay = DateTime(2025, 11, 20, 9, 0);
+        final existingAnnouncements = [
+          ScheduledAnnouncement(
+            id: '0',
+            content: 'Existing 0',
+            scheduledTime: sameDay,
+            isActive: true,
+          ),
+          ScheduledAnnouncement(
+            id: '1',
+            content: 'Existing 1',
+            scheduledTime: sameDay.add(const Duration(hours: 1)),
+            isActive: true,
+          ),
+          ScheduledAnnouncement(
+            id: '2',
+            content: 'Existing 2',
+            scheduledTime: sameDay.add(const Duration(hours: 2)),
+            isActive: true,
+          ),
+          ScheduledAnnouncement(
+            id: '3',
+            content: 'Existing 3',
+            scheduledTime: sameDay.add(const Duration(hours: 3)),
+            isActive: true,
+          ),
+          ScheduledAnnouncement(
+            id: '4',
+            content: 'Existing 4',
+            scheduledTime: sameDay.add(const Duration(days: 1)),
+            isActive: true,
+          ),
+        ];
+
+        await service.validateSchedulingLimits(
+          announcement,
+          existingAnnouncements,
+        );
+
+        expect(
+          true,
+          isTrue,
+          reason:
+              'Should pass when 4 existing (current day) + 1 (next day) + 1 new (current day)= 5 total (equal to daily limit of 5 )',
+        );
+      });
+
+      test('should pass when within total scheduled limit', () async {
+        final config = AnnouncementConfig(
+          notificationConfig: const NotificationConfig(),
+          validationConfig: const ValidationConfig(
+            maxNotificationsPerDay: 10,
+            maxScheduledNotifications: 50,
+          ),
+        );
+        service = CoreNotificationService(
+          settingsService: mockSettingsService,
+          config: config,
+        );
+
+        final announcement = ScheduledAnnouncement(
+          id: '3',
+          content: 'Weekly reminder',
+          scheduledTime: DateTime.now().add(const Duration(days: 7)),
+          isActive: true,
+          recurrence: RecurrencePattern.weekdays,
+        );
+
+        // 49 existing announcements across various days
+        final existingAnnouncements = List.generate(
+          49,
+          (i) => ScheduledAnnouncement(
+            id: i.toString(),
+            content: 'Announcement $i',
+            scheduledTime: DateTime.now().add(Duration(days: i)),
+            isActive: true,
+          ),
+        );
+
+        await service.validateSchedulingLimits(
+          announcement,
+          existingAnnouncements,
+        );
+
+        expect(
+          true,
+          isTrue,
+          reason:
+              'Should pass when 49 existing + 1 new = 50 total (equal to limit of 50)',
+        );
+      });
+    });
+
+    group('Exceeding daily limit', () {
+      test('should throw when exceeding maxNotificationsPerDay', () async {
+        final config = AnnouncementConfig(
+          notificationConfig: const NotificationConfig(),
+          validationConfig: const ValidationConfig(
+            maxNotificationsPerDay: 3,
+            maxScheduledNotifications: 50,
+          ),
+        );
+        service = CoreNotificationService(
+          settingsService: mockSettingsService,
+          config: config,
+        );
+
+        final announcement = ScheduledAnnouncement(
+          id: '4',
+          content: 'One too many',
+          scheduledTime: DateTime(2025, 11, 20, 16, 0),
+          isActive: true,
+          recurrence: RecurrencePattern.daily,
+        );
+
+        // 3 announcements already scheduled for the same day
+        final sameDay = DateTime(2025, 11, 20, 9, 0);
+        final existingAnnouncements = [
+          ScheduledAnnouncement(
+            id: '0',
+            content: 'Existing 0',
+            scheduledTime: sameDay,
+            isActive: true,
+          ),
+          ScheduledAnnouncement(
+            id: '1',
+            content: 'Existing 1',
+            scheduledTime: sameDay.add(const Duration(hours: 2)),
+            isActive: true,
+          ),
+          ScheduledAnnouncement(
+            id: '2',
+            content: 'Existing 2',
+            scheduledTime: sameDay.add(const Duration(hours: 4)),
+            isActive: true,
+          ),
+        ];
+
+        await expectLater(
+          service.validateSchedulingLimits(announcement, existingAnnouncements),
+          throwsA(isA<ValidationException>()),
+          reason: 'Should throw when 3 existing + 1 new = 4 exceeds limit of 3',
+        );
+      });
+    });
+
+    group('Exceeding total limit', () {
+      test('should throw when exceeding maxScheduledNotifications', () async {
+        final config = AnnouncementConfig(
+          notificationConfig: const NotificationConfig(),
+          validationConfig: const ValidationConfig(
+            maxNotificationsPerDay: 10,
+            maxScheduledNotifications: 50,
+          ),
+        );
+        service = CoreNotificationService(
+          settingsService: mockSettingsService,
+          config: config,
+        );
+
+        final announcement = ScheduledAnnouncement(
+          id: '5',
+          content: 'Too many total',
+          scheduledTime: DateTime.now().add(const Duration(days: 30)),
+          isActive: true,
+          recurrence: RecurrencePattern.daily,
+        );
+
+        // 50 announcements already scheduled
+        final existingAnnouncements = List.generate(
+          50,
+          (i) => ScheduledAnnouncement(
+            id: i.toString(),
+            content: 'Announcement $i',
+            scheduledTime: DateTime.now().add(Duration(days: i)),
+            isActive: true,
+          ),
+        );
+
+        await expectLater(
+          service.validateSchedulingLimits(announcement, existingAnnouncements),
+          throwsA(isA<ValidationException>()),
+          reason: 'Should throw when 50 existing + new exceeds limit of 50',
+        );
+      });
     });
   });
 }
