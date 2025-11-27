@@ -148,13 +148,13 @@ List<ScheduledAnnouncement> scheduledAnnouncements = [
 
 **Note**: Since the package is unpublished, we can safely remove old methods without deprecation.
 
-- [ ] **Task 2.1**: Add `getScheduledAnnouncements()` method
+- [x] **Task 2.1**: Add `getScheduledAnnouncements()` method
   - Retrieve stored list from `_storage.get<List<dynamic>>('scheduledAnnouncements')`
   - Deserialize each JSON object to `ScheduledAnnouncement`
   - Return empty list if no data exists
   - Handle deserialization errors gracefully
   
-- [ ] **Task 2.2**: Add `setScheduledAnnouncements()` method
+- [x] **Task 2.2**: Add `setScheduledAnnouncements()` method
   - Accept `List<ScheduledAnnouncement>` parameter
   - Serialize each announcement to JSON
   - Store as `List<Map<String, dynamic>>` in storage

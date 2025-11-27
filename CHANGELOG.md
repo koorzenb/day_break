@@ -1,3 +1,9 @@
+## 1.10.6
+  
+### Refactor
+  
+- Added new get and set scheduled Announcement methods
+
 ## 1.10.5
   
 ### Enhancement

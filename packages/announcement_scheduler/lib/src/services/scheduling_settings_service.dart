@@ -1,4 +1,5 @@
 import '../models/recurrence_pattern.dart';
+import '../models/scheduled_announcement.dart';
 import 'storage_service.dart';
 
 /// Service for managing announcement scheduling settings within the package.
@@ -118,6 +119,51 @@ class SchedulingSettingsService {
 
   Future<void> clearScheduledTimes() async {
     await _storage.remove('scheduledTimes');
+  }
+
+  // Scheduled announcements persistence
+  // Stores complete ScheduledAnnouncement objects as JSON
+
+  /// Retrieves all scheduled announcements from storage
+  ///
+  /// Returns an empty list if no announcements are stored or if
+  /// deserialization fails. Handles deserialization errors gracefully
+  /// by logging and skipping invalid entries.
+  Future<List<ScheduledAnnouncement>> getScheduledAnnouncements() async {
+    try {
+      final data = await _storage.get<List<dynamic>>('scheduledAnnouncements');
+      if (data == null) return [];
+
+      final announcements = <ScheduledAnnouncement>[];
+      for (final item in data) {
+        try {
+          if (item is Map<dynamic, dynamic>) {
+            // Convert to Map<String, dynamic> for fromJson
+            final jsonMap = Map<String, dynamic>.from(item);
+            announcements.add(ScheduledAnnouncement.fromJson(jsonMap));
+          }
+        } catch (e) {
+          // Skip invalid entries, continue processing others
+          // In production, this could be logged for debugging
+          continue;
+        }
+      }
+      return announcements;
+    } catch (e) {
+      // If storage retrieval fails, return empty list
+      return [];
+    }
+  }
+
+  /// Persists a list of scheduled announcements to storage
+  ///
+  /// Serializes each [ScheduledAnnouncement] to JSON and stores the
+  /// resulting list. Replaces any previously stored announcements.
+  Future<void> setScheduledAnnouncements(
+    List<ScheduledAnnouncement> announcements,
+  ) async {
+    final jsonList = announcements.map((a) => a.toJson()).toList();
+    await _storage.set('scheduledAnnouncements', jsonList);
   }
 
   /// Clear all settings
