@@ -1,3 +1,9 @@
+## 1.7.0
+  
+### Other
+  
+- Add agent instructions for code review and testing, enhance copilot guidance, and establish project configuration
+
 ## 1.6.6
   
 ### Chore

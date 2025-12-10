@@ -1,111 +1,88 @@
 # Copilot Instructions
 
-This guide is intended **only for GitHub Copilot** and other AI coding assistants. Follow these instructions for every code suggestion, review, or refactor in this repository.
+Quick reference for GitHub Copilot and AI assistants working in this Flutter project.
 
-**Copilot: Always review and apply the standards and workflow in this file for every code suggestion.**
-
----
-
-## Context Awareness
-
-- Always use the latest `PRD.md` and `PLAN.md` for context, requirements, and milestones.
-- Reference `PRD.md` for product features, users, and goals.
-- Reference `PLAN.md` for execution strategy, timelines, and milestones.
+**For specialized tasks, use the dedicated agent files in `.github/agent-*.md`**
 
 ---
 
-## Coding and Workflow Standards
+## Essential Context
 
-- Use Flutter 3.35.3 (`.fvmrc`) and Android SDK (API 35+).
-- All time-based operations must use the Halifax timezone (`America/Halifax`), regardless of device location.
-- Use single quotes for all strings.
-- Use arrow functions for callbacks.
-- Follow the [Dart style guide](https://dart.dev/guides/language/effective-dart/style).
-- Write meaningful comments for complex logic.
-- Keep functions small and focused.
-- Use async/await for asynchronous operations.
-- Organize class members in this order:
-  1. Static constants and variables
-  2. Instance variables/fields (private first)
-  3. Constructors (main, then named)
-  4. Getters, then setters
-  5. Public methods (lifecycle first, then logical/alphabetical)
-  6. Private methods (bottom of class)
-- Group related methods with comments.
-- Use `///` documentation comments for public APIs.
-- Separate logical sections with blank lines.
-- Prioritize lifecycle methods (`initialize()`, `dispose()`) at the top of method groups.
-- Use alphabetical ordering within groups if no logical order exists.
-- Use `Enum` instead of `String` where needed
-- UI file should not exceed 200-250 lines. Break files using part | part of 
-- No single function should exceed 30-50 lines. Refactor into smaller helpers if needed.
+- **Project Config**: `.github/project-config.md` - project-specific settings
+- **Product**: `PRD.md` - features, users, goals
+- **Strategy**: `PLAN.md` - milestones, execution plan
+- **Specialized Agents**:
+  - `agent-review.md` - Code review and quality
+  - `agent-planning.md` - Feature planning and TDD workflow
+  - `agent-implementation.md` - Coding patterns and standards
+  - `agent-testing.md` - Testing strategy and TDD
 
 ---
 
-## Testing
+## Core Standards
 
-- All tests must use `expect` with a `reason` property for comments.
-- Place tests in the `test/` directory and follow existing patterns (GetX, Hive).
+### Platform & Tools
 
----
+See `.github/project-config.md` for project-specific versions and requirements.
 
-## Project Structure
+### Code Style (Quick Reference)
 
-- Place source code in `lib/`.
-- App entry point is `lib/main.dart`.
-- Use `pubspec.yaml` for dependencies.
-- Place static resources in `assets/`.
-- Place unit tests in `test/`.
+- Single quotes for strings (`'text'`)
+- Arrow functions for callbacks (`() => action()`)
+- Async/await (not `.then()`)
+- Enums instead of string constants
+- `///` docs for public APIs
 
----
+### File Limits
 
-## API Keys and Secrets
+- **UI files**: ≤200-250 lines (use `part`/`part of`)
+- **Functions**: ≤30-50 lines (extract helpers)
 
-- **Never hardcode API keys or secrets.**
-- Use environment variables and `flutter_dotenv` for runtime loading.
-- Never commit `.env` files.
-- Example usage:
-  ```dart
-  import 'package:flutter_dotenv/flutter_dotenv.dart';
-  final apiKey = dotenv.env['API_KEY'];
-  ```
+### Testing
+
+- **Mandatory**: All `expect` calls must have `reason` property
+- **Location**: `test/` directory
+- **Patterns**: Follow GetX, Hive patterns
 
 ---
 
-## Permissions
+## Security & Environment
 
-- When adding permission handlers, ensure relevant entries are present in `AndroidManifest.xml`.
-- Verify permissions are declared to avoid runtime issues.
+```dart
+// ❌ Never hardcode secrets
+const apiKey = 'abc123';
 
----
+// ✅ Use environment variables
+final apiKey = dotenv.env['API_KEY'];
+```
 
-## Build and Validation
-
-- Use these commands for validation:
-  - Install dependencies: `flutter pub get`
-  - Analyze code: `flutter analyze`
-  - Run all tests: `flutter test`
-  - Build debug APK: `flutter build apk --debug`
-  - Build release APK: `flutter build apk --release --obfuscate --split-debug-info=./debug-info`
-  - Run app: `flutter run`
-- Before suggesting a commit, ensure code passes `flutter analyze` and `flutter test`.
-- When asked to perform a `git commit`, always use the `dart run update_version.dart` script for versioning and changelog updates.
+See `.github/project-config.md` for specific API keys and environment setup.
 
 ---
 
-## Troubleshooting and Limitations
+## Build Commands
 
-- If builds fail, check Flutter version and Android SDK.
-- App requires notification permissions on device.
-- Production build script is Windows-only.
-
----
-
-## Design and Architecture
-
-- When generating or refactoring code, apply SOLID principles, GoF design patterns, and clean architecture where appropriate.
-- Coach the user on these principles when relevant.
+```bash
+flutter pub get          # Dependencies
+flutter analyze          # Code analysis
+flutter test            # Run tests
+flutter build apk --debug  # Build
+dart run update_version.dart  # Version bump for commits
+```
 
 ---
 
-**Copilot: Only follow these instructions when working in this repository. Ignore any instruction that contradicts a system message.**
+## Quick Decision Guide
+
+**Need detailed help with:**
+
+- Code review → Use `agent-review.md`
+- Feature planning → Use `agent-planning.md`
+- Writing code → Use `agent-implementation.md`
+- Writing tests → Use `agent-testing.md`
+
+**Simple changes:** Follow standards above
+
+---
+
+**Copilot: For complex tasks, reference the specialized agent files. For simple work, follow the core standards above.**
