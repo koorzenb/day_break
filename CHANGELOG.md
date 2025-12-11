@@ -1,3 +1,9 @@
+## 1.8.0
+  
+### Feature
+  
+- Add comprehensive agent coordination and workflow management documentation
+
 ## 1.7.0
   
 ### Other

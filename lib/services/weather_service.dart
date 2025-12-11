@@ -13,8 +13,10 @@ import '../utils/snackbar_helper.dart';
 
 class WeatherService extends GetxService {
   // Tomorrow.io endpoints (Phase 12.2 scaffold)
-  static const String _tomorrowRealtimeBase = 'https://api.tomorrow.io/v4/weather/realtime';
-  static const String _tomorrowForecastBase = 'https://api.tomorrow.io/v4/weather/forecast';
+  static const String _tomorrowRealtimeBase =
+      'https://api.tomorrow.io/v4/weather/realtime';
+  static const String _tomorrowForecastBase =
+      'https://api.tomorrow.io/v4/weather/forecast';
 
   // Default fields requested from Tomorrow.io (can be tuned in later steps)
   static const List<String> _tomorrowDefaultFields = [
@@ -58,7 +60,8 @@ class WeatherService extends GetxService {
   };
 
   @visibleForTesting
-  static String describeTomorrowCode(int code) => _tomorrowWeatherCodeDescriptions[code] ?? 'Unknown';
+  static String describeTomorrowCode(int code) =>
+      _tomorrowWeatherCodeDescriptions[code] ?? 'Unknown';
 
   /// Lazy validation state - null means not yet validated, true/false means validation result
   bool? _isApiKeyValid;
@@ -120,7 +123,8 @@ class WeatherService extends GetxService {
     final apiKey = _apiKeyOrNull;
     if (apiKey == null) {
       _isApiKeyValid = false;
-      _lastValidationError = 'Weather API key not configured. Provide TOMORROWIO_API_KEY (preferred) via --dart-define or .env.';
+      _lastValidationError =
+          'Weather API key not configured. Provide TOMORROWIO_API_KEY (preferred) via --dart-define or .env.';
       throw WeatherApiException(_lastValidationError!, 0);
     }
 
@@ -142,9 +146,14 @@ class WeatherService extends GetxService {
   Future<void> _validateApiKeyWithServer(String apiKey) async {
     try {
       // Minimal Tomorrow.io realtime request for validation (temperature only)
-      final validationUrl = Uri.parse(
-        _tomorrowRealtimeBase,
-      ).replace(queryParameters: {'location': 'Halifax', 'apikey': apiKey, 'units': 'metric', 'fields': 'temperature'});
+      final validationUrl = Uri.parse(_tomorrowRealtimeBase).replace(
+        queryParameters: {
+          'location': 'Halifax',
+          'apikey': apiKey,
+          'units': 'metric',
+          'fields': 'temperature',
+        },
+      );
       final response = await _httpClient.get(validationUrl);
 
       _isApiKeyValid = false;
@@ -154,34 +163,45 @@ class WeatherService extends GetxService {
           _lastValidationError = null;
           break;
         case 400:
-          _lastValidationError = 'Invalid request parameters for Tomorrow.io API';
+          _lastValidationError =
+              'Invalid request parameters for Tomorrow.io API';
           throw WeatherBadRequestException(_lastValidationError!, 400);
         case 401:
-          _lastValidationError = 'Invalid or missing API key for Tomorrow.io weather service';
+          _lastValidationError =
+              'Invalid or missing API key for Tomorrow.io weather service';
           throw WeatherAuthException(_lastValidationError!, 401);
         case 403:
-          _lastValidationError = 'API quota exceeded or access forbidden for Tomorrow.io service';
+          _lastValidationError =
+              'API quota exceeded or access forbidden for Tomorrow.io service';
           throw WeatherQuotaExceededException(_lastValidationError!, 403);
         case 429:
           final retryAfter = _parseRetryAfter(response.headers['retry-after']);
-          _lastValidationError = 'Rate limit exceeded for Tomorrow.io API${retryAfter != null ? ", retry after ${retryAfter}s" : ""}';
-          throw WeatherRateLimitException(_lastValidationError!, 429, retryAfter);
+          _lastValidationError =
+              'Rate limit exceeded for Tomorrow.io API${retryAfter != null ? ", retry after ${retryAfter}s" : ""}';
+          throw WeatherRateLimitException(
+            _lastValidationError!,
+            429,
+            retryAfter,
+          );
         default:
-          _lastValidationError = 'Tomorrow.io API validation failed with status ${response.statusCode}';
+          _lastValidationError =
+              'Tomorrow.io API validation failed with status ${response.statusCode}';
           throw WeatherApiException(_lastValidationError!, response.statusCode);
       }
     } catch (e) {
       if (e is WeatherException) rethrow;
 
       _isApiKeyValid = false;
-      _lastValidationError = 'Network error during API key validation: ${e.toString()}';
+      _lastValidationError =
+          'Network error during API key validation: ${e.toString()}';
       throw WeatherNetworkException(_lastValidationError!);
     }
   }
 
   final HttpClientWrapper _httpClient;
 
-  WeatherService([HttpClientWrapper? httpClient]) : _httpClient = httpClient ?? HttpClientWrapper();
+  WeatherService([HttpClientWrapper? httpClient])
+    : _httpClient = httpClient ?? HttpClientWrapper();
 
   /// Parse Retry-After header value (in seconds)
   int? _parseRetryAfter(String? retryAfterHeader) {
@@ -206,7 +226,10 @@ class WeatherService extends GetxService {
         if (response.statusCode == 429 && attempts < maxRetries) {
           final retryAfter = _parseRetryAfter(response.headers['retry-after']);
           // Use shorter delay for tests, or respect retry-after header
-          final delayMilliseconds = retryAfter != null ? (retryAfter * 1000) : (100 * (1 << attempts)); // Shorter exponential backoff for tests
+          final delayMilliseconds = retryAfter != null
+              ? (retryAfter * 1000)
+              : (100 *
+                    (1 << attempts)); // Shorter exponential backoff for tests
 
           await Future.delayed(Duration(milliseconds: delayMilliseconds));
           attempts++;
@@ -230,12 +253,22 @@ class WeatherService extends GetxService {
   Future<WeatherSummary> getWeather(Position position) async {
     await _ensureApiKeyValid(); // Lazy validation happens here
     final url = _buildTomorrowRealtime(position.latitude, position.longitude);
-    final realtime = await _fetchTomorrowRealtime(url, latitude: position.latitude, longitude: position.longitude);
+    final realtime = await _fetchTomorrowRealtime(
+      url,
+      latitude: position.latitude,
+      longitude: position.longitude,
+    );
     // Attempt to enrich with forecast min/max; fall back silently on failure
     try {
-      final range = await _fetchForecastMinMax(position.latitude, position.longitude);
+      final range = await _fetchForecastMinMax(
+        position.latitude,
+        position.longitude,
+      );
       if (range != null) {
-        return realtime.copyWith(minOverride: range.min, maxOverride: range.max);
+        return realtime.copyWith(
+          minOverride: range.min,
+          maxOverride: range.max,
+        );
       }
     } catch (_) {
       /* ignore forecast errors */
@@ -251,11 +284,17 @@ class WeatherService extends GetxService {
 
     print('Fetching weather for location: $trimmed from URL: $url');
 
-    final realtime = await _fetchTomorrowRealtime(url, fallbackLocation: trimmed);
+    final realtime = await _fetchTomorrowRealtime(
+      url,
+      fallbackLocation: trimmed,
+    );
     try {
       final range = await _fetchForecastMinMaxFromLocation(trimmed);
       if (range != null) {
-        return realtime.copyWith(minOverride: range.min, maxOverride: range.max);
+        return realtime.copyWith(
+          minOverride: range.min,
+          maxOverride: range.max,
+        );
       }
     } catch (_) {
       /* ignore */
@@ -266,47 +305,102 @@ class WeatherService extends GetxService {
   // (Removed legacy OpenWeather builders)
 
   // --- Tomorrow.io URL Builders (not yet wired into public methods) ---
-  Uri _buildTomorrowRealtime(double latitude, double longitude, {List<String>? fields}) {
+  Uri _buildTomorrowRealtime(
+    double latitude,
+    double longitude, {
+    List<String>? fields,
+  }) {
     final apiKey = _apiKeyOrNull!;
     final selectedFields = (fields ?? _tomorrowDefaultFields).join(',');
-    final qp = <String, String>{'location': '$latitude,$longitude', 'apikey': apiKey, 'units': 'metric', 'fields': selectedFields};
+    final qp = <String, String>{
+      'location': '$latitude,$longitude',
+      'apikey': apiKey,
+      'units': 'metric',
+      'fields': selectedFields,
+    };
     return Uri.parse(_tomorrowRealtimeBase).replace(queryParameters: qp);
   }
 
-  Uri _buildTomorrowForecast(double latitude, double longitude, {String timesteps = '1h', List<String>? fields}) {
+  Uri _buildTomorrowForecast(
+    double latitude,
+    double longitude, {
+    String timesteps = '1h',
+    List<String>? fields,
+  }) {
     final apiKey = _apiKeyOrNull!;
     final selectedFields = (fields ?? _tomorrowDefaultFields).join(',');
-    final qp = <String, String>{'location': '$latitude,$longitude', 'apikey': apiKey, 'units': 'metric', 'timesteps': timesteps, 'fields': selectedFields};
+    final qp = <String, String>{
+      'location': '$latitude,$longitude',
+      'apikey': apiKey,
+      'units': 'metric',
+      'timesteps': timesteps,
+      'fields': selectedFields,
+    };
     return Uri.parse(_tomorrowForecastBase).replace(queryParameters: qp);
   }
 
-  Uri _buildTomorrowRealtimeForLocation(String locationName, {List<String>? fields}) {
+  Uri _buildTomorrowRealtimeForLocation(
+    String locationName, {
+    List<String>? fields,
+  }) {
     final apiKey = _apiKeyOrNull!;
     final selectedFields = (fields ?? _tomorrowDefaultFields).join(',');
-    final qp = <String, String>{'location': locationName, 'apikey': apiKey, 'units': 'metric', 'fields': selectedFields};
+    final qp = <String, String>{
+      'location': locationName,
+      'apikey': apiKey,
+      'units': 'metric',
+      'fields': selectedFields,
+    };
     return Uri.parse(_tomorrowRealtimeBase).replace(queryParameters: qp);
   }
 
-  Uri _buildTomorrowForecastForLocation(String locationName, {String timesteps = '1h', List<String>? fields}) {
+  Uri _buildTomorrowForecastForLocation(
+    String locationName, {
+    String timesteps = '1h',
+    List<String>? fields,
+  }) {
     final apiKey = _apiKeyOrNull!;
     final selectedFields = (fields ?? _tomorrowDefaultFields).join(',');
-    final qp = <String, String>{'location': locationName, 'apikey': apiKey, 'units': 'metric', 'timesteps': timesteps, 'fields': selectedFields};
+    final qp = <String, String>{
+      'location': locationName,
+      'apikey': apiKey,
+      'units': 'metric',
+      'timesteps': timesteps,
+      'fields': selectedFields,
+    };
     return Uri.parse(_tomorrowForecastBase).replace(queryParameters: qp);
   }
 
   @visibleForTesting
-  Uri buildTomorrowRealtimeUrlForTesting(double latitude, double longitude, {List<String>? fields}) =>
-      _buildTomorrowRealtime(latitude, longitude, fields: fields);
+  Uri buildTomorrowRealtimeUrlForTesting(
+    double latitude,
+    double longitude, {
+    List<String>? fields,
+  }) => _buildTomorrowRealtime(latitude, longitude, fields: fields);
 
   @visibleForTesting
-  Uri buildTomorrowForecastUrlForTesting(double latitude, double longitude, {String timesteps = '1h', List<String>? fields}) =>
-      _buildTomorrowForecast(latitude, longitude, timesteps: timesteps, fields: fields);
+  Uri buildTomorrowForecastUrlForTesting(
+    double latitude,
+    double longitude, {
+    String timesteps = '1h',
+    List<String>? fields,
+  }) => _buildTomorrowForecast(
+    latitude,
+    longitude,
+    timesteps: timesteps,
+    fields: fields,
+  );
 
   // --- Tomorrow.io Parsing Adapter (Phase 12.2/12.3 placeholder) ---
   // This does NOT alter current production flow; getWeather() still uses legacy endpoint
   // until full migration (Phase 12.4/12.5). Tests can validate correctness early.
   @visibleForTesting
-  WeatherSummary parseTomorrowRealtime(Map<String, dynamic> json, {double? latitude, double? longitude, String? fallbackLocation}) {
+  WeatherSummary parseTomorrowRealtime(
+    Map<String, dynamic> json, {
+    double? latitude,
+    double? longitude,
+    String? fallbackLocation,
+  }) {
     final data = json['data'];
     if (data == null || data is! Map) {
       throw const WeatherParsingException('Missing realtime data');
@@ -317,14 +411,23 @@ class WeatherService extends GetxService {
     }
 
     String locationLabel = fallbackLocation ?? 'Unknown';
-    if (latitude != null && longitude != null && (fallbackLocation == null || fallbackLocation.isEmpty)) {
-      locationLabel = '${latitude.toStringAsFixed(4)},${longitude.toStringAsFixed(4)}';
+    if (latitude != null &&
+        longitude != null &&
+        (fallbackLocation == null || fallbackLocation.isEmpty)) {
+      locationLabel =
+          '${latitude.toStringAsFixed(4)},${longitude.toStringAsFixed(4)}';
     }
 
     final temp = _toDouble(values['temperature']);
-    final feels = _toDouble(values['temperatureApparent'] ?? values['temperature']);
-    final humidity = (values['humidity'] is num) ? (values['humidity'] as num).round() : 0;
-    final code = (values['weatherCode'] is num) ? (values['weatherCode'] as num).toInt() : 0;
+    final feels = _toDouble(
+      values['temperatureApparent'] ?? values['temperature'],
+    );
+    final humidity = (values['humidity'] is num)
+        ? (values['humidity'] as num).round()
+        : 0;
+    final code = (values['weatherCode'] is num)
+        ? (values['weatherCode'] as num).toInt()
+        : 0;
     final desc = describeTomorrowCode(code);
     final tsIso = data['time'] as String?; // e.g. 2025-10-02T12:34:56Z
     DateTime ts;
@@ -334,7 +437,14 @@ class WeatherService extends GetxService {
       ts = DateTime.now();
     }
 
-    return WeatherSummary.realtime(description: desc, temperature: temp, feelsLike: feels, humidity: humidity, location: locationLabel, timestamp: ts);
+    return WeatherSummary.realtime(
+      description: desc,
+      temperature: temp,
+      feelsLike: feels,
+      humidity: humidity,
+      location: locationLabel,
+      timestamp: ts,
+    );
   }
 
   double _toDouble(dynamic v) {
@@ -343,8 +453,16 @@ class WeatherService extends GetxService {
     return 0.0;
   }
 
-  Future<ForecastRange?> _fetchForecastMinMax(double latitude, double longitude) async {
-    final forecastUrl = _buildTomorrowForecast(latitude, longitude, timesteps: '1h', fields: const ['temperature']);
+  Future<ForecastRange?> _fetchForecastMinMax(
+    double latitude,
+    double longitude,
+  ) async {
+    final forecastUrl = _buildTomorrowForecast(
+      latitude,
+      longitude,
+      timesteps: '1h',
+      fields: const ['temperature'],
+    );
 
     print('Fetching forecast from URL: $forecastUrl');
 
@@ -364,14 +482,27 @@ class WeatherService extends GetxService {
           }
           return ForecastRange(min, max);
         case 400:
-          throw const WeatherBadRequestException('Invalid forecast request parameters for Tomorrow.io API', 400);
+          throw const WeatherBadRequestException(
+            'Invalid forecast request parameters for Tomorrow.io API',
+            400,
+          );
         case 401:
-          throw const WeatherAuthException('Invalid or missing API key for Tomorrow.io forecast service', 401);
+          throw const WeatherAuthException(
+            'Invalid or missing API key for Tomorrow.io forecast service',
+            401,
+          );
         case 403:
-          throw const WeatherQuotaExceededException('API quota exceeded for Tomorrow.io forecast service', 403);
+          throw const WeatherQuotaExceededException(
+            'API quota exceeded for Tomorrow.io forecast service',
+            403,
+          );
         case 429:
           final retryAfter = _parseRetryAfter(resp.headers['retry-after']);
-          throw WeatherRateLimitException('Rate limit exceeded for Tomorrow.io forecast API', 429, retryAfter);
+          throw WeatherRateLimitException(
+            'Rate limit exceeded for Tomorrow.io forecast API',
+            429,
+            retryAfter,
+          );
         default:
           return null; // swallow other forecast errors gracefully
       }
@@ -385,8 +516,14 @@ class WeatherService extends GetxService {
     }
   }
 
-  Future<ForecastRange?> _fetchForecastMinMaxFromLocation(String locationName) async {
-    final forecastUrl = _buildTomorrowForecastForLocation(locationName, timesteps: '1h', fields: const ['temperature']);
+  Future<ForecastRange?> _fetchForecastMinMaxFromLocation(
+    String locationName,
+  ) async {
+    final forecastUrl = _buildTomorrowForecastForLocation(
+      locationName,
+      timesteps: '1h',
+      fields: const ['temperature'],
+    );
     try {
       final resp = await _makeRequestWithRetry(forecastUrl);
 
@@ -403,14 +540,27 @@ class WeatherService extends GetxService {
           }
           return ForecastRange(min, max);
         case 400:
-          throw const WeatherBadRequestException('Invalid forecast request parameters for Tomorrow.io API', 400);
+          throw const WeatherBadRequestException(
+            'Invalid forecast request parameters for Tomorrow.io API',
+            400,
+          );
         case 401:
-          throw const WeatherAuthException('Invalid or missing API key for Tomorrow.io forecast service', 401);
+          throw const WeatherAuthException(
+            'Invalid or missing API key for Tomorrow.io forecast service',
+            401,
+          );
         case 403:
-          throw const WeatherQuotaExceededException('API quota exceeded for Tomorrow.io forecast service', 403);
+          throw const WeatherQuotaExceededException(
+            'API quota exceeded for Tomorrow.io forecast service',
+            403,
+          );
         case 429:
           final retryAfter = _parseRetryAfter(resp.headers['retry-after']);
-          throw WeatherRateLimitException('Rate limit exceeded for Tomorrow.io forecast API', 429, retryAfter);
+          throw WeatherRateLimitException(
+            'Rate limit exceeded for Tomorrow.io forecast API',
+            429,
+            retryAfter,
+          );
         default:
           return null; // swallow other forecast errors gracefully
       }
@@ -486,30 +636,58 @@ class WeatherService extends GetxService {
   }
 
   /// Fetches and parses Tomorrow.io realtime weather data
-  Future<WeatherSummary> _fetchTomorrowRealtime(Uri url, {double? latitude, double? longitude, String? fallbackLocation}) async {
+  Future<WeatherSummary> _fetchTomorrowRealtime(
+    Uri url, {
+    double? latitude,
+    double? longitude,
+    String? fallbackLocation,
+  }) async {
     try {
       final response = await _makeRequestWithRetry(url);
 
       switch (response.statusCode) {
         case 200:
           final data = json.decode(response.body) as Map<String, dynamic>;
-          return parseTomorrowRealtime(data, latitude: latitude, longitude: longitude, fallbackLocation: fallbackLocation);
+          return parseTomorrowRealtime(
+            data,
+            latitude: latitude,
+            longitude: longitude,
+            fallbackLocation: fallbackLocation,
+          );
         case 400:
-          throw const WeatherBadRequestException('Invalid request parameters for Tomorrow.io API', 400);
+          throw const WeatherBadRequestException(
+            'Invalid request parameters for Tomorrow.io API',
+            400,
+          );
         case 401:
-          throw const WeatherAuthException('Invalid or missing API key for Tomorrow.io weather service', 401);
+          throw const WeatherAuthException(
+            'Invalid or missing API key for Tomorrow.io weather service',
+            401,
+          );
         case 403:
-          throw const WeatherQuotaExceededException('API quota exceeded or access forbidden for Tomorrow.io service', 403);
+          throw const WeatherQuotaExceededException(
+            'API quota exceeded or access forbidden for Tomorrow.io service',
+            403,
+          );
         case 429:
           final retryAfter = _parseRetryAfter(response.headers['retry-after']);
-          throw WeatherRateLimitException('Rate limit exceeded for Tomorrow.io API', 429, retryAfter);
+          throw WeatherRateLimitException(
+            'Rate limit exceeded for Tomorrow.io API',
+            429,
+            retryAfter,
+          );
         default:
-          throw WeatherApiException('Tomorrow.io API returned status ${response.statusCode}', response.statusCode);
+          throw WeatherApiException(
+            'Tomorrow.io API returned status ${response.statusCode}',
+            response.statusCode,
+          );
       }
     } catch (e) {
       if (e is WeatherException) rethrow;
       if (e is FormatException) {
-        throw const WeatherParsingException('Failed to parse Tomorrow.io weather data');
+        throw const WeatherParsingException(
+          'Failed to parse Tomorrow.io weather data',
+        );
       }
       throw WeatherNetworkException('Network error: ${e.toString()}');
     }
@@ -520,7 +698,10 @@ class WeatherService extends GetxService {
     if (locationName.trim().isEmpty) return false;
     try {
       await _ensureApiKeyValid();
-      final url = _buildTomorrowRealtimeForLocation(locationName.trim(), fields: const ['temperature']);
+      final url = _buildTomorrowRealtimeForLocation(
+        locationName.trim(),
+        fields: const ['temperature'],
+      );
       final response = await _makeRequestWithRetry(url);
 
       switch (response.statusCode) {
@@ -528,18 +709,34 @@ class WeatherService extends GetxService {
           debugPrint('Weather API response (validation): ${response.body}');
           return true;
         case 400:
-          SnackBarHelper.showError('Error', 'Invalid location or request parameters');
+          SnackBarHelper.showError(
+            'Error',
+            'Invalid location or request parameters',
+          );
           return false;
         case 401:
-          SnackBarHelper.showError('Error', 'Invalid API key for weather service');
-          throw const WeatherAuthException('Invalid API key for weather service', 401);
+          SnackBarHelper.showError(
+            'Error',
+            'Invalid API key for weather service',
+          );
+          throw const WeatherAuthException(
+            'Invalid API key for weather service',
+            401,
+          );
         case 403:
           SnackBarHelper.showError('Error', 'API quota exceeded');
           throw const WeatherQuotaExceededException('API quota exceeded', 403);
         case 429:
           final retryAfter = _parseRetryAfter(response.headers['retry-after']);
-          SnackBarHelper.showError('Error', 'Rate limit exceeded${retryAfter != null ? ", retry after ${retryAfter}s" : ""}');
-          throw WeatherRateLimitException('Rate limit exceeded', 429, retryAfter);
+          SnackBarHelper.showError(
+            'Error',
+            'Rate limit exceeded${retryAfter != null ? ", retry after ${retryAfter}s" : ""}',
+          );
+          throw WeatherRateLimitException(
+            'Rate limit exceeded',
+            429,
+            retryAfter,
+          );
         default:
           SnackBarHelper.showError('Error', 'Failed to validate location');
           return false;
