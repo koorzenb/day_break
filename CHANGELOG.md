@@ -1,3 +1,9 @@
+## 1.8.1
+  
+### Fix
+  
+- Implement add and remove methods for scheduled announcements in SchedulingSettingsService
+
 ## 1.8.0
   
 ### Feature
