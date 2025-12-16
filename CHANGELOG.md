@@ -1,3 +1,9 @@
+## 1.8.2
+  
+### Refactor
+  
+- ScheduledAnnouncement tests to use integer IDs and update CoreNotificationService tests
+
 ## 1.8.1
   
 ### Fix
