@@ -1,3 +1,9 @@
+## 1.9.0
+  
+### Feature
+  
+- Updated scheduleOneTimeAnnouncement in CoreNotificationService to create ScheduledAnnouncement objects, persist them using SchedulingSettingsService, and schedule the notification.
+
 ## 1.8.2
   
 ### Refactor
