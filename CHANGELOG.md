@@ -1,3 +1,9 @@
+## 1.11.1
+  
+### Tests
+  
+- Added tests for new implementation of getScheduledAnnouncements()
+
 ## 1.11.0
   
 ### Other
