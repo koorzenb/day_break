@@ -1,3 +1,9 @@
+## 1.10.0
+  
+### Feature
+  
+- Handling edge cases for platform notifications
+
 ## 1.9.0
   
 ### Feature
