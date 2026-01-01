@@ -1,3 +1,9 @@
+## 1.11.0
+  
+### Other
+  
+- Returned sorted ScheduledAnnouncement
+
 ## 1.10.0
   
 ### Feature
