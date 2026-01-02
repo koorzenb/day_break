@@ -1,3 +1,9 @@
+## 1.11.2
+  
+### Enhancement
+  
+- Updated cancelAnnouncementById()
+
 ## 1.11.1
   
 ### Tests
