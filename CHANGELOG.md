@@ -1,3 +1,9 @@
+## 1.11.3
+  
+### Enhancement
+  
+- Update cancelAllNotifications()
+
 ## 1.11.2
   
 ### Enhancement
