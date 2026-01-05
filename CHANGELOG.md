@@ -1,3 +1,9 @@
+## 1.11.4
+  
+### Refactor
+  
+- Update Internal Scheduling Methods
+
 ## 1.11.3
   
 ### Enhancement
