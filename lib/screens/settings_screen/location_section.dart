@@ -209,7 +209,7 @@ class _ManualLocationInputState extends State<_ManualLocationInput> {
             },
             onSubmitted: widget.controller.updateLocation,
             decoration: InputDecoration(
-              hintText: 'e.g., Halifax, Nova Scotia',
+              hintText: 'e.g., Lower Sackville, Nova Scotia, Canada',
               prefixIcon: const Icon(Icons.location_on),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),

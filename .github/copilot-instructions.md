@@ -8,16 +8,20 @@ Quick reference for GitHub Copilot and AI assistants working in this Flutter pro
 
 ## Agent Coordination System
 
+**⚠️ IMPORTANT**: All referenced agent files exist and are complete. Always verify file existence using `list_dir` or `file_search` tools before assuming files are missing.
+
 ### Main Agent (You!)
+
 - **Agent Coordinator**: `.github/agent-main.md` - Route requests, manage workflows
-- **Routing Guide**: `.github/agent-routing.md` - Quick decision tree for task routing  
+- **Routing Guide**: `.github/agent-routing.md` - Quick decision tree for task routing
 - **Workflow Management**: `.github/workflow-management.md` - Multi-agent coordination
 - **Examples**: `.github/workflow-examples.md` - Common development scenarios
 
 ### Specialized Agents
+
 - **Planning Agent**: `.github/agent-planning.md` - Requirements analysis, task breakdown
-- **Implementation Agent**: `.github/agent-implementation.md` - Code writing, feature development  
-- **Testing Agent**: `.github/agent-testing.md` - TDD workflows, test creation
+- **Implementation Agent**: `.github/agent-implementation.md` - Code writing, feature development
+- **Testing Agent**: `.github/agent-testing.md` - TDD workflows, test creation, test fixing
 - **Review Agent**: `.github/agent-review.md` - Code review, quality assessment
 
 ## Essential Context
@@ -25,6 +29,22 @@ Quick reference for GitHub Copilot and AI assistants working in this Flutter pro
 - **Project Config**: `.github/project-config.md` - project-specific settings
 - **Product**: `PRD.md` - features, users, goals
 - **Strategy**: `PLAN.md` - milestones, execution plan
+
+---
+
+## AI Agent Guidelines
+
+### File Verification
+
+- **Always verify before assuming**: Use `list_dir`, `file_search`, or `read_file` tools to check file existence
+- **Complete system**: This project has a complete agent coordination system - all referenced `.github/agent-*.md` files exist
+- **Check workspace structure**: Use tools to explore rather than relying on incomplete context
+
+### Error Prevention
+
+- Don't make assumptions about missing files without verification
+- When in doubt, check the actual directory structure
+- Reference the complete agent system when routing complex tasks
 
 ---
 
@@ -41,6 +61,8 @@ See `.github/project-config.md` for project-specific versions and requirements.
 - Async/await (not `.then()`)
 - Enums instead of string constants
 - `///` docs for public APIs
+- **CQS**: No side effects in getters/retrievers
+- **Constants**: Use `app_constants.dart` for shared values
 
 ### File Limits
 
@@ -84,13 +106,15 @@ dart run update_version.dart  # Version bump for commits
 ## Quick Decision Guide
 
 **Complex multi-step tasks:**
+
 - Use the main agent coordination system (`.github/agent-main.md`)
 - Reference routing guide for quick decisions (`.github/agent-routing.md`)
 - Follow workflow management for multi-agent coordination
 
 **Single-purpose tasks:**
+
 - Planning & analysis → `.github/agent-planning.md`
-- Code implementation → `.github/agent-implementation.md`  
+- Code implementation → `.github/agent-implementation.md`
 - Test creation → `.github/agent-testing.md`
 - Code review → `.github/agent-review.md`
 

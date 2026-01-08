@@ -985,6 +985,25 @@ void main() {
 
 ---
 
+## Testing Best Practices
+
+### Constants & Configuration
+
+- **Use AppConstants**: When testing values defined in `AppConstants`, use the constant reference instead of hardcoding the string/number in the test.
+  - *Exception*: If testing that the constant *value* itself hasn't changed unintentionally, you might hardcode the expected value.
+
+### Command-Query Separation (CQS)
+
+- **Verify Getters**: Explicitly test that getters and retrieval methods do not have side effects.
+  - *Pattern*: Call the getter multiple times and assert that the state remains unchanged and the result is identical.
+
+### Cleanup & Resource Management
+
+- **TearDown**: Always clean up resources (streams, timers, controllers) in `tearDown`.
+- **Mock Reset**: If reusing mocks, ensure they are reset or recreated in `setUp`.
+
+---
+
 ## Running Tests
 
 ### Commands

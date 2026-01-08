@@ -99,6 +99,24 @@ class MyClass {
 - **Functions**: Maximum 30-50 lines
 - **Solution**: Extract helper methods
 
+#### Centralized Constants
+
+- **Rule**: Move shared constants to `lib/utils/app_constants.dart`
+- **Usage**: Import and use `AppConstants.myValue`
+- **Scope**: Private constants (`_const`) can remain in the class if not shared
+
+### Clean Code Principles
+
+- **Command-Query Separation (CQS)**:
+  - Methods should either return a value (query) or perform an action (command), but ideally not both.
+  - **Getters**: `get property` or `getSomething()` should be idempotent and free of side effects.
+  - **Side Effects**: Avoid hiding cleanup, state mutation, or heavy processing inside simple retrieval methods.
+  - **Pattern**: If retrieval requires reconciliation/cleanup, extract the logic to a private `_reconcile()` method and call it explicitly.
+
+- **Single Responsibility**:
+  - Each class and method should have one reason to change.
+  - Separate "maintenance" logic (cleanup) from "retrieval" logic (getters).
+
   ```dart
   // ❌ Too long
   void processData() {

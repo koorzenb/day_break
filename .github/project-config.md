@@ -56,6 +56,12 @@ This file contains project-specific settings and context for the Day Break Flutt
 - **Location**: `test/` directory
 - **Patterns**: Follow existing GetX and Hive test patterns
 
+### Centralized Constants
+
+- **Rule**: All shared constants (strings, numbers, config values) must be defined in `lib/utils/app_constants.dart` (or package equivalent)
+- **Exception**: Private constants specific to a single class implementation (e.g., `_maxRetries`)
+- **Goal**: Single source of truth for configuration values
+
 ---
 
 ## Project Structure
