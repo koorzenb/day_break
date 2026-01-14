@@ -18,6 +18,8 @@ A Flutter app for announcing daily weather forecasts at dawn with both visual no
 - Android SDK (API 35+)
 - Tomorrow.io API key (free tier available)
 
+> **💡 Tip**: Free Tier available at [Tomorrow.io](https://www.tomorrow.io/).
+
 ### Weather API Setup
 
 Day Break uses Tomorrow.io for weather data. You'll need a free API key to get started.

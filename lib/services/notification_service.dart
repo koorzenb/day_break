@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:announcement_scheduler/announcement_scheduler.dart'
+    as scheduler;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
@@ -1000,24 +1002,23 @@ class NotificationService extends GetxService {
           '🌤️ Your daily weather update is ready! (Audio announcement will start automatically)';
     }
 
-    // Schedule the notification
-    await _notifications.zonedSchedule(
-      notificationId,
-      title,
-      body,
-      scheduledDate,
-      NotificationDetails(
-        android: androidDetails,
-        iOS: const DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
+    //  String channelId = 'scheduled_announcements',
+
+    final config = scheduler.AnnouncementConfig(
+      notificationConfig: scheduler.NotificationConfig(
+        channelId: 'scheduled_notification',
+        channelName: title,
+        channelDescription: payload,
       ),
-      androidScheduleMode:
-          scheduleMode ?? AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: matchDateTimeComponents,
-      payload: payload,
+    );
+
+    // final notService = await scheduler.NotificationService.create(
+    final notificationService = await scheduler.NotificationService.create(
+      config: config,
+    );
+    await notificationService.scheduleOnceOff(
+      content: body,
+      dateTime: scheduledDate,
     );
   }
 
